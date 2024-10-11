@@ -17,6 +17,5 @@ public class GyroIOSim implements GyroIO {
     inputs.odometryYawTimestamps = OdometryTimeStampsSim.getTimeStamps();
     inputs.yawPosition = gyroSimulation.getGyroReading();
     inputs.yawVelocityRadPerSec = gyroSimulation.getMeasuredAngularVelocityRadPerSec();
-    
   }
 }

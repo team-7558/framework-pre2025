@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
-import frc.robot.subsystems.IntakeExample;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.flywheel.Flywheel;
 import frc.robot.subsystems.flywheel.FlywheelIO;
@@ -55,7 +54,6 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Flywheel flywheel;
-  private final IntakeExample intake;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -90,7 +88,6 @@ public class RobotContainer {
         // new ModuleIOTalonFX(2),
         // new ModuleIOTalonFX(3));
         // flywheel = new Flywheel(new FlywheelIOTalonFX());
-        this.intake = null;
         break;
 
       case SIM:
@@ -121,7 +118,6 @@ public class RobotContainer {
 
         // reset the field for auto (placing game-pieces in positions)
         SimulatedArena.getInstance().resetFieldForAuto();
-        this.intake = new IntakeExample(SimulatedArena.getInstance(), swerveDriveSimulation);
 
         drive =
             new Drive(
@@ -143,7 +139,6 @@ public class RobotContainer {
 
         /* physics simulations are also not needed */
         this.swerveDriveSimulation = null;
-        this.intake = null;
         drive =
             new Drive(
                 new GyroIO() {},
@@ -219,14 +214,6 @@ public class RobotContainer {
         .whileTrue(
             Commands.startEnd(
                 () -> flywheel.runVelocity(flywheelSpeedInput.get()), flywheel::stop, flywheel));
-
-    if (intake != null) {
-      controller
-          .leftTrigger(0.5)
-          .onTrue(Commands.runOnce(intake::startIntake))
-          .onFalse(Commands.runOnce(intake::stopIntake));
-      controller.leftBumper().onTrue(Commands.runOnce(intake::clearGamePiece));
-    }
   }
 
   /**
@@ -246,7 +233,5 @@ public class RobotContainer {
 
     final List<Pose3d> notes = SimulatedArena.getInstance().getGamePiecesByType("Note");
     if (notes != null) Logger.recordOutput("FieldSimulation/Notes", notes.toArray(Pose3d[]::new));
-
-    intake.visualizeNoteInIntake();
   }
 }
