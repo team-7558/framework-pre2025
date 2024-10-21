@@ -49,7 +49,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
  */
 public class RobotContainer {
   // Simulations are store in the robot container
-  private final SwerveDriveSimulation swerveDriveSimulation;
 
   // Subsystems
   private final Drive drive;
@@ -70,7 +69,6 @@ public class RobotContainer {
         /* Real robot, instantiate hardware IO implementations */
 
         /* Disable Simulations */
-        this.swerveDriveSimulation = null;
 
         /* Subsystems */
         drive =
@@ -96,25 +94,6 @@ public class RobotContainer {
         /* create simulation for pigeon2 IMU (different IMUs have different measurement errors) */
         final GyroSimulation gyroSimulation = GyroSimulation.createPigeon2();
         /* create a swerve drive simulation */
-        this.swerveDriveSimulation =
-            new SwerveDriveSimulation(
-                45,
-                0.65,
-                0.65,
-                0.74,
-                0.74,
-                SwerveModuleSimulation.getMark4( // creates a mark4 module
-                    DCMotor.getKrakenX60(1), // drive motor is a Kraken x60
-                    DCMotor.getFalcon500(1), // steer motor is a Falcon 500
-                    80, // current limit: 80 Amps
-                    DRIVE_WHEEL_TYPE.RUBBER, // rubber wheels
-                    3 // l3 gear ratio
-                    ),
-                gyroSimulation,
-                new Pose2d( // initial starting pose on field, set it to where-ever you want
-                    3, 3, new Rotation2d()));
-        SimulatedArena.getInstance()
-            .addDriveTrainSimulation(swerveDriveSimulation); // register the drive train simulation
 
         // reset the field for auto (placing game-pieces in positions)
         SimulatedArena.getInstance().resetFieldForAuto();
