@@ -21,9 +21,13 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -34,14 +38,15 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.OI;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.Util;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -55,8 +60,11 @@ public class Drive extends StateMachineSubsystemBase {
   private static final double MAX_LINEAR_SPEED = Units.feetToMeters(14.5);
   private static final double TRACK_WIDTH_X = Units.inchesToMeters(25.0);
   private static final double TRACK_WIDTH_Y = Units.inchesToMeters(25.0);
-  private static final double DRIVE_BASE_RADIUS = Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
+  private static final double DRIVE_BASE_RADIUS =
+      Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
   private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
+
+  public static final int FL = 0, FR = 1, BL = 2, BR = 3;
 
   static final Lock odometryLock = new ReentrantLock();
   private final GyroIO gyroIO;
@@ -64,71 +72,74 @@ public class Drive extends StateMachineSubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine sysId;
 
+  private SlewRateLimiter throttleLimit = new SlewRateLimiter(4.0, -2.1, 0.0);
+
+  private double autolockSetpoint_r = 0, intermediaryAutolockSetpoint_r = 0;
+
   private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
   private Rotation2d rawGyroRotation = new Rotation2d();
   private SwerveModulePosition[] lastModulePositions = // For delta tracking
       new SwerveModulePosition[] {
-          new SwerveModulePosition(),
-          new SwerveModulePosition(),
-          new SwerveModulePosition(),
-          new SwerveModulePosition()
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition()
       };
 
   private SwerveDriveSimulation swerveDriveSimulation;
 
-  private SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(kinematics, rawGyroRotation,
-      lastModulePositions, new Pose2d());
+  private SwerveDrivePoseEstimator poseEstimator =
+      new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
 
   private static Drive instance;
 
-  public final State DISABLED,
-      STRAFE_AUTOLOCK,
-      STRAFE_N_TURN;
+  public final State DISABLED, STRAFE_AUTOLOCK, STRAFE_N_TURN;
 
   public static Drive getInstance() {
     if (instance == null) {
       switch (Constants.currentMode) {
         case REAL:
-          instance = new Drive(
-              new GyroIOPigeon2(false),
-              new ModuleIOSparkMax(0),
-              new ModuleIOSparkMax(1),
-              new ModuleIOSparkMax(2),
-              new ModuleIOSparkMax(3),
-              null);
+          instance =
+              new Drive(
+                  new GyroIOPigeon2(false),
+                  new ModuleIOSparkMax(0),
+                  new ModuleIOSparkMax(1),
+                  new ModuleIOSparkMax(2),
+                  new ModuleIOSparkMax(3),
+                  null);
 
         case SIM:
-
           final GyroSimulation gyroSimulation = GyroSimulation.createPigeon2();
 
-          SwerveDriveSimulation swerveDriveSimulation = new SwerveDriveSimulation(
-              45,
-              0.65,
-              0.65,
-              0.74,
-              0.74,
-              SwerveModuleSimulation.getMark4( // creates a mark4 module
-                  DCMotor.getKrakenX60(1), // drive motor is a Kraken x60
-                  DCMotor.getFalcon500(1), // steer motor is a Falcon 500
-                  80, // current limit: 80 Amps
-                  DRIVE_WHEEL_TYPE.RUBBER, // rubber wheels
-                  3 // l3 gear ratio
-              ),
-              gyroSimulation,
-              new Pose2d( // initial starting pose on field, set it to where-ever you want
-                  3, 3, new Rotation2d()));
+          SwerveDriveSimulation swerveDriveSimulation =
+              new SwerveDriveSimulation(
+                  45,
+                  0.65,
+                  0.65,
+                  0.74,
+                  0.74,
+                  SwerveModuleSimulation.getMark4( // creates a mark4 module
+                      DCMotor.getKrakenX60(1), // drive motor is a Kraken x60
+                      DCMotor.getKrakenX60(1), // steer motor is a Falcon 500
+                      80, // current limit: 80 Amps
+                      DRIVE_WHEEL_TYPE.RUBBER, // rubber wheels
+                      2 // l2 gear ratio
+                      ),
+                  gyroSimulation,
+                  new Pose2d( // initial starting pose on field, set it to whereever you want
+                      3, 3, new Rotation2d()));
 
-          instance = new Drive(
-              new GyroIOSim(
-                  gyroSimulation), // GyroIOSim is a wrapper around gyro simulation, that reads
-              // the simulation result
-              /* ModuleIOSim are edited such that they also wraps around module simulations */
-              new ModuleIOSim(swerveDriveSimulation.getModules()[0]),
-              new ModuleIOSim(swerveDriveSimulation.getModules()[1]),
-              new ModuleIOSim(swerveDriveSimulation.getModules()[2]),
-              new ModuleIOSim(swerveDriveSimulation.getModules()[3]),
-              swerveDriveSimulation);
-
+          instance =
+              new Drive(
+                  new GyroIOSim(
+                      gyroSimulation), // GyroIOSim is a wrapper around gyro simulation, that reads
+                  // the simulation result
+                  /* ModuleIOSim are edited such that they also wraps around module simulations */
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[0]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[1]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[2]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[3]),
+                  swerveDriveSimulation);
       }
     }
     return instance;
@@ -141,9 +152,14 @@ public class Drive extends StateMachineSubsystemBase {
       ModuleIO blModuleIO,
       ModuleIO brModuleIO,
       SwerveDriveSimulation driveSim) {
+
     super("Drive");
-    this.gyroIO = gyroIO;
     swerveDriveSimulation = driveSim;
+    this.gyroIO = gyroIO;
+    this.modules[FL] = new Module(flModuleIO, FL);
+    this.modules[FR] = new Module(frModuleIO, FR);
+    this.modules[BL] = new Module(blModuleIO, BL);
+    this.modules[BR] = new Module(brModuleIO, BR);
 
     // Start threads (no-op for each if no signals have been created)
     PhoenixOdometryThread.getInstance().start();
@@ -166,16 +182,18 @@ public class Drive extends StateMachineSubsystemBase {
     AutoBuilder.configure(
         this::getPose, // Robot pose supplier
         this::setPose, // Method to reset odometry (will be called if your auto has a starting pose)
-        () -> kinematics.toChassisSpeeds(
-            getModuleStates()), // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-        (speeds, feedforwards) -> runVelocity(
-            speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds.
+        () ->
+            kinematics.toChassisSpeeds(
+                getModuleStates()), // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        (speeds, feedforwards) ->
+            runVelocity(
+                speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds.
         // Also optionally outputs individual module feedforwards
         new PPHolonomicDriveController( // PPHolonomicController is the built in path following
             // controller for holonomic drive trains
             new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
             new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-        ),
+            ),
         config, // The robot configuration
         () -> {
           // Boolean supplier that controls when the path will be mirrored for the red
@@ -190,7 +208,7 @@ public class Drive extends StateMachineSubsystemBase {
           return false;
         },
         this // Reference to this subsystem to set requirements
-    );
+        );
 
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
@@ -204,80 +222,76 @@ public class Drive extends StateMachineSubsystemBase {
         });
 
     // Configure SysId
-    sysId = new SysIdRoutine(
-        new SysIdRoutine.Config(
-            null,
-            null,
-            null,
-            (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
-        new SysIdRoutine.Mechanism(
-            (voltage) -> {
-              for (int i = 0; i < 4; i++) {
-                modules[i].runCharacterization(voltage.in(Volts));
-              }
-            },
-            null,
-            this));
+    sysId =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                null,
+                null,
+                null,
+                (state) -> Logger.recordOutput("Drive/SysIdState", state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> {
+                  for (int i = 0; i < 4; i++) {
+                    modules[i].runCharacterization(voltage.in(Volts));
+                  }
+                },
+                null,
+                this));
 
-    DISABLED = new State("DISABLED") {
-      @Override
-      public void init() {
-        stop();
-      }
+    DISABLED =
+        new State("DISABLED") {
+          @Override
+          public void init() {
+            stop();
+          }
 
-      @Override
-      public void periodic() {
-      }
+          @Override
+          public void periodic() {}
 
-      @Override
-      public void exit() {
-      }
-    };
+          @Override
+          public void exit() {}
+        };
 
-    STRAFE_N_TURN = new State("STRAFE_N_TURN") {
+    STRAFE_N_TURN =
+        new State("STRAFE_N_TURN") {
 
-      // do this in a sec once u add OI
+          // do this in a sec once u add OI
 
-      // double scaler = 1.0 / Math.sqrt(2);
+          double scaler = 1.0 / Math.sqrt(2);
 
-      // @Override
-      // public void periodic() {
-      // double throttle = 1.0;
-      // throttle = Util.lerp(1, 0.4, OI.DR.getRightTriggerAxis() *
-      // OI.DR.getRightTriggerAxis());
+          @Override
+          public void periodic() {
+            double throttle = 1.0;
+            throttle = Util.lerp(1, 0.4, OI.DR.getRightTriggerAxis() * OI.DR.getRightTriggerAxis());
 
-      // double x_ = -OI.DR.getLeftY();
-      // double y_ = -OI.DR.getLeftX();
-      // double w_ = -Util.sqInput(OI.DR.getRightX());
+            double x_ = -OI.DR.getLeftY();
+            double y_ = -OI.DR.getLeftX();
+            double w_ = -Util.sqInput(OI.DR.getRightX());
 
-      // if (Math.abs(w_) > 0.3) {
-      // runVelocity(
-      // drive(
-      // x_,
-      // y_,
-      // w_ * 0.75,
-      // throttleLimit.calculate(throttle))); // throttleLimit.calculate(throttle)
-      // } else {
-      // double mag = Math.sqrt(x_ * x_ + y_ * y_);
-      // intermediaryAutolockSetpoint_r = autolockSetpoint_r;
-      // double err =
-      // Math.IEEEremainder(
-      // getRotation().getRotations() - intermediaryAutolockSetpoint_r, 1.0);
-      // if (Constants.verboseLogging)
-      // Logger.recordOutput("Drive/Autolock Heading Error", err);
-      // double con = 6 * err;
-      // con = Util.limit(con, Util.lerp(0.7, 0.2, mag * scaler));
-      // if (Constants.verboseLogging)
-      // Logger.recordOutput("Drive/Autolock Heading Output", con);
-      // runVelocity(drive(x_, y_, -con, throttleLimit.calculate(throttle)));
-      // }
-      // }
-    };
+            if (Math.abs(w_) > 0.3) {
+              runVelocity(drive(x_, y_, w_ * 0.75, throttleLimit.calculate(throttle)));
+            } else {
+              double mag = Math.sqrt(x_ * x_ + y_ * y_);
+              intermediaryAutolockSetpoint_r = autolockSetpoint_r;
+              double err =
+                  Math.IEEEremainder(
+                      getRotation().getRotations() - intermediaryAutolockSetpoint_r, 1.0);
+              if (Constants.verboseLogging)
+                Logger.recordOutput("Drive/Autolock Heading Error", err);
+              double con = 6 * err;
+              con = Util.limit(con, Util.lerp(0.7, 0.2, mag * scaler));
+              if (Constants.verboseLogging)
+                Logger.recordOutput("Drive/Autolock Heading Output", con);
+              runVelocity(drive(x_, y_, -con, throttleLimit.calculate(throttle)));
+            }
+          }
+        };
 
-    STRAFE_AUTOLOCK = new State("STRAFE_AUTOLOCK") {
-      // fill later
-    };
-
+    STRAFE_AUTOLOCK =
+        new State("STRAFE_AUTOLOCK") {
+          // fill later
+        };
+    setCurrentState(DISABLED);
   }
 
   @Override
@@ -298,8 +312,6 @@ public class Drive extends StateMachineSubsystemBase {
   @Override
   public void outputPeriodic() {
 
-
-
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
       for (var module : modules) {
@@ -313,7 +325,8 @@ public class Drive extends StateMachineSubsystemBase {
     }
 
     // Update odometry
-    double[] sampleTimestamps = modules[0].getOdometryTimestamps(); // All signals are sampled together
+    double[] sampleTimestamps =
+        modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions and deltas from each module
@@ -321,10 +334,11 @@ public class Drive extends StateMachineSubsystemBase {
       SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
         modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
-        moduleDeltas[moduleIndex] = new SwerveModulePosition(
-            modulePositions[moduleIndex].distanceMeters
-                - lastModulePositions[moduleIndex].distanceMeters,
-            modulePositions[moduleIndex].angle);
+        moduleDeltas[moduleIndex] =
+            new SwerveModulePosition(
+                modulePositions[moduleIndex].distanceMeters
+                    - lastModulePositions[moduleIndex].distanceMeters,
+                modulePositions[moduleIndex].angle);
         lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
 
@@ -366,16 +380,41 @@ public class Drive extends StateMachineSubsystemBase {
     Logger.recordOutput("SwerveStates/SetpointsOptimized", optimizedSetpointStates);
   }
 
+  public ChassisSpeeds drive(double x, double y, double w, double throttle) {
+    // Apply deadband
+    double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), 0);
+    Rotation2d linearDirection = new Rotation2d(x, y);
+    double omega = MathUtil.applyDeadband(w, 0);
+
+    // Square values
+    linearMagnitude = linearMagnitude * linearMagnitude;
+    omega = Math.copySign(omega * omega, omega);
+
+    // Calcaulate new linear velocity
+    Translation2d linearVelocity =
+        new Pose2d(new Translation2d(), linearDirection)
+            .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
+            .getTranslation();
+
+    // Convert to field relative speeds & send command
+
+    double x_ = (linearVelocity.getX() * MAX_LINEAR_SPEED) * throttle;
+    double y_ = (linearVelocity.getY() * MAX_LINEAR_SPEED) * throttle;
+    double w_ = omega * MAX_ANGULAR_SPEED;
+
+    ChassisSpeeds rr = ChassisSpeeds.fromFieldRelativeSpeeds(x_, y_, w_, getPose().getRotation());
+
+    return rr;
+  }
+
   /** Stops the drive. */
   public void stop() {
     runVelocity(new ChassisSpeeds());
   }
 
   /**
-   * Stops the drive and turns the modules to an X arrangement to resist movement.
-   * The modules will
-   * return to their normal orientations the next time a nonzero velocity is
-   * requested.
+   * Stops the drive and turns the modules to an X arrangement to resist movement. The modules will
+   * return to their normal orientations the next time a nonzero velocity is requested.
    */
   public void stopWithX() {
     Rotation2d[] headings = new Rotation2d[4];
@@ -396,10 +435,7 @@ public class Drive extends StateMachineSubsystemBase {
     return sysId.dynamic(direction);
   }
 
-  /**
-   * Returns the module states (turn angles and drive velocities) for all of the
-   * modules.
-   */
+  /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
@@ -409,10 +445,7 @@ public class Drive extends StateMachineSubsystemBase {
     return states;
   }
 
-  /**
-   * Returns the module positions (turn angles and drive positions) for all of the
-   * modules.
-   */
+  /** Returns the module positions (turn angles and drive positions) for all of the modules. */
   private SwerveModulePosition[] getModulePositions() {
     SwerveModulePosition[] states = new SwerveModulePosition[4];
     for (int i = 0; i < 4; i++) {
@@ -432,16 +465,28 @@ public class Drive extends StateMachineSubsystemBase {
     return getPose().getRotation();
   }
 
+  public double getAngularVelocity() {
+    if (gyroInputs.connected) {
+      return gyroInputs.yawVelocityRadPerSec;
+    } else {
+      return getChassisSpeeds().omegaRadiansPerSecond;
+    }
+  }
+
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+  }
+
+  public ChassisSpeeds getChassisSpeeds() {
+    return kinematics.toChassisSpeeds(getModuleStates());
   }
 
   /**
    * Adds a vision measurement to the pose estimator.
    *
    * @param visionPose The pose of the robot as measured by the vision camera.
-   * @param timestamp  The timestamp of the vision measurement in seconds.
+   * @param timestamp The timestamp of the vision measurement in seconds.
    */
   public void addVisionMeasurement(Pose2d visionPose, double timestamp) {
     poseEstimator.addVisionMeasurement(visionPose, timestamp);
@@ -460,10 +505,20 @@ public class Drive extends StateMachineSubsystemBase {
   /** Returns an array of module translations. */
   public static Translation2d[] getModuleTranslations() {
     return new Translation2d[] {
-        new Translation2d(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
-        new Translation2d(TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0),
-        new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
-        new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
+      new Translation2d(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
+      new Translation2d(TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0),
+      new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
+      new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
     };
+  }
+
+  public void updateSimulationField() {
+    SimulatedArena.getInstance().simulationPeriodic();
+
+    Logger.recordOutput(
+        "FieldSimulation/RobotPosition", swerveDriveSimulation.getSimulatedDriveTrainPose());
+
+    final List<Pose3d> notes = SimulatedArena.getInstance().getGamePiecesByType("Note");
+    if (notes != null) Logger.recordOutput("FieldSimulation/Notes", notes.toArray(Pose3d[]::new));
   }
 }

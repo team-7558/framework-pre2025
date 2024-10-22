@@ -175,5 +175,4 @@ public abstract class StateMachineSubsystemBase extends SubsystemBase {
     PerfTracker.end(id);
     Logger.recordOutput(this.getName() + "/State", currentState.name);
   }
-
 }
