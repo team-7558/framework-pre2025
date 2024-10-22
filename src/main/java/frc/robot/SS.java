@@ -60,7 +60,6 @@ public class SS {
     switch (currState) {
       case DISABLED:
         if (first) {
-          System.out.println("yes?");
           drive.setCurrentState(drive.DISABLED);
         }
       case BOOT:
