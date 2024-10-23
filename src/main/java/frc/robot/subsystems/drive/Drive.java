@@ -57,12 +57,12 @@ import org.littletonrobotics.junction.Logger;
 
 public class Drive extends StateMachineSubsystemBase {
 
-  private static final double MAX_LINEAR_SPEED = Units.feetToMeters(14.5);
-  private static final double TRACK_WIDTH_X = Units.inchesToMeters(25.0);
-  private static final double TRACK_WIDTH_Y = Units.inchesToMeters(25.0);
-  private static final double DRIVE_BASE_RADIUS =
+  public static final double MAX_LINEAR_SPEED = Units.feetToMeters(14.5);
+  public static final double TRACK_WIDTH_X = Units.inchesToMeters(25.0);
+  public static final double TRACK_WIDTH_Y = Units.inchesToMeters(25.0);
+  public static final double DRIVE_BASE_RADIUS =
       Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
-  private static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
+  public static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
 
   public static final int FL = 0, FR = 1, BL = 2, BR = 3;
 
@@ -86,10 +86,15 @@ public class Drive extends StateMachineSubsystemBase {
         new SwerveModulePosition()
       };
 
+  public static final PIDConstants TRANSLATION_CONSTANTS = new PIDConstants(5.0, 0.0, 0.0);
+  public static final PIDConstants ROTATION_CONSTANTS = new PIDConstants(5.0, 0.0, 0.0);
+
   private SwerveDriveSimulation swerveDriveSimulation;
 
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, new Pose2d());
+
+  private RobotConfig config = null;
 
   private static Drive instance;
 
@@ -166,7 +171,6 @@ public class Drive extends StateMachineSubsystemBase {
     SparkMaxOdometryThread.getInstance().start();
 
     // Configure AutoBuilder for PathPlanner
-    RobotConfig config = null;
     try {
       config = RobotConfig.fromGUISettings();
     } catch (Exception e) {
@@ -189,11 +193,7 @@ public class Drive extends StateMachineSubsystemBase {
             runVelocity(
                 speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds.
         // Also optionally outputs individual module feedforwards
-        new PPHolonomicDriveController( // PPHolonomicController is the built in path following
-            // controller for holonomic drive trains
-            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-            ),
+        new PPHolonomicDriveController(TRANSLATION_CONSTANTS, ROTATION_CONSTANTS),
         config, // The robot configuration
         () -> {
           // Boolean supplier that controls when the path will be mirrored for the red

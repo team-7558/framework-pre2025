@@ -26,6 +26,8 @@ public final class Constants {
 
   public static final boolean verboseLogging = true;
 
+  public static final double globalDelta_sec = 0.015; // 75hz
+
   public enum Mode {
     /** Running on a real robot. */
     REAL,
