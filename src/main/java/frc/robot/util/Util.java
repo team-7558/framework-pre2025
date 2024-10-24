@@ -4,6 +4,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 
 /** Contains some basic utility functions that are used often. */
 public class Util {
+
+  public static double ONE_OVER_ROOT_TWO = 1.0 / Math.sqrt(2.0);
+  public static double ONE_OVER_PI = 1.0 / Math.PI;
+
   /** Prevent this class from being instantiated. */
   private Util() {}
 

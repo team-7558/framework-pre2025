@@ -14,8 +14,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.SS.State;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.superstructure.Intention;
+import frc.robot.subsystems.superstructure.InternalState;
+import frc.robot.subsystems.superstructure.SS;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -98,7 +100,7 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
 
-    SS.getInstance().periodic();
+    SS.getInstance().handleStateMachine();
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();
@@ -108,7 +110,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {    
+    SS.getInstance().queueState(InternalState.DISABLED);
+  }
 
   /** This function is called periodically when disabled. */
   @Override
@@ -127,7 +131,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    SS.getInstance().queueState(State.IDLE);
+    SS.getInstance().queueState(InternalState.IDLE);
   }
 
   /** This function is called periodically during operator control. */
