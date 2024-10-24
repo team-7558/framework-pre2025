@@ -15,9 +15,10 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.superstructure.Intention;
-import frc.robot.subsystems.superstructure.InternalState;
-import frc.robot.subsystems.superstructure.SS;
+import frc.robot.superstructure.Intention;
+import frc.robot.superstructure.InternalState;
+import frc.robot.superstructure.SS;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.superstructure;
+package frc.robot.superstructure;
 
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveState;
