@@ -66,7 +66,7 @@ public abstract class StateMachineSubsystemBase<T extends Enum<T> & IState> exte
     handleStateMachine();
     outputPeriodic();
     PerfTracker.end(id);
-    Logger.recordOutput(this.getName() + "/State", currentState);
-    Logger.recordOutput(this.getName() + "/StateTimer", timer.time());
+    Logger.recordOutput(name + "/State", currentState);
+    Logger.recordOutput(name + "/StateTimer", timer.time());
   }
 }
