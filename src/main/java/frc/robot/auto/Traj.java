@@ -4,14 +4,19 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
+import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import frc.robot.G;
 import frc.robot.subsystems.drive.Drive;
 
+import java.io.IOException;
 import java.util.Optional;
+
+import org.json.simple.parser.ParseException;
 
 public class Traj implements IFollowable {
 
@@ -48,10 +53,14 @@ public class Traj implements IFollowable {
   @Override
   public void generate() {
     if (this.type == TrajType.MOVING) {
-      PathPlannerPath pppath =
-          isChoreo
-              ? PathPlannerPath.fromChoreoTrajectory(filename)
-              : PathPlannerPath.fromPathFile(filename);
+      PathPlannerPath pppath = null;
+      try {
+        pppath = isChoreo
+            ? PathPlannerPath.fromChoreoTrajectory(filename)
+            : PathPlannerPath.fromPathFile(filename);
+      } catch (FileVersionException | IOException | ParseException e) {
+        e.printStackTrace();
+      }
       ChassisSpeeds cs = new ChassisSpeeds();
       this.path = pppath;
       double startrad = 0;
@@ -60,7 +69,7 @@ public class Traj implements IFollowable {
         startrad = Math.PI;
       }
 
-      this.traj = pppath.getTrajectory(cs, Rotation2d.fromRadians(startrad));
+      this.traj = pppath.generateTrajectory(cs, Rotation2d.fromRadians(startrad),Drive.getInstance().getRobotConfig());
       initState = traj.getInitialState();
     } else {
       this.initState = new PathPlannerTrajectoryState();
@@ -74,12 +83,16 @@ public class Traj implements IFollowable {
 
   public void generate(PathPlannerTrajectoryState prevState) {
     if (this.type == TrajType.MOVING) {
-      PathPlannerPath pppath =
-          isChoreo
-              ? PathPlannerPath.fromChoreoTrajectory(filename)
-              : PathPlannerPath.fromPathFile(filename);
+      PathPlannerPath pppath = null;
+      try {
+        pppath = isChoreo
+            ? PathPlannerPath.fromChoreoTrajectory(filename)
+            : PathPlannerPath.fromPathFile(filename);
+      } catch (FileVersionException | IOException | ParseException e) {
+        e.printStackTrace();
+      }
       double rotvel =
-          prevState.fieldSpeeds.omegaRadiansPerSecond
+          prevState.fieldSpeeds.omegaRadiansPerSecond;
       ChassisSpeeds cs =
           new ChassisSpeeds(
               prevState.linearVelocity * Math.cos(Math.PI * 0.25),
@@ -90,8 +103,7 @@ public class Traj implements IFollowable {
         pppath = pppath.flipPath();
       }
 
-      pppath.generateTrajectory(cs, pppath.getInitialHeading(), Drive.getInstance().);
-      this.traj = pppath.getTrajectory(cs, prevState.targetHolonomicRotation);
+      this.traj = pppath.generateTrajectory(cs, prevState.pose.getRotation(),Drive.getInstance().getRobotConfig());
       initState = traj.getInitialState();
     } else {
       this.initState = prevState;
@@ -121,7 +133,7 @@ public class Traj implements IFollowable {
   }
 
   @Override
-  public State sample(double time) {
+  public PathPlannerTrajectoryState sample(double time) {
     if (type == TrajType.MOVING) {
       return traj.sample(time);
     } else {
@@ -130,12 +142,12 @@ public class Traj implements IFollowable {
   }
 
   @Override
-  public State getInitState() {
+  public PathPlannerTrajectoryState getInitState() {
     return initState;
   }
 
   @Override
-  public State getEndState() {
+  public PathPlannerTrajectoryState getEndState() {
     if (type == TrajType.MOVING) {
       return traj.getEndState();
     } else {
@@ -145,8 +157,10 @@ public class Traj implements IFollowable {
 
   @Override
   public double segEnd(int i) {
-    if (!generated) return 0;
-    if (i != 0) return 0;
+    if (!generated)
+      return 0;
+    if (i != 0)
+      return 0;
     return endTime();
   }
 }

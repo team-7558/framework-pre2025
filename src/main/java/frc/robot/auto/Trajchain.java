@@ -1,6 +1,7 @@
 package frc.robot.auto;
 
-import com.pathplanner.lib.path.Waypoint;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +48,8 @@ public class Trajchain implements IFollowable {
       System.err.println("Path of just waits");
     } else {
       trajs.get(firstPath).generate();
-      State initState = trajs.get(firstPath).getInitState();
-      startingPose = new Pose2d(initState.positionMeters, initState.targetHolonomicRotation);
+      PathPlannerTrajectoryState initState = trajs.get(firstPath).getInitState();
+      startingPose = initState.pose;
       startTimes.add(0.0);
       totalTime_s = 0;
       for (int i = firstPath + 1; i < chainSize; i++) {
@@ -62,9 +63,6 @@ public class Trajchain implements IFollowable {
         startTimes.add(totalTime_s);
       }
 
-      for (var time : startTimes) {
-      }
-
       System.out.println("Trajchain generated");
       generated = true;
     }
@@ -76,7 +74,7 @@ public class Trajchain implements IFollowable {
   }
 
   @Override
-  public State sample(double time_s) {
+  public PathPlannerTrajectoryState sample(double time_s) {
     if (time_s >= startTimes.get(chainSize)) {
       return getEndState();
     } else {
@@ -98,7 +96,7 @@ public class Trajchain implements IFollowable {
   }
 
   @Override
-  public State getInitState() {
+  public PathPlannerTrajectoryState getInitState() {
     if (generated) {
       return trajs.get(0).getInitState();
     }
@@ -106,7 +104,7 @@ public class Trajchain implements IFollowable {
   }
 
   @Override
-  public State getEndState() {
+  public PathPlannerTrajectoryState getEndState() {
     if (generated) {
       return trajs.get(chainSize - 1).getEndState();
     }

@@ -14,8 +14,10 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.auto.AltAuto;
+import frc.robot.auto.RunAltAuto;
+import frc.robot.auto.autos.DoNothing;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.superstructure.Intention;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 
@@ -35,6 +37,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+
+  private RunAltAuto autoExecutor = new RunAltAuto(new DoNothing());
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -126,7 +130,10 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    // run auto!
+    // run auto
+    if(autoExecutor != null) {
+      autoExecutor.periodic();
+    }
   }
 
   /** This function is called once when teleop is enabled. */

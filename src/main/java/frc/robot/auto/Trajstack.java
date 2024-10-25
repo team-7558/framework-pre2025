@@ -1,8 +1,12 @@
 package frc.robot.auto;
 
 import edu.wpi.first.math.MathUtil;
+import frc.robot.G;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 
 public class Trajstack implements IFollowable {
 
@@ -53,7 +57,7 @@ public class Trajstack implements IFollowable {
   }
 
   @Override
-  public State sample(double time_s) {
+  public PathPlannerTrajectoryState sample(double time_s) {
     return trajs.get(activeTraj).sample(time_s);
   }
 
@@ -75,7 +79,7 @@ public class Trajstack implements IFollowable {
   }
 
   @Override
-  public State getInitState() {
+  public PathPlannerTrajectoryState getInitState() {
     if (generated) {
       return trajs.get(activeTraj).getInitState();
     }
@@ -83,7 +87,7 @@ public class Trajstack implements IFollowable {
   }
 
   @Override
-  public State getEndState() {
+  public PathPlannerTrajectoryState getEndState() {
     if (generated) {
       return trajs.get(activeTraj).getEndState();
     }

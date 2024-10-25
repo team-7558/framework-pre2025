@@ -7,11 +7,15 @@ import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.SS;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.DriveState;
+import frc.robot.superstructure.InternalState;
+import frc.robot.superstructure.SS;
+import frc.robot.util.AltTimer;
+import frc.robot.util.IStateMachine;
 import frc.robot.util.Util;
 
-public abstract class AltAuto {
+public abstract class AltAuto implements IStateMachine<AutoState> {
 
   private String name;
 
@@ -20,9 +24,12 @@ public abstract class AltAuto {
   protected final Drive drive;
   protected final SS ss;
   
-  private HashMap<BooleanSupplier,Runnable> callbacks = new HashMap<>();
+  private AutoState state;
 
-  private Timer t;
+  private boolean first;
+  
+
+  private AltTimer t;
   private boolean forcePoseReset;
 
   private boolean generated = false;
@@ -33,29 +40,7 @@ public abstract class AltAuto {
     ss = SS.getInstance();
     trajstack = new Trajstack();
     this.forcePoseReset = forcePoseReset;
-    t = new Timer();
-  }
-
-  protected abstract void onInit();
-
-  protected abstract void onExecute();
-
-  /** Use this method to register any custom conditions and their associated actions */
-  protected void registerCallback(BooleanSupplier condition, Runnable action) {
-    this.callbacks.put(condition, action);
-  }
-
-  private void executeCallbacks() {
-    ArrayList<BooleanSupplier> shouldRemove = new ArrayList<>();
-    for(Entry<BooleanSupplier,Runnable> callback : callbacks.entrySet()) {
-        if(callback.getKey().getAsBoolean()) {
-            callback.getValue().run();
-            shouldRemove.add(callback.getKey());
-        }
-    }
-    shouldRemove.forEach(callback -> {
-        callbacks.remove(callback); // this might cause concurrent mod exception lol mb
-    });
+    this.t = new AltTimer();
   }
 
 
@@ -66,14 +51,13 @@ public abstract class AltAuto {
     }
 
     if (forcePoseReset) {
-      drive.setPose(new Pose2d(trajstack.getInitState().positionMeters, drive.getRotation()));
+      drive.setPose(trajstack.getInitState().pose);
     }
 
-    drive.setCurrentState(drive.PATHING);
+    drive.queueState(DriveState.PATHING);
 
+    t = new AltTimer();
     t.reset();
-    t.start();
-    onInit();
   }
 
   @Override
@@ -87,20 +71,21 @@ public abstract class AltAuto {
   }
 
   public final void execute() {
+    handleStateMachine();
     onExecute();
-    executeCallbacks();
-    double time = t.get();
+    // executeCallbacks(); figure this out
+    double time = t.time();
     // if (time < 15.0) led.drawPreciseNumber(time, 16, 16, 16);
     // else led.drawNumber(time, 48, 0, 0);
     // TODO: ADD LED BACK 
   }
 
   protected boolean before(double time_s) {
-    return t.get() < time_s;
+    return t.time() < time_s;
   }
 
   protected boolean after(double time_s) {
-    return t.get() > time_s;
+    return t.time() > time_s;
   }
 
   protected boolean between(double time0_s, double time1_s) {
@@ -108,12 +93,18 @@ public abstract class AltAuto {
   }
 
   protected double alpha(double time0_s, double time1_s) {
-    return Util.unlerp(time0_s, time1_s, t.get());
+    return Util.unlerp(time0_s, time1_s, t.time());
   }
 
   protected boolean near(double x, double y, double tol) {
     double dx = x - drive.getPose().getX();
     double dy = y - drive.getPose().getY();
+    return dx * dx + dy * dy < tol * tol;
+  }
+
+  protected boolean near(Pose2d pose, double tol) {
+    double dx = pose.getX() - drive.getPose().getX();
+    double dy = pose.getY() - drive.getPose().getY();
     return dx * dx + dy * dy < tol * tol;
   }
 
@@ -125,5 +116,48 @@ public abstract class AltAuto {
 
   protected double segEnd(int i) {
     return trajstack.segEnd(i);
+  }
+
+  @Override
+  public AutoState getState() {
+    return state;
+  }
+
+  @Override
+  public void queueState(AutoState nextState) {
+    if (!state.equals(nextState)) {
+      state = nextState;
+      t.reset();
+      first = true;
+    } else {
+      first = false;
+    }
+  }
+
+  @Override
+  public boolean stateInit() {
+    if(first) {
+      first = false;
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public boolean isState(AutoState state) {
+    return this.state.equals(state);
+  }
+
+  public abstract void onExecute();
+
+  public abstract void onInit();
+
+  @Override
+  public void handleStateMachine() {
+    switch(state) {
+      case DO_NOTHING:
+        drive.queueState(DriveState.DISABLED);
+        break;
+    }
   }
 }
