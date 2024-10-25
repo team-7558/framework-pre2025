@@ -55,12 +55,11 @@ import org.ironmaple.simulation.drivesims.SwerveModuleSimulation.DRIVE_WHEEL_TYP
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Drive extends StateMachineSubsystemBase {
-
-  public static final double MAX_LINEAR_SPEED = Units.feetToMeters(14.5);
-  public static final double TRACK_WIDTH_X = Units.inchesToMeters(25.0);
-  public static final double TRACK_WIDTH_Y = Units.inchesToMeters(25.0);
-  public static final double DRIVE_BASE_RADIUS =
+public class Drive extends StateMachineSubsystemBase<DriveState> {
+  private static final double MAX_LINEAR_SPEED = Units.feetToMeters(14.5);
+  private static final double TRACK_WIDTH_X = Units.inchesToMeters(25.0);
+  private static final double TRACK_WIDTH_Y = Units.inchesToMeters(25.0);
+  private static final double DRIVE_BASE_RADIUS =
       Math.hypot(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0);
   public static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / DRIVE_BASE_RADIUS;
 
@@ -98,8 +97,6 @@ public class Drive extends StateMachineSubsystemBase {
 
   private static Drive instance;
 
-  public final State DISABLED, STRAFE_AUTOLOCK, STRAFE_N_TURN;
-
   public static Drive getInstance() {
     if (instance == null) {
       switch (Constants.currentMode) {
@@ -127,7 +124,7 @@ public class Drive extends StateMachineSubsystemBase {
                       DCMotor.getKrakenX60(1), // drive motor is a Kraken x60
                       DCMotor.getKrakenX60(1), // steer motor is a Falcon 500
                       80, // current limit: 80 Amps
-                      DRIVE_WHEEL_TYPE.RUBBER, // rubber wheels
+                      DRIVE_WHEEL_TYPE.TIRE, // rubber wheels
                       2 // l2 gear ratio
                       ),
                   gyroSimulation,
@@ -237,61 +234,7 @@ public class Drive extends StateMachineSubsystemBase {
                 },
                 null,
                 this));
-
-    DISABLED =
-        new State("DISABLED") {
-          @Override
-          public void init() {
-            stop();
-          }
-
-          @Override
-          public void periodic() {}
-
-          @Override
-          public void exit() {}
-        };
-
-    STRAFE_N_TURN =
-        new State("STRAFE_N_TURN") {
-
-          // do this in a sec once u add OI
-
-          double scaler = 1.0 / Math.sqrt(2);
-
-          @Override
-          public void periodic() {
-            double throttle = 1.0;
-            throttle = Util.lerp(1, 0.4, OI.DR.getRightTriggerAxis() * OI.DR.getRightTriggerAxis());
-
-            double x_ = -OI.DR.getLeftY();
-            double y_ = -OI.DR.getLeftX();
-            double w_ = -Util.sqInput(OI.DR.getRightX());
-
-            if (Math.abs(w_) > 0.3) {
-              runVelocity(drive(x_, y_, w_ * 0.75, throttleLimit.calculate(throttle)));
-            } else {
-              double mag = Math.sqrt(x_ * x_ + y_ * y_);
-              intermediaryAutolockSetpoint_r = autolockSetpoint_r;
-              double err =
-                  Math.IEEEremainder(
-                      getRotation().getRotations() - intermediaryAutolockSetpoint_r, 1.0);
-              if (Constants.verboseLogging)
-                Logger.recordOutput("Drive/Autolock Heading Error", err);
-              double con = 6 * err;
-              con = Util.limit(con, Util.lerp(0.7, 0.2, mag * scaler));
-              if (Constants.verboseLogging)
-                Logger.recordOutput("Drive/Autolock Heading Output", con);
-              runVelocity(drive(x_, y_, -con, throttleLimit.calculate(throttle)));
-            }
-          }
-        };
-
-    STRAFE_AUTOLOCK =
-        new State("STRAFE_AUTOLOCK") {
-          // fill later
-        };
-    setCurrentState(DISABLED);
+    queueState(DriveState.DISABLED);
   }
 
   @Override
@@ -306,6 +249,46 @@ public class Drive extends StateMachineSubsystemBase {
     Logger.processInputs("Drive/Gyro", gyroInputs);
     for (var module : modules) {
       module.periodic();
+    }
+  }
+
+  @Override
+  public void handleStateMachine() {
+    double throttle = 1.0;
+    throttle = Util.lerp(1, 0.4, OI.DR.getRightTriggerAxis() * OI.DR.getRightTriggerAxis());
+
+    double x_ = -OI.DR.getLeftY();
+    double y_ = -OI.DR.getLeftX();
+    double w_ = -Util.sqInput(OI.DR.getRightX());
+
+    switch (getState()) {
+      case DISABLED:
+        if (stateInit()) { // First time init stuff per entry of state
+          stop();
+        }
+        break;
+      case STRAFE_AUTOLOCK:
+        if (Math.abs(w_) > 0.1) {
+          runVelocity(drive(x_, y_, w_ * 0.75, throttleLimit.calculate(throttle)));
+        } else {
+          double mag = Math.sqrt(x_ * x_ + y_ * y_);
+          intermediaryAutolockSetpoint_r = autolockSetpoint_r;
+          double err =
+              Math.IEEEremainder(
+                  getRotation().getRotations() - intermediaryAutolockSetpoint_r, 1.0);
+          if (Constants.verboseLogging) Logger.recordOutput("Drive/Autolock Heading Error", err);
+          double con = 6 * err;
+          con = Util.limit(con, Util.lerp(0.7, 0.2, mag * Util.ONE_OVER_ROOT_TWO));
+          if (Constants.verboseLogging) Logger.recordOutput("Drive/Autolock Heading Output", con);
+          runVelocity(drive(x_, y_, -con, throttleLimit.calculate(throttle)));
+        }
+        break;
+      case STRAFE_N_TURN:
+        runVelocity(drive(x_, y_, w_ * 0.75, throttleLimit.calculate(throttle)));
+        break;
+      case PATHING:
+        // TODO: add stuff
+      default:
     }
   }
 
@@ -463,6 +446,10 @@ public class Drive extends StateMachineSubsystemBase {
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
     return getPose().getRotation();
+  }
+
+  public RobotConfig getRobotConfig() {
+    return this.config;
   }
 
   public double getAngularVelocity() {
