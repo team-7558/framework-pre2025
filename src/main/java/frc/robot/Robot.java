@@ -15,10 +15,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.superstructure.Intention;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
-
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -111,7 +109,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {    
+  public void disabledInit() {
     SS.getInstance().queueState(InternalState.DISABLED);
   }
 
