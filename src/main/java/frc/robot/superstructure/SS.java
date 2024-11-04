@@ -50,7 +50,7 @@ public class SS implements IStateMachine<InternalState> {
       case BOOT:
         drive.queueState(DriveState.DISABLED);
 
-        if(timer.after(2.0)){
+        if (timer.after(2.0)) {
           booted = true;
           queueState(InternalState.IDLE);
         }

@@ -7,6 +7,7 @@ public class Util {
 
   public static double ONE_OVER_ROOT_TWO = 1.0 / Math.sqrt(2.0);
   public static double ONE_OVER_PI = 1.0 / Math.PI;
+  public static double ONE_OVER_TAU = 1.0 / (2.0 * Math.PI);
 
   /** Prevent this class from being instantiated. */
   private Util() {}
@@ -227,5 +228,17 @@ public class Util {
 
   public static double sqInput(double x) {
     return Math.signum(x) * x * x;
+  }
+
+  public static double cubeInput(double x) {
+    return x * x * x;
+  }
+
+  public static double rotsin(double x) {
+    return Math.sin(Math.PI * 2.0 * x);
+  }
+
+  public static double rotcos(double x) {
+    return Math.cos(Math.PI * 2.0 * x);
   }
 }

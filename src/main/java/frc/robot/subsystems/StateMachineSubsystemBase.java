@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.PerfTracker;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IState;
@@ -12,7 +11,7 @@ import frc.robot.util.IStateMachine;
 import org.littletonrobotics.junction.Logger;
 
 /** States are now handled inside the respective subsystem */
-public abstract class StateMachineSubsystemBase<T extends Enum<T> & IState> extends SubsystemBase
+public abstract class StateMachineSubsystemBase<T extends Enum<T> & IState>
     implements IStateMachine<T> {
 
   private String name;
@@ -50,18 +49,16 @@ public abstract class StateMachineSubsystemBase<T extends Enum<T> & IState> exte
   /** Creates a new StateMachineSubsystem. */
   public StateMachineSubsystemBase(String name) {
     this.name = name;
-    this.setName(name);
     firstStep = true;
     timer = new AltTimer();
   }
 
-  public void inputPeriodic() {}
+  protected void inputPeriodic() {}
 
-  public abstract void outputPeriodic();
+  protected abstract void outputPeriodic();
 
-  @Override
   public final void periodic() {
-    int id = PerfTracker.start(this.getName());
+    int id = PerfTracker.start(name);
     inputPeriodic();
     handleStateMachine();
     outputPeriodic();
