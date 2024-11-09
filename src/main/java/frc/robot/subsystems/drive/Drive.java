@@ -287,7 +287,7 @@ public class Drive extends StateMachineSubsystemBase<DriveState> {
         runVelocity(drive(x_, y_, w_ * 0.75, throttleLimit.calculate(throttle)));
         break;
       case PATHING:
-        // TODO: add stuff
+        
       default:
     }
   }

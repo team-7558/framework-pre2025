@@ -1,6 +1,5 @@
 package frc.robot.auto;
 
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
@@ -8,13 +7,11 @@ import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.G;
 import frc.robot.subsystems.drive.Drive;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.json.simple.parser.ParseException;
 

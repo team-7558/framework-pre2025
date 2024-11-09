@@ -1,12 +1,8 @@
 package frc.robot.auto;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.function.BooleanSupplier;
+
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveState;
 import frc.robot.superstructure.InternalState;
@@ -18,6 +14,7 @@ import frc.robot.util.Util;
 public abstract class AltAuto implements IStateMachine<AutoState> {
 
   private String name;
+  
 
   public final Trajstack trajstack;
 
@@ -102,6 +99,20 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
     return dx * dx + dy * dy < tol * tol;
   }
 
+  // elipses
+
+  protected boolean near(double x, double y, double tolX, double tolY) {
+    double dx = x - drive.getPose().getX();
+    double dy = y - drive.getPose().getY();
+    return (dx * dx) / (tolX * tolX) + (dy * dy) / (tolY * tolY) < 1;
+  }
+
+  protected boolean near(Pose2d pose, double tolX, double tolY) {
+    double dx = pose.getX() - drive.getPose().getX();
+    double dy = pose.getY() - drive.getPose().getY();
+    return (dx * dx) / (tolX * tolX) + (dy * dy) / (tolY * tolY) < 1;
+  }
+
   protected boolean near(Pose2d pose, double tol) {
     double dx = pose.getX() - drive.getPose().getX();
     double dy = pose.getY() - drive.getPose().getY();
@@ -117,6 +128,25 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
   protected double segEnd(int i) {
     return trajstack.segEnd(i);
   }
+
+  protected double angleDifference(double targetAngle) {
+    double currentAngle = drive.getPose().getRotation().getDegrees();
+    return targetAngle - currentAngle;
+  }
+
+
+  protected boolean withinRectangle(double minX, double maxX, double minY, double maxY) {
+    double x = drive.getPose().getX();
+    double y = drive.getPose().getY();
+    return x >= minX && x <= maxX && y >= minY && y <= maxY;
+  }
+
+  protected boolean headingTowards(double x, double y, double angleTol) {
+    double targetAngle = Math.atan2(y - drive.getPose().getY(), x - drive.getPose().getX()) * 180 / Math.PI;
+    double angleDiff = angleDifference(targetAngle);
+    return Math.abs(angleDiff) <= angleTol;
+  }
+
 
   @Override
   public AutoState getState() {
@@ -143,6 +173,7 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
     return false;
   }
 
+
   @Override
   public boolean isState(AutoState state) {
     return this.state.equals(state);
@@ -156,7 +187,7 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
   public void handleStateMachine() {
     switch(state) {
       case DO_NOTHING:
-        drive.queueState(DriveState.DISABLED);
+        ss.queueState(InternalState.DISABLED);
         break;
     }
   }

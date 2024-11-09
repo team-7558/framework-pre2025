@@ -118,4 +118,5 @@ public class Trajchain implements IFollowable {
     }
     return 0.0;
   }
+
 }
