@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.util.Units;
 
@@ -29,7 +29,7 @@ public class SwerveConfigVentura implements ISwerveConfig {
   // Constraints
   public final double MAX_VOLTAGE_V = 13.0;
   public final double MAX_LINEAR_VEL_mps = 4.41;
-  public final double MAX_LINEAR_VEL_CONTROLLED_mps = 4.05;
+  public final double MAX_LINEAR_VEL_CONTROLLED_mps = 4.0;
   public final double MAX_LINEAR_VEL_THROTTLED_mps = 3.0;
   public final double MAX_ANGULAR_VEL_radps = MAX_LINEAR_VEL_mps / DRIVE_BASE_RADIUS_m;
   public final double MAX_ANGULAR_VEL_THROTTLED_radps = MAX_ANGULAR_VEL_radps * 0.5;

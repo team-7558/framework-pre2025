@@ -27,6 +27,8 @@ import java.util.Queue;
 public class GyroIOPigeon2 implements GyroIO {
   private final Pigeon2 pigeon = new Pigeon2(20);
   private final StatusSignal<Double> yaw = pigeon.getYaw();
+  private final StatusSignal<Double> pitch = pigeon.getPitch();
+  private final StatusSignal<Double> roll = pigeon.getRoll();
   private final Queue<Double> yawPositionQueue;
   private final Queue<Double> yawTimestampQueue;
   private final StatusSignal<Double> yawVelocity = pigeon.getAngularVelocityZWorld();
@@ -34,7 +36,10 @@ public class GyroIOPigeon2 implements GyroIO {
   public GyroIOPigeon2(boolean phoenixDrive) {
     pigeon.getConfigurator().apply(new Pigeon2Configuration());
     pigeon.getConfigurator().setYaw(0.0);
-    yaw.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);
+    yaw.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);    
+    pitch.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);
+    roll.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);
+
     yawVelocity.setUpdateFrequency(100.0);
     pigeon.optimizeBusUtilization();
     if (phoenixDrive) {
@@ -60,8 +65,10 @@ public class GyroIOPigeon2 implements GyroIO {
   @Override
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity).equals(StatusCode.OK);
-    inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
-    inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
+    inputs.yaw_Rot2d = Rotation2d.fromDegrees(yaw.getValueAsDouble());
+    inputs.pitch_Rot2d = Rotation2d.fromDegrees(pitch.getValueAsDouble());
+    inputs.roll_Rot2d = Rotation2d.fromDegrees(roll.getValueAsDouble());
+    inputs.yawVel_radps = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
     inputs.odometryYawTimestamps =
         yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
@@ -71,5 +78,10 @@ public class GyroIOPigeon2 implements GyroIO {
             .toArray(Rotation2d[]::new);
     yawTimestampQueue.clear();
     yawPositionQueue.clear();
+  }
+
+  @Override
+  public void zero() {
+    pigeon.setYaw(0);
   }
 }

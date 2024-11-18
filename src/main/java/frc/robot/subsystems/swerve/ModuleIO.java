@@ -26,16 +26,15 @@ public interface ModuleIO {
   public default void updateInputs(ModuleIOInputs inputs) {}
 
   /** Run the drive motor at the specified voltage. */
-  public default void setDriveVoltage(double volts) {}
+  public default void setDriveDC(double percentage) {}
 
   /** Run the drive motor at the specified velocity. */
-  public default void setDriveVelocity(double velocity) {}
-
-  /** Run the turn motor at the specified voltage. */
-  public default void setTurnVoltage(double volts) {}
+  public default void setDriveVelocity(double vel_mps) {}  
 
   /** Run the turn motor to the specified angle in rotations */
-  public default void setTurnAngle(double pos_r) {}
+  public default void setTurnAngle(double measured_r, double setpoint_r) {}
+
+  public default void stop() {}
 
   /** Enable or disable brake mode on the drive motor. */
   public default void setBrake(boolean brake) {}
