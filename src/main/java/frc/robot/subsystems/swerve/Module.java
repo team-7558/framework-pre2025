@@ -22,6 +22,7 @@ public class Module {
   private Rotation2d turnSetpoint_Rot2d =
       null; // Setpoint for closed loop control, null for open loop
   private Double driveSetpoint_mps = null; // Setpoint for closed loop control, null for open loop
+  private Rotation2d turnRelativeOffset_Rot2d = null; // Relative + Offset = Absolute
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
   public Module(ModuleIO io, int index) {
@@ -51,14 +52,23 @@ public class Module {
     for (int i = 0; i < sampleCount; i++) {
       double positionMeters =
           Units.rotationsToRadians(inputs.odometryDrivePos_r[i]) * Swerve.CFG.WHEEL_RADIUS_m;
-      Rotation2d angle = inputs.odometryTurnPos_Rot2d[i];
+      Rotation2d angle =
+          inputs.odometryTurnPos_Rot2d[i].plus(
+              turnRelativeOffset_Rot2d != null ? turnRelativeOffset_Rot2d : new Rotation2d());
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
+    }
+
+    // On first cycle, reset relative turn encoder
+    // Wait until absolute angle is nonzero in case it wasn't initialized yet
+    if (turnRelativeOffset_Rot2d == null && inputs.turnAbsPos_Rot2d.getRadians() != 0.0) {
+      turnRelativeOffset_Rot2d = inputs.turnAbsPos_Rot2d.minus(inputs.turnPos_Rot2d);
     }
   }
 
   public void outputPeriodic(Mode mode) {
+
     if (turnSetpoint_Rot2d != null) {
-      io.setTurnAngle(turnSetpoint_Rot2d.getRotations());
+      io.setTurnAngle(getAngle().getRotations(), turnSetpoint_Rot2d.getRotations());
 
       if (driveSetpoint_mps != null) {
 
@@ -70,7 +80,7 @@ public class Module {
         if (mode == Mode.HIGH_CONTROL) {
           io.setDriveVelocity(cosineCompensatedDriveSetpoint_mps);
         } else {
-          io.setDriveVoltage(Swerve.CFG.KV_T * cosineCompensatedDriveSetpoint_mps);
+          io.setDriveDC(Swerve.CFG.KV_T * cosineCompensatedDriveSetpoint_mps);
         }
       }
     }
@@ -91,8 +101,7 @@ public class Module {
 
   /** Disables all outputs to motors. */
   public void stop() {
-    io.setTurnVoltage(0.0);
-    io.setDriveVoltage(0.0);
+    io.stop();
 
     // Disable closed loop control for turn and drive
     turnSetpoint_Rot2d = null;
@@ -106,7 +115,11 @@ public class Module {
 
   /** Returns the current turn angle of the module. */
   public Rotation2d getAngle() {
-    return inputs.turnPos_Rot2d;
+    if (turnRelativeOffset_Rot2d == null) {
+      return inputs.turnPos_Rot2d;
+    } else {
+      return inputs.turnPos_Rot2d.plus(turnRelativeOffset_Rot2d);
+    }
   }
 
   /** Returns the current drive position of the module in meters. */

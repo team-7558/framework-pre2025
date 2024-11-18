@@ -2,6 +2,7 @@ package frc.robot.subsystems.swerve;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -9,15 +10,23 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
+import frc.robot.subsystems.drive.PhoenixOdometryThread;
+import frc.robot.subsystems.drive.SparkMaxOdometryThread;
 import frc.robot.subsystems.swerve.Module.Mode;
 import frc.robot.util.ChassisAcceleration;
 import frc.robot.util.Util;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.GyroSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation.DRIVE_WHEEL_TYPE;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -32,6 +41,38 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
       switch (Constants.currentMode) {
         case REAL:
         case SIM:
+          final GyroSimulation gyroSimulation = GyroSimulation.createPigeon2();
+          SwerveDriveSimulation sim =
+              new SwerveDriveSimulation(
+                  CFG.MASS_KG,
+                  0.65, // CFG.TRACK_WIDTH_Y_m,
+                  0.65, // CFG.TRACK_WIDTH_X_m,
+                  0.74, // CFG.BOT_WIDTH_Y_m,
+                  0.74, // CFG.BOT_WIDTH_X_m,
+                  SwerveModuleSimulation.getMark4( // creates a mark4 module
+                      DCMotor.getKrakenX60Foc(1), // drive motor is a Kraken x60
+                      DCMotor.getKrakenX60Foc(1), // steer motor is a Falcon 500
+                      CFG.SUPPLY_LIMIT_A, // current limit: 80 Amps
+                      DRIVE_WHEEL_TYPE.TIRE, // rubber wheels
+                      2 // l2 gear ratio
+                      ),
+                  gyroSimulation,
+                  new Pose2d( // initial starting pose on field, set it to whereever you want
+                      7, 3, new Rotation2d()));
+          /*instance =
+              new Swerve(
+                  new GyroIO() {}, new ModuleIOIdeal(),
+                  new ModuleIOIdeal(), new ModuleIOIdeal(),
+                  new ModuleIOIdeal(), sim);*/
+          instance =
+          new Swerve(
+              new GyroIOSim(gyroSimulation),
+              new ModuleIOSim(sim.getModules()[CFG.FL]),
+              new ModuleIOSim(sim.getModules()[CFG.FR]),
+              new ModuleIOSim(sim.getModules()[CFG.BL]),
+              new ModuleIOSim(sim.getModules()[CFG.BR]),
+              sim);
+          break;
         default:
           instance =
               new Swerve(
@@ -88,18 +129,22 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
           new SwerveModulePosition()
         };
     centerOfRotation = new Translation2d(CFG.COR_OFFSET_X_m, CFG.COR_OFFSET_Y_m);
-    poseEstimator = new SwerveDrivePoseEstimator(kin, rawYaw_Rot2d, prevModulePos, new Pose2d());
+    poseEstimator =
+        new SwerveDrivePoseEstimator(
+            kin, rawYaw_Rot2d, prevModulePos, new Pose2d(7, 3, new Rotation2d()));
 
-    // TODO: Start threads
+    // Start threads (no-op for each if no signals have been created)
+    PhoenixOdometryThread.getInstance().start();
+    SparkMaxOdometryThread.getInstance().start();
 
     // TODO: Autobuilder config
 
     // Simulated Arena
-    // SimulatedArena.getInstance()
-    //    .addDriveTrainSimulation(sim); // register the drive train simulation
+    SimulatedArena.getInstance()
+        .addDriveTrainSimulation(sim); // register the drive train simulation
 
     // reset the field for auto (placing game-pieces in positions)
-    // SimulatedArena.getInstance().resetFieldForAuto();
+    SimulatedArena.getInstance().resetFieldForAuto();
 
     input = new SwerveInput(SwerveInput.ZERO);
     inputSpeeds = new ChassisSpeeds();
@@ -112,12 +157,10 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
   @Override
   protected void inputPeriodic() {
     odometryLock.lock(); // Prevents odometry updates while reading data
-
     gyroIO.updateInputs(gyroInputs);
     for (var module : modules) {
       module.updateInputs();
     }
-
     odometryLock.unlock();
 
     Logger.processInputs("Swerve/Gyro", gyroInputs);
@@ -125,21 +168,22 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
       module.inputPeriodic();
     }
 
-    // Update Odometry before handling states
+    // Update odometry
     double[] sampleTimestamps =
         modules[0].getOdometryTimestamps(); // All signals are sampled together
     int sampleCount = sampleTimestamps.length;
     for (int i = 0; i < sampleCount; i++) {
       // Read wheel positions and deltas from each module
-      SwerveModulePosition[] modulePos = new SwerveModulePosition[4];
+      SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
       SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        modulePos[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
+        modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
         moduleDeltas[moduleIndex] =
             new SwerveModulePosition(
-                modulePos[moduleIndex].distanceMeters - prevModulePos[moduleIndex].distanceMeters,
-                modulePos[moduleIndex].angle);
-        prevModulePos[moduleIndex] = modulePos[moduleIndex];
+                modulePositions[moduleIndex].distanceMeters
+                    - prevModulePos[moduleIndex].distanceMeters,
+                modulePositions[moduleIndex].angle);
+        prevModulePos[moduleIndex] = modulePositions[moduleIndex];
       }
 
       // Update gyro angle
@@ -153,7 +197,7 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
       }
 
       // Apply update
-      poseEstimator.updateWithTime(sampleTimestamps[i], rawYaw_Rot2d, modulePos);
+      poseEstimator.updateWithTime(sampleTimestamps[i], rawYaw_Rot2d, modulePositions);
     }
   }
 
@@ -178,7 +222,7 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
       vyi = vyi / inputMagnitude;
     }
 
-    inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vxi, vyi, wi, getRotation());
+    inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(vxi, vyi, wi, getPose().getRotation());
     switch (getState()) {
       case DISABLED:
         break;
@@ -194,14 +238,19 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
 
     ChassisSpeeds measuredSpeeds = getChassisSpeeds();
     ChassisSpeeds inputAcc =
-        ChassisAcceleration.fromChassisSpeeds(
-            measuredSpeeds, inputSpeeds, Constants.globalDelta_ms);
+        ChassisAcceleration.fromChassisSpeeds(measuredSpeeds, inputSpeeds, Constants.globalDelta_s);
 
-    acc = accLimit(inputAcc);
+    acc = inputAcc;
+    // acc = accLimitForward(acc, measuredSpeeds);
+    // acc = accLimitAngular(acc);
+    // acc = accLimitTilt(acc);
+    // acc = accLimitSkid(acc);
+
     outputSpeeds =
-        ChassisAcceleration.fromAcceleration(measuredSpeeds, acc, Constants.globalDelta_ms);
+        ChassisAcceleration.fromAcceleration(measuredSpeeds, acc, Constants.globalDelta_s);
 
     // Log speeds and accelerations
+    Logger.recordOutput("Swerve/Speeds/Input", new ChassisSpeeds(input.xi, input.yi, input.wi));
     Logger.recordOutput("Swerve/Speeds/InputVel", inputSpeeds);
     Logger.recordOutput("Swerve/Speeds/MeasuredVel", measuredSpeeds);
     Logger.recordOutput("Swerve/Speeds/OutputVel", outputSpeeds);
@@ -211,14 +260,14 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
 
   @Override
   protected void outputPeriodic() {
-    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(outputSpeeds, Constants.globalDelta_ms);
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(outputSpeeds, Constants.globalDelta_s);
     SwerveModuleState[] setpointStates = kin.toSwerveModuleStates(discreteSpeeds, centerOfRotation);
     SwerveDriveKinematics.desaturateWheelSpeeds(
         setpointStates,
-        discreteSpeeds,
+        /*discreteSpeeds,*/
+        CFG.MAX_LINEAR_VEL_mps /*,
         CFG.MAX_LINEAR_VEL_mps,
-        CFG.MAX_LINEAR_VEL_mps,
-        CFG.MAX_ANGULAR_VEL_radps);
+        CFG.MAX_ANGULAR_VEL_radps*/);
 
     // Send setpoints to modules
     SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
@@ -244,6 +293,7 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
       for (var module : modules) {
         module.outputPeriodic(mode);
       }
+      // modules[CFG.FL].outputPeriodic(mode);
     }
 
     // Log setpoint states
@@ -260,8 +310,55 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
     this.override = override;
   }
 
-  public ChassisSpeeds accLimit(ChassisSpeeds in) {
-    return in;
+  public ChassisSpeeds accLimitForward(ChassisSpeeds acc, ChassisSpeeds vel) {
+    ChassisSpeeds res = acc;
+    double accMag_mps2 = ChassisAcceleration.magnitude(acc);
+
+    double velMag_mps = ChassisAcceleration.magnitude(vel);
+
+    // TODO: cosine profile with direction of vel, or dot product
+
+    double maxFwdAcc = CFG.MAX_FORWARD_ACC_mps2 * (1.0 - velMag_mps / CFG.MAX_LINEAR_VEL_mps);
+    double outMag = Math.min(accMag_mps2, maxFwdAcc);
+    if (accMag_mps2 != 0.0) {
+      res = acc.times(outMag / accMag_mps2);
+    }
+    return res;
+  }
+
+  public ChassisSpeeds accLimitAngular(ChassisSpeeds in) {
+    ChassisSpeeds res = in;
+
+    double angularAcc_radps2 =
+        Math.copySign(
+            Math.min(CFG.MAX_ANGULAR_ACC_radps2, Math.abs(in.omegaRadiansPerSecond)),
+            in.omegaRadiansPerSecond);
+    res.omegaRadiansPerSecond = angularAcc_radps2;
+
+    return res;
+  }
+
+  public ChassisSpeeds accLimitTilt(ChassisSpeeds in) {
+    ChassisSpeeds res = in;
+
+    res.vxMetersPerSecond =
+        Util.limit(in.vxMetersPerSecond, -CFG.MAX_TILT_XNEG_ACC_mps2, CFG.MAX_TILT_XPOS_ACC_mps2);
+    res.vyMetersPerSecond =
+        Util.limit(in.vyMetersPerSecond, -CFG.MAX_TILT_YNEG_ACC_mps2, CFG.MAX_TILT_YPOS_ACC_mps2);
+
+    return res;
+  }
+
+  public ChassisSpeeds accLimitSkid(ChassisSpeeds acc) {
+    ChassisSpeeds res = acc;
+    double accMag_mps2 = ChassisAcceleration.magnitude(acc);
+
+    double outMag = Math.min(accMag_mps2, CFG.MAX_SKID_ACC_mps2);
+    if (accMag_mps2 != 0.0) {
+      res = acc.times(outMag / accMag_mps2);
+    }
+
+    return res;
   }
 
   /** Returns the current odometry pose. */
@@ -320,5 +417,14 @@ public class Swerve extends StateMachineSubsystemBase<PathingMode> {
     translations[CFG.BR] =
         new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
     return translations;
+  }
+
+  public void updateSimulationField() {
+    SimulatedArena.getInstance().simulationPeriodic();
+
+    Logger.recordOutput("Swerve/SimPose", sim.getSimulatedDriveTrainPose());
+
+    final List<Pose3d> notes = SimulatedArena.getInstance().getGamePiecesByType("Note");
+    if (notes != null) Logger.recordOutput("Swerve/Notes", notes.toArray(Pose3d[]::new));
   }
 }

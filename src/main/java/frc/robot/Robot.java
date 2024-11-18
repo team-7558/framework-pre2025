@@ -15,8 +15,8 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.subsystems.swerve.Swerve;
-import frc.robot.subsystems.swerve.SwerveInput;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -109,11 +109,11 @@ public class Robot extends LoggedRobot {
     double w_ = 0.5 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
-    swerve.setInput(input);
+    drive.setInput(input);
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
-    swerve.periodic();
+    //swerve.periodic();
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();
@@ -167,5 +167,6 @@ public class Robot extends LoggedRobot {
   @Override
   public void simulationPeriodic() {
     drive.updateSimulationField();
+    //swerve.updateSimulationField();
   }
 }
