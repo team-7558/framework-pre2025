@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
@@ -21,7 +21,7 @@ public class ModuleIOIdeal implements ModuleIO {
     outputs.turnVel_rps = 0.0;
     outputs.turnVolts_V = 0.0;
     outputs.turnCurrent_A = new double[] {};
-    outputs.odometryTimestamps = new double[] {};
+    outputs.odometryTimestamps_s = new double[] {};
     outputs.odometryDrivePos_r = new double[] {};
     outputs.odometryTurnPos_Rot2d = new Rotation2d[] {};
   }
@@ -38,7 +38,7 @@ public class ModuleIOIdeal implements ModuleIO {
     inputs.turnVel_rps = outputs.turnVel_rps;
     inputs.turnVolts_V = outputs.turnVolts_V;
     inputs.turnCurrent_A = outputs.turnCurrent_A;
-    inputs.odometryTimestamps = outputs.odometryTimestamps;
+    inputs.odometryTimestamps_s = outputs.odometryTimestamps_s;
     inputs.odometryDrivePos_r = outputs.odometryDrivePos_r;
     inputs.odometryTurnPos_Rot2d = outputs.odometryTurnPos_Rot2d;
   }
@@ -46,13 +46,13 @@ public class ModuleIOIdeal implements ModuleIO {
   @Override
   public void setDriveDC(double percentage) {
     outputs.driveVolts_V = percentage * 12.0;
-    setDriveVelocity(percentage * Swerve.CFG.MAX_LINEAR_VEL_mps);
+    setDriveVel(percentage * Drive.CFG.MAX_LINEAR_VEL_mps);
   }
 
   @Override
-  public void setDriveVelocity(double vel_mps) {
+  public void setDriveVel(double vel_mps) {
     outputs.driveVel_mps = vel_mps;
-    double rps = Units.radiansToRotations(vel_mps / Swerve.CFG.WHEEL_RADIUS_m);
+    double rps = Units.radiansToRotations(vel_mps / Drive.CFG.WHEEL_RADIUS_m);
     outputs.drivePos_r += rps * Constants.globalDelta_s;
 
     // TODO: fix logic
@@ -67,12 +67,12 @@ public class ModuleIOIdeal implements ModuleIO {
       odometryDrivePos_r[i] = outputs.drivePos_r; // + rps * factor;
     }
     Logger.recordOutput("T", Timer.getFPGATimestamp());
-    outputs.odometryTimestamps = odometryTimestamps;
+    outputs.odometryTimestamps_s = odometryTimestamps;
     outputs.odometryDrivePos_r = odometryDrivePos_r;
   }
 
   @Override
-  public void setTurnAngle(double measured_r, double setpoint_r) {
+  public void setTurnPos(double measured_r, double setpoint_r) {
     outputs.turnVel_rps = (setpoint_r - measured_r) * Constants.globalDelta_Hz;
     // System.out.println(Rotation2d.fromRotations(pos_r).getDegrees());
     outputs.turnPos_Rot2d = Rotation2d.fromRotations(setpoint_r);
@@ -82,15 +82,16 @@ public class ModuleIOIdeal implements ModuleIO {
     final Rotation2d[] odometryTurnPos_Rot2d = new Rotation2d[subticks];
     for (int i = 0; i < subticks; i++) {
       double factor = ((i + 1) / ((double) subticks) - 1);
-      odometryTurnPos_Rot2d[i] = Rotation2d.fromRotations(setpoint_r /*+ outputs.turnVel_rps * factor*/);
+      odometryTurnPos_Rot2d[i] =
+          Rotation2d.fromRotations(setpoint_r /*+ outputs.turnVel_rps * factor*/);
     }
     outputs.odometryTurnPos_Rot2d = odometryTurnPos_Rot2d;
   }
 
   @Override
   public void stop() {
-    setDriveVelocity(0);
-    setTurnAngle(outputs.turnPos_Rot2d.getRotations(), outputs.turnPos_Rot2d.getRotations());
+    setDriveVel(0);
+    setTurnVoltage(0);
   }
 
   @Override

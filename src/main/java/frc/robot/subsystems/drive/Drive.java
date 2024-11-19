@@ -19,7 +19,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -60,11 +59,11 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         case REAL:
           instance =
               new Drive(
-                  new GyroIOPigeon2(false),
-                  new ModuleIOTalonFX(0),
-                  new ModuleIOTalonFX(1),
-                  new ModuleIOTalonFX(2),
-                  new ModuleIOTalonFX(3),
+                  new GyroIOPigeon2(true),
+                  new ModuleIOTalonFX(CFG.FL),
+                  new ModuleIOTalonFX(CFG.FR),
+                  new ModuleIOTalonFX(CFG.BL),
+                  new ModuleIOTalonFX(CFG.BR),
                   null);
 
         case SIM:
@@ -72,21 +71,20 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
 
           SwerveDriveSimulation swerveDriveSimulation =
               new SwerveDriveSimulation(
-                  45,
-                  0.65,
-                  0.65,
-                  0.74,
-                  0.74,
-                  SwerveModuleSimulation.getMark4( // creates a mark4 module
+                  CFG.MASS_KG,
+                  CFG.TRACK_WIDTH_Y_m,
+                  CFG.TRACK_WIDTH_X_m,
+                  CFG.BOT_WIDTH_Y_m,
+                  CFG.BOT_WIDTH_X_m,
+                  SwerveModuleSimulation.getMark4i( // creates a mark4 module
                       DCMotor.getKrakenX60Foc(1), // drive motor is a Kraken x60
                       DCMotor.getKrakenX60Foc(1), // steer motor is a Falcon 500
-                      80, // current limit: 80 Amps
+                      CFG.DRIVE_SUPPLY_LIMIT_A, // current limit: 80 Amps
                       DRIVE_WHEEL_TYPE.TIRE, // rubber wheels
                       2 // l2 gear ratio
                       ),
                   gyroSimulation,
-                  new Pose2d( // initial starting pose on field, set it to whereever you want
-                      3, 3, new Rotation2d()));
+                  Poses.START);
 
           instance =
               new Drive(
@@ -94,10 +92,10 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
                       gyroSimulation), // GyroIOSim is a wrapper around gyro simulation, that reads
                   // the simulation result
                   /* ModuleIOSim are edited such that they also wraps around module simulations */
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[0]),
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[1]),
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[2]),
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[3]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.FL]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.FR]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.BL]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.BR]),
                   swerveDriveSimulation);
           break;
         default:
@@ -123,8 +121,6 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private SwerveDriveSimulation sim;
-
-  private SlewRateLimiter throttleLimit = new SlewRateLimiter(4.0, -2.1, 0.0);
 
   private double autolockSetpoint_r = 0, intermediaryAutolockSetpoint_r = 0;
 
@@ -162,13 +158,10 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
           new SwerveModulePosition()
         };
     centerOfRotation = new Translation2d(CFG.COR_OFFSET_X_m, CFG.COR_OFFSET_Y_m);
-    poseEstimator =
-        new SwerveDrivePoseEstimator(
-            kin, rawYaw_Rot2d, prevModulePos, new Pose2d(3, 3, new Rotation2d()));
+    poseEstimator = new SwerveDrivePoseEstimator(kin, rawYaw_Rot2d, prevModulePos, Poses.START);
 
     // Start threads (no-op for each if no signals have been created)
     PhoenixOdometryThread.getInstance().start();
-    SparkMaxOdometryThread.getInstance().start();
 
     // Configure AutoBuilder for PathPlanner
     RobotConfig config = null;
@@ -178,6 +171,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
       // Handle exception as needed
       e.printStackTrace();
     }
+
+    // Simulation
     SimulatedArena.getInstance()
         .addDriveTrainSimulation(sim); // register the drive train simulation
 
@@ -210,8 +205,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     for (var module : modules) {
       module.updateInputs();
     }
-
     odometryLock.unlock();
+
     Logger.processInputs("Drive/Gyro", gyroInputs);
     for (var module : modules) {
       module.inputPeriodic();
@@ -474,24 +469,15 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     poseEstimator.addVisionMeasurement(visionPose, timestamp);
   }
 
-  /** Returns the maximum linear speed in meters per sec. */
-  public double getMaxLinearSpeedMetersPerSec() {
-    return CFG.MAX_LINEAR_VEL_mps;
-  }
-
-  /** Returns the maximum angular speed in radians per sec. */
-  public double getMaxAngularSpeedRadPerSec() {
-    return CFG.MAX_ANGULAR_VEL_radps;
-  }
-
   /** Returns an array of module translations. */
   public static Translation2d[] getModuleTranslations() {
-    return new Translation2d[] {
-      new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0),
-      new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0),
-      new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0),
-      new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0)
-    };
+    Translation2d[] translations = new Translation2d[4];
+    translations[CFG.FL] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
+    translations[CFG.FR] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
+    translations[CFG.BL] = new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
+    translations[CFG.BR] =
+        new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
+    return translations;
   }
 
   public void updateSimulationField() {

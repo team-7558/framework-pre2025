@@ -14,7 +14,6 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -29,14 +28,15 @@ public class Module {
   }
 
   private static final double WHEEL_RADIUS = Units.inchesToMeters(2.0);
-  static final double ODOMETRY_FREQUENCY = 250.0;
+  // static final double ODOMETRY_FREQUENCY = 250.0;
 
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final int index;
 
   private final PIDController turnFeedback;
-  private Rotation2d turnSetpoint_Rot2d = null; // Setpoint for closed loop control, null for open loop
+  private Rotation2d turnSetpoint_Rot2d =
+      null; // Setpoint for closed loop control, null for open loop
   private Double driveSetpoint_mps = null; // Setpoint for closed loop control, null for open loop
   private Rotation2d turnRelativeOffset_Rot2d = null; // Relative + Offset = Absolute
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
@@ -85,7 +85,7 @@ public class Module {
     // Run closed loop turn control
     if (turnSetpoint_Rot2d != null) {
       io.setTurnPos(getAngle().getRadians(), turnSetpoint_Rot2d.getRadians());
-      //io.setTurnVoltage(
+      // io.setTurnVoltage(
       //    turnFeedback.calculate(getAngle().getRadians(), turnSetpoint_Rot2d.getRadians()));
 
       // Run closed loop drive control
@@ -96,7 +96,8 @@ public class Module {
         // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
         // towards the setpoint, its velocity should increase. This is achieved by
         // taking the component of the velocity in the direction of the setpoint.
-        double compensatedDriveVel_mps = driveSetpoint_mps * Math.cos(turnFeedback.getPositionError());
+        double compensatedDriveVel_mps =
+            driveSetpoint_mps * Math.cos(turnFeedback.getPositionError());
 
         // Run drive controller
         if (mode == Mode.HIGH_CONTROL) {
@@ -133,8 +134,7 @@ public class Module {
 
   /** Sets whether brake mode is enabled. */
   public void setBrakeMode(boolean enabled) {
-    io.setDriveBrakeMode(enabled);
-    io.setTurnBrakeMode(enabled);
+    io.setBrake(enabled);
   }
 
   /** Returns the current turn angle of the module. */

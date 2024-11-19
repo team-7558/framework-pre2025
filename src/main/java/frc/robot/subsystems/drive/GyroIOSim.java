@@ -1,9 +1,8 @@
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.util.OdometryTimeStampsSim;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
-
-import edu.wpi.first.math.geometry.Rotation2d;
 
 public class GyroIOSim implements GyroIO {
   private final GyroSimulation sim;
