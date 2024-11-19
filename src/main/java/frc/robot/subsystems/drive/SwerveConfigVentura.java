@@ -7,6 +7,8 @@ public class SwerveConfigVentura implements ISwerveConfig {
   public final int FL = 0, FR = 1, BL = 2, BR = 3;
 
   // Measured
+  public final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
+  public final double TURN_GEAR_RATIO = 150.0 / 7.0;
   public final double MASS_KG = 65.7709;
   public final double TRACK_WIDTH_X_m = Units.inchesToMeters(18.75);
   public final double TRACK_WIDTH_Y_m = Units.inchesToMeters(18.75);
@@ -28,9 +30,9 @@ public class SwerveConfigVentura implements ISwerveConfig {
 
   // Constraints
   public final double MAX_VOLTAGE_V = 13.0;
-  public final double MAX_LINEAR_VEL_mps = 4.41;
+  public final double MAX_LINEAR_VEL_mps = 4.33;
   public final double MAX_LINEAR_VEL_CONTROLLED_mps = 4.0;
-  public final double MAX_LINEAR_VEL_THROTTLED_mps = 3.0;
+  public final double MAX_LINEAR_VEL_THROTTLED_mps = 3.5;
   public final double MAX_ANGULAR_VEL_radps = MAX_LINEAR_VEL_mps / DRIVE_BASE_RADIUS_m;
   public final double MAX_ANGULAR_VEL_THROTTLED_radps = MAX_ANGULAR_VEL_radps * 0.5;
   public final double MAX_FORWARD_ACC_mps2 = 10.0;
@@ -46,6 +48,8 @@ public class SwerveConfigVentura implements ISwerveConfig {
   public final double KP_R = 3.0;
 
   // Current
-  public final double STATOR_LIMIT_A = 80.0;
-  public final double SUPPLY_LIMIT_A = 80.0;
+  public final double DRIVE_STATOR_LIMIT_A = 80.0;
+  public final double DRIVE_SUPPLY_LIMIT_A = 80.0;
+  public final double TURN_STATOR_LIMIT_A = 80.0;
+  public final double TURN_SUPPLY_LIMIT_A = 80.0;
 }

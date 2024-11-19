@@ -50,9 +50,8 @@ public interface ModuleIO {
   /** Run the turn motor at the specified voltage. */
   public default void setTurnVoltage(double volts) {}
 
-  /** Enable or disable brake mode on the drive motor. */
-  public default void setDriveBrakeMode(boolean enable) {}
+  public default void stop() {}
 
-  /** Enable or disable brake mode on the turn motor. */
-  public default void setTurnBrakeMode(boolean enable) {}
+  /** Enable or disable brake mode on the drive motor. */
+  public default void setBrake(boolean brake) {}
 }

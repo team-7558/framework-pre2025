@@ -57,10 +57,10 @@ public class ModuleIOSim implements ModuleIO {
     inputs.turnCurrent_A = new double[] {Math.abs(sim.getSteerMotorSupplyCurrentAmps())};
 
     inputs.odometryTimestamps_s = OdometryTimeStampsSim.getTimeStamps();
-    inputs.odometryDrivePos_r = 
-    Arrays.stream(sim.getCachedDriveWheelFinalPositionsRad())
-        .map(Units::radiansToRotations)
-        .toArray();
+    inputs.odometryDrivePos_r =
+        Arrays.stream(sim.getCachedDriveWheelFinalPositionsRad())
+            .map(Units::radiansToRotations)
+            .toArray();
     inputs.odometryTurnPos_Rot2d =
         Arrays.stream(sim.getCachedSteerRelativeEncoderPositions())
             .mapToObj(Rotation2d::fromRadians)
@@ -90,5 +90,11 @@ public class ModuleIOSim implements ModuleIO {
   public void setTurnPos(double measured_rad, double pos_rad) {
     double output = turnFeedback.calculate(measured_rad, pos_rad);
     sim.requestSteerVoltageOut(output);
+  }
+
+  @Override
+  public void stop() {
+    setDriveDC(0);
+    setTurnVoltage(0);
   }
 }
