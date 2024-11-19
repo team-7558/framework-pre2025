@@ -15,8 +15,10 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
+import frc.robot.util.Util;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -99,7 +101,16 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
 
+    double x_ = OI.deadband(-OI.DR.getLeftY());
+    double y_ = OI.deadband(-OI.DR.getLeftX());
+    double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
+    double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
+    SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
+    drive.setInput(input);
+
     SS.getInstance().handleStateMachine();
+    drive.periodic();
+    // swerve.periodic();
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();

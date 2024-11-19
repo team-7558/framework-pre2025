@@ -19,10 +19,8 @@ public class OI extends XboxController {
   public static double deadband(double jsValue) {
     double res = 0.0;
 
-    if (jsValue > DEADBAND_RADIUS) {
-      res = Util.lerp(DEADBAND_RADIUS, 1.0, jsValue);
-    } else if (jsValue < -DEADBAND_RADIUS) {
-      res = Util.lerp(-DEADBAND_RADIUS, -1.0, -jsValue);
+    if (Math.abs(jsValue) > DEADBAND_RADIUS) {
+      res = Math.copySign(Util.remap(DEADBAND_RADIUS, 1.0, Math.abs(jsValue), 0.0, 1.0), jsValue);
     }
 
     return res;

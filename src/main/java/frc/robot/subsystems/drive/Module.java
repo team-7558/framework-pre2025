@@ -14,7 +14,6 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -22,32 +21,33 @@ import edu.wpi.first.math.util.Units;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
+
+  public enum Mode {
+    HIGH_SPEED,
+    HIGH_CONTROL
+  }
+
   private static final double WHEEL_RADIUS = Units.inchesToMeters(2.0);
-  static final double ODOMETRY_FREQUENCY = 250.0;
+  // static final double ODOMETRY_FREQUENCY = 250.0;
 
   private final ModuleIO io;
   private final ModuleIOInputsAutoLogged inputs = new ModuleIOInputsAutoLogged();
   private final int index;
 
-  private final SimpleMotorFeedforward driveFeedforward;
-  private final PIDController driveFeedback;
   private final PIDController turnFeedback;
-  private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
-  private Double speedSetpoint = null; // Setpoint for closed loop control, null for open loop
-  private Rotation2d turnRelativeOffset = null; // Relative + Offset = Absolute
+  private Rotation2d turnSetpoint_Rot2d =
+      null; // Setpoint for closed loop control, null for open loop
+  private Double driveSetpoint_mps = null; // Setpoint for closed loop control, null for open loop
+  private Rotation2d turnRelativeOffset_Rot2d = null; // Relative + Offset = Absolute
   private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
   public Module(ModuleIO io, int index) {
     this.io = io;
     this.index = index;
 
-    // Unlike the original project, the physics simulator robot can be treated exactly like the real
-    // robot
-    driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
-    driveFeedback = new PIDController(0.05, 0.0, 0.0);
     turnFeedback = new PIDController(7.0, 0.0, 0.0);
-
     turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
+
     setBrakeMode(true);
   }
 
@@ -59,47 +59,53 @@ public class Module {
     io.updateInputs(inputs);
   }
 
-  public void periodic() {
+  public void inputPeriodic() {
     Logger.processInputs("Drive/Module" + Integer.toString(index), inputs);
+
+    // Calculate positions for odometry
+    int sampleCount = inputs.odometryTimestamps_s.length; // All signals are sampled together
+    odometryPositions = new SwerveModulePosition[sampleCount];
+    for (int i = 0; i < sampleCount; i++) {
+      double positionMeters = Units.rotationsToRadians(inputs.odometryDrivePos_r[i]) * WHEEL_RADIUS;
+      Rotation2d angle =
+          inputs.odometryTurnPos_Rot2d[i].plus(
+              turnRelativeOffset_Rot2d != null ? turnRelativeOffset_Rot2d : new Rotation2d());
+      odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
+    }
 
     // On first cycle, reset relative turn encoder
     // Wait until absolute angle is nonzero in case it wasn't initialized yet
-    if (turnRelativeOffset == null && inputs.turnAbsolutePosition.getRadians() != 0.0) {
-      turnRelativeOffset = inputs.turnAbsolutePosition.minus(inputs.turnPosition);
+    if (turnRelativeOffset_Rot2d == null && inputs.turnAbsPos_Rot2d.getRadians() != 0.0) {
+      turnRelativeOffset_Rot2d = inputs.turnAbsPos_Rot2d.minus(inputs.turnPos_Rot2d);
     }
+  }
+
+  public void outputPeriodic(Mode mode) {
 
     // Run closed loop turn control
-    if (angleSetpoint != null) {
-      io.setTurnVoltage(
-          turnFeedback.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+    if (turnSetpoint_Rot2d != null) {
+      io.setTurnPos(getAngle().getRadians(), turnSetpoint_Rot2d.getRadians());
+      // io.setTurnVoltage(
+      //    turnFeedback.calculate(getAngle().getRadians(), turnSetpoint_Rot2d.getRadians()));
 
       // Run closed loop drive control
       // Only allowed if closed loop turn control is running
-      if (speedSetpoint != null) {
+      if (driveSetpoint_mps != null) {
         // Scale velocity based on turn error
         //
         // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
         // towards the setpoint, its velocity should increase. This is achieved by
         // taking the component of the velocity in the direction of the setpoint.
-        double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnFeedback.getPositionError());
+        double compensatedDriveVel_mps =
+            driveSetpoint_mps * Math.cos(turnFeedback.getPositionError());
 
         // Run drive controller
-        double velocityRadPerSec = adjustSpeedSetpoint / WHEEL_RADIUS;
-        io.setDriveVoltage(
-            driveFeedforward.calculate(velocityRadPerSec)
-                + driveFeedback.calculate(inputs.driveVelocityRadPerSec, velocityRadPerSec));
+        if (mode == Mode.HIGH_CONTROL) {
+          io.setDriveVel(compensatedDriveVel_mps);
+        } else {
+          io.setDriveDC(compensatedDriveVel_mps / Drive.CFG.MAX_LINEAR_VEL_mps);
+        }
       }
-    }
-
-    // Calculate positions for odometry
-    int sampleCount = inputs.odometryTimestamps.length; // All signals are sampled together
-    odometryPositions = new SwerveModulePosition[sampleCount];
-    for (int i = 0; i < sampleCount; i++) {
-      double positionMeters = inputs.odometryDrivePositionsRad[i] * WHEEL_RADIUS;
-      Rotation2d angle =
-          inputs.odometryTurnPositions[i].plus(
-              turnRelativeOffset != null ? turnRelativeOffset : new Rotation2d());
-      odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
   }
 
@@ -110,55 +116,44 @@ public class Module {
     var optimizedState = SwerveModuleState.optimize(state, getAngle());
 
     // Update setpoints, controllers run in "periodic"
-    angleSetpoint = optimizedState.angle;
-    speedSetpoint = optimizedState.speedMetersPerSecond;
+    turnSetpoint_Rot2d = optimizedState.angle;
+    driveSetpoint_mps = optimizedState.speedMetersPerSecond;
 
     return optimizedState;
-  }
-
-  /** Runs the module with the specified voltage while controlling to zero degrees. */
-  public void runCharacterization(double volts) {
-    // Closed loop turn control
-    angleSetpoint = new Rotation2d();
-
-    // Open loop drive control
-    io.setDriveVoltage(volts);
-    speedSetpoint = null;
   }
 
   /** Disables all outputs to motors. */
   public void stop() {
     io.setTurnVoltage(0.0);
-    io.setDriveVoltage(0.0);
+    io.setDriveDC(0.0);
 
     // Disable closed loop control for turn and drive
-    angleSetpoint = null;
-    speedSetpoint = null;
+    turnSetpoint_Rot2d = null;
+    driveSetpoint_mps = null;
   }
 
   /** Sets whether brake mode is enabled. */
   public void setBrakeMode(boolean enabled) {
-    io.setDriveBrakeMode(enabled);
-    io.setTurnBrakeMode(enabled);
+    io.setBrake(enabled);
   }
 
   /** Returns the current turn angle of the module. */
   public Rotation2d getAngle() {
-    if (turnRelativeOffset == null) {
+    if (turnRelativeOffset_Rot2d == null) {
       return new Rotation2d();
     } else {
-      return inputs.turnPosition.plus(turnRelativeOffset);
+      return inputs.turnPos_Rot2d.plus(turnRelativeOffset_Rot2d);
     }
   }
 
   /** Returns the current drive position of the module in meters. */
   public double getPositionMeters() {
-    return inputs.drivePositionRad * WHEEL_RADIUS;
+    return Units.rotationsToRadians(inputs.drivePos_r) * WHEEL_RADIUS;
   }
 
   /** Returns the current drive velocity of the module in meters per second. */
   public double getVelocityMetersPerSec() {
-    return inputs.driveVelocityRadPerSec * WHEEL_RADIUS;
+    return inputs.driveVel_mps;
   }
 
   /** Returns the module position (turn angle and drive position). */
@@ -178,11 +173,6 @@ public class Module {
 
   /** Returns the timestamps of the samples received this cycle. */
   public double[] getOdometryTimestamps() {
-    return inputs.odometryTimestamps;
-  }
-
-  /** Returns the drive velocity in radians/sec. */
-  public double getCharacterizationVelocity() {
-    return inputs.driveVelocityRadPerSec;
+    return inputs.odometryTimestamps_s;
   }
 }

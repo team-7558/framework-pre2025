@@ -1,7 +1,7 @@
 package frc.robot.superstructure;
 
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.DriveState;
+import frc.robot.subsystems.drive.PathingMode;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
 import org.littletonrobotics.junction.Logger;
@@ -42,15 +42,15 @@ public class SS implements IStateMachine<InternalState> {
 
     switch (state) {
       case DISABLED:
-        drive.queueState(DriveState.DISABLED);
+        drive.queueState(PathingMode.DISABLED);
         break;
       case IDLE:
-        drive.queueState(DriveState.STRAFE_N_TURN);
+        drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
-        drive.queueState(DriveState.DISABLED);
+        drive.queueState(PathingMode.DISABLED);
 
-        if (timer.after(2.0)) {
+        if (timer.after(0.1)) {
           booted = true;
           queueState(InternalState.IDLE);
         }
