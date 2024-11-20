@@ -20,13 +20,14 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import java.util.OptionalDouble;
 import java.util.Queue;
 
 /** IO implementation for Pigeon2 */
 public class GyroIOPigeon2 implements GyroIO {
   private final Pigeon2 pigeon = new Pigeon2(20);
   private final StatusSignal<Double> yaw = pigeon.getYaw();
+  private final StatusSignal<Double> pitch = pigeon.getPitch();
+  private final StatusSignal<Double> roll = pigeon.getRoll();
   private final Queue<Double> yawPositionQueue;
   private final Queue<Double> yawTimestampQueue;
   private final StatusSignal<Double> yawVelocity = pigeon.getAngularVelocityZWorld();
@@ -34,7 +35,10 @@ public class GyroIOPigeon2 implements GyroIO {
   public GyroIOPigeon2(boolean phoenixDrive) {
     pigeon.getConfigurator().apply(new Pigeon2Configuration());
     pigeon.getConfigurator().setYaw(0.0);
-    yaw.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);
+    yaw.setUpdateFrequency(Drive.CFG.ODOMETRY_FREQUENCY_Hz);
+    pitch.setUpdateFrequency(100.0);
+    roll.setUpdateFrequency(100.0);
+
     yawVelocity.setUpdateFrequency(100.0);
     pigeon.optimizeBusUtilization();
     if (phoenixDrive) {
@@ -42,26 +46,17 @@ public class GyroIOPigeon2 implements GyroIO {
       yawPositionQueue =
           PhoenixOdometryThread.getInstance().registerSignal(pigeon, pigeon.getYaw());
     } else {
-      yawTimestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
-      yawPositionQueue =
-          SparkMaxOdometryThread.getInstance()
-              .registerSignal(
-                  () -> {
-                    boolean valid = yaw.refresh().getStatus().isOK();
-                    if (valid) {
-                      return OptionalDouble.of(yaw.getValueAsDouble());
-                    } else {
-                      return OptionalDouble.empty();
-                    }
-                  });
+      throw new RuntimeException("What you mean its not Phoenix??");
     }
   }
 
   @Override
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity).equals(StatusCode.OK);
-    inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
-    inputs.yawVelocityRadPerSec = Units.degreesToRadians(yawVelocity.getValueAsDouble());
+    inputs.yaw_Rot2d = Rotation2d.fromDegrees(yaw.getValueAsDouble());
+    inputs.pitch_Rot2d = Rotation2d.fromDegrees(pitch.getValueAsDouble());
+    inputs.roll_Rot2d = Rotation2d.fromDegrees(roll.getValueAsDouble());
+    inputs.yawVel_radps = Units.degreesToRadians(yawVelocity.getValueAsDouble());
 
     inputs.odometryYawTimestamps =
         yawTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
@@ -71,5 +66,10 @@ public class GyroIOPigeon2 implements GyroIO {
             .toArray(Rotation2d[]::new);
     yawTimestampQueue.clear();
     yawPositionQueue.clear();
+  }
+
+  @Override
+  public void zero() {
+    pigeon.setYaw(0);
   }
 }

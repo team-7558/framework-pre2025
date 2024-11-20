@@ -5,6 +5,7 @@ package frc.robot.auto;
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveState;
+import frc.robot.subsystems.drive.PathingMode;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.AltTimer;
@@ -51,7 +52,7 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
       drive.setPose(trajstack.getInitState().pose);
     }
 
-    drive.queueState(DriveState.PATHING);
+    drive.queueState(PathingMode.PATH_FOLLOWING);
 
     t = new AltTimer();
     t.reset();

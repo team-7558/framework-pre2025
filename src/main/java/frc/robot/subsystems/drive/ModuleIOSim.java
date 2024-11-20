@@ -16,50 +16,85 @@
 
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.util.OdometryTimeStampsSim;
 import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 
 /** Wrapper class around {@link SwerveModuleSimulation} that implements ModuleIO */
 public class ModuleIOSim implements ModuleIO {
-  private final SwerveModuleSimulation moduleSimulation;
+  private final SwerveModuleSimulation sim;
+
+  private final SimpleMotorFeedforward driveFeedforward;
+  private final PIDController driveFeedback;
+  private final PIDController turnFeedback;
 
   public ModuleIOSim(SwerveModuleSimulation moduleSimulation) {
-    this.moduleSimulation = moduleSimulation;
+    this.sim = moduleSimulation;
+
+    // Unlike the original project, the physics simulator robot can be treated exactly like the real
+    // robot
+    driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
+    driveFeedback = new PIDController(0.05, 0.0, 0.0);
+    turnFeedback = new PIDController(7.0, 0.0, 0.0);
+    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
-    inputs.drivePositionRad = moduleSimulation.getDriveWheelFinalPositionRad();
-    inputs.driveVelocityRadPerSec = moduleSimulation.getDriveWheelFinalSpeedRadPerSec();
-    inputs.driveAppliedVolts = moduleSimulation.getDriveMotorAppliedVolts();
-    inputs.driveCurrentAmps =
-        new double[] {Math.abs(moduleSimulation.getDriveMotorSupplyCurrentAmps())};
+    inputs.drivePos_r = Units.radiansToRotations(sim.getDriveWheelFinalPositionRad());
+    inputs.driveVel_mps = sim.getDriveWheelFinalSpeedRadPerSec() * Drive.CFG.WHEEL_RADIUS_m;
+    inputs.driveVolts_V = sim.getDriveMotorAppliedVolts();
+    inputs.driveCurrent_A = new double[] {Math.abs(sim.getDriveMotorSupplyCurrentAmps())};
 
-    inputs.turnAbsolutePosition = moduleSimulation.getSteerAbsoluteFacing();
-    inputs.turnPosition =
-        Rotation2d.fromRadians(moduleSimulation.getSteerRelativeEncoderPositionRad());
-    inputs.turnVelocityRadPerSec = moduleSimulation.getSteerRelativeEncoderSpeedRadPerSec();
-    inputs.turnAppliedVolts = moduleSimulation.getSteerMotorAppliedVolts();
-    inputs.turnCurrentAmps =
-        new double[] {Math.abs(moduleSimulation.getSteerMotorSupplyCurrentAmps())};
+    inputs.turnAbsPos_Rot2d = sim.getSteerAbsoluteFacing();
+    inputs.turnPos_Rot2d = Rotation2d.fromRadians(sim.getSteerRelativeEncoderPositionRad());
+    inputs.turnVel_rps = Units.radiansToRotations(sim.getSteerRelativeEncoderSpeedRadPerSec());
+    inputs.turnVolts_V = sim.getSteerMotorAppliedVolts();
+    inputs.turnCurrent_A = new double[] {Math.abs(sim.getSteerMotorSupplyCurrentAmps())};
 
-    inputs.odometryTimestamps = OdometryTimeStampsSim.getTimeStamps();
-    inputs.odometryDrivePositionsRad = moduleSimulation.getCachedDriveWheelFinalPositionsRad();
-    inputs.odometryTurnPositions =
-        Arrays.stream(moduleSimulation.getCachedSteerRelativeEncoderPositions())
+    inputs.odometryTimestamps_s = OdometryTimeStampsSim.getTimeStamps();
+    inputs.odometryDrivePos_r =
+        Arrays.stream(sim.getCachedDriveWheelFinalPositionsRad())
+            .map(Units::radiansToRotations)
+            .toArray();
+    inputs.odometryTurnPos_Rot2d =
+        Arrays.stream(sim.getCachedSteerRelativeEncoderPositions())
             .mapToObj(Rotation2d::fromRadians)
             .toArray(Rotation2d[]::new);
   }
 
   @Override
-  public void setDriveVoltage(double volts) {
-    moduleSimulation.requestDriveVoltageOut(volts);
+  public void setDriveDC(double percentage) {
+    sim.requestDriveVoltageOut(percentage * 12.0);
+  }
+
+  @Override
+  public void setDriveVel(double vel_mps) {
+    double vel_radps = vel_mps / Drive.CFG.WHEEL_RADIUS_m;
+    double output =
+        driveFeedforward.calculate(vel_radps)
+            + driveFeedback.calculate(sim.getDriveWheelFinalSpeedRadPerSec(), vel_radps);
+    sim.requestDriveVoltageOut(output);
   }
 
   @Override
   public void setTurnVoltage(double volts) {
-    moduleSimulation.requestSteerVoltageOut(volts);
+    sim.requestSteerVoltageOut(volts);
+  }
+
+  @Override
+  public void setTurnPos(double measured_rad, double pos_rad) {
+    double output = turnFeedback.calculate(measured_rad, pos_rad);
+    sim.requestSteerVoltageOut(output);
+  }
+
+  @Override
+  public void stop() {
+    setDriveDC(0);
+    setTurnVoltage(0);
   }
 }
