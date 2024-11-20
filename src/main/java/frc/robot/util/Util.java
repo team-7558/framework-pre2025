@@ -230,8 +230,6 @@ public class Util {
     return Math.signum(x) * x * x;
   }
 
-<<<<<<< HEAD
-=======
   public static double cubeInput(double x) {
     return x * x * x;
   }
@@ -243,5 +241,4 @@ public class Util {
   public static double rotcos(double x) {
     return Math.cos(Math.PI * 2.0 * x);
   }
->>>>>>> main
 }

@@ -18,10 +18,7 @@ import frc.robot.auto.AltAuto;
 import frc.robot.auto.RunAltAuto;
 import frc.robot.auto.autos.DoNothing;
 import frc.robot.subsystems.drive.Drive;
-<<<<<<< HEAD
-=======
 import frc.robot.subsystems.drive.SwerveInput;
->>>>>>> main
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
