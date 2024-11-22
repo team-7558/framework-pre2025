@@ -16,7 +16,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
+import frc.robot.subsystems.pinkarm.pinkarm;
 import frc.robot.subsystems.pinkarm.pinkarm2d;
+import frc.robot.subsystems.pinkarm.pinkarmIOSim;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -37,6 +39,7 @@ public class Robot extends LoggedRobot {
 
   private Drive drive;
   private pinkarm2d mech = new pinkarm2d();
+  private pinkarm elev = new pinkarm();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -107,6 +110,7 @@ public class Robot extends LoggedRobot {
     double y_ = OI.deadband(-OI.DR.getLeftX());
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
+    double elevcontrol = Util.sqInput(1.0 - OI.deadband(OI.DR.getRightTriggerAxis()));
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
     drive.setInput(input);
 
@@ -116,6 +120,8 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();
+
+    elev.set(elevcontrol);
     mech.periodic();
 
     // ^ will be gone later just keeping now to not break shit
