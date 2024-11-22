@@ -16,6 +16,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
+import frc.robot.subsystems.pinkarm.pinkarm2d;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -35,6 +36,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private pinkarm2d mech = new pinkarm2d();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -114,6 +116,7 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();
+    mech.periodic();
 
     // ^ will be gone later just keeping now to not break shit
   }
