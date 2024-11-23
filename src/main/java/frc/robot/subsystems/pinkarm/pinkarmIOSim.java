@@ -34,13 +34,12 @@ public class pinkarmIOSim implements pinkarmIO {
 
   @Override
   public void setAngle(double degrees) {
-
     anglePID.setSetpoint(degrees);
 
   }
 
   @Override
-  public void setLength(double meters) {
+  public void goToPos(double meters) {
     elev_posPid.setSetpoint(meters);
     setelevVoltage(elev_posPid.calculate(sim.getPositionMeters()));
 

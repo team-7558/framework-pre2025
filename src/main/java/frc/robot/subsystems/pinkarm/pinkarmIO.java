@@ -23,7 +23,7 @@ public interface pinkarmIO {
 
   public default void setAngle(double degrees) {}
 
-  public default void setLength(double meters) {}
+  public default void goToPos(double meters) {}
 
   public default void stop() {}
 }
