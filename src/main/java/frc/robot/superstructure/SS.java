@@ -5,6 +5,8 @@ import frc.robot.subsystems.drive.PathingMode;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
 import org.littletonrobotics.junction.Logger;
+import frc.robot.subsystems.pinkarm.pinkarm;
+import frc.robot.subsystems.pinkarm.elevModes;
 
 public class SS implements IStateMachine<InternalState> {
 
@@ -15,6 +17,8 @@ public class SS implements IStateMachine<InternalState> {
   }
 
   private Drive drive;
+
+  private pinkarm pinkarm;
 
   private AltTimer timer;
   private Intention intention;
@@ -55,6 +59,8 @@ public class SS implements IStateMachine<InternalState> {
           queueState(InternalState.IDLE);
         }
         break;
+      case ELEV_MOVING: 
+        pinkarm.queueState(elevModes.TRAVELLING);
       default:
         break;
     }

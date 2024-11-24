@@ -39,7 +39,8 @@ public class Robot extends LoggedRobot {
 
   private Drive drive;
   private pinkarm2d mech = new pinkarm2d();
-  private pinkarm elev = new pinkarm();
+  private pinkarmIOSim sim = new pinkarmIOSim();
+  private pinkarm elev = new pinkarm(sim);
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -122,7 +123,6 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
 
     elev.set(elevcontrol);
-    mech.periodic();
 
     // ^ will be gone later just keeping now to not break shit
   }
