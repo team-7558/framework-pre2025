@@ -33,7 +33,6 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
@@ -85,8 +84,13 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   private final double driveFactor_rpmeter;
 
-
-  public ModuleIOTalonFX(int driveID, int steerID, int cancoderID, double absOffset, boolean invertDrive, boolean invertSteer) {
+  public ModuleIOTalonFX(
+      int driveID,
+      int steerID,
+      int cancoderID,
+      double absOffset,
+      boolean invertDrive,
+      boolean invertSteer) {
 
     driveTalon = new TalonFX(driveID, Drive.CFG.CAN_BUS);
     steerTalon = new TalonFX(steerID, Drive.CFG.CAN_BUS);
@@ -95,29 +99,33 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     isDriveMotorInverted = invertDrive;
     isSteerMotorInverted = invertSteer;
-    
+
     TalonFXConfiguration driveConfig = new TalonFXConfiguration();
     TalonFXConfiguration steerConfig = new TalonFXConfiguration();
     CANcoderConfiguration cancoderConfig = new CANcoderConfiguration();
-    
+
     cancoderConfig.MagnetSensor.MagnetOffset = absOffset;
     cancoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
     cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
-    
-    driveConfig.Slot0 = new Slot0Configs()
-    .withKP(Drive.CFG.DRIVE_0_KP)
-    .withKI(Drive.CFG.DRIVE_0_KI)
-    .withKD(Drive.CFG.DRIVE_0_KD)
-    .withKS(Drive.CFG.DRIVE_0_KS)
-    .withKV(Drive.CFG.DRIVE_0_KV)
-    .withKD(Drive.CFG.DRIVE_0_KA);
-    
-    driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    driveConfig.MotorOutput.Inverted = isDriveMotorInverted? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
-    //driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.02;
-    //driveConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.02;
-    
+    driveConfig.Slot0 =
+        new Slot0Configs()
+            .withKP(Drive.CFG.DRIVE_0_KP)
+            .withKI(Drive.CFG.DRIVE_0_KI)
+            .withKD(Drive.CFG.DRIVE_0_KD)
+            .withKS(Drive.CFG.DRIVE_0_KS)
+            .withKV(Drive.CFG.DRIVE_0_KV)
+            .withKD(Drive.CFG.DRIVE_0_KA);
+
+    driveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    driveConfig.MotorOutput.Inverted =
+        isDriveMotorInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
+
+    // driveConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.02;
+    // driveConfig.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.02;
+
     driveConfig.TorqueCurrent.PeakForwardTorqueCurrent = Drive.CFG.DRIVE_STATOR_LIMIT_A;
     driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -Drive.CFG.DRIVE_STATOR_LIMIT_A;
     driveConfig.CurrentLimits.StatorCurrentLimit = Drive.CFG.DRIVE_STATOR_LIMIT_A;
@@ -127,45 +135,49 @@ public class ModuleIOTalonFX implements ModuleIO {
     driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    steerConfig.Slot0 = new Slot0Configs()
-    .withKP(Drive.CFG.STEER_0_KP)
-    .withKI(Drive.CFG.STEER_0_KI)
-    .withKD(Drive.CFG.STEER_0_KD)
-    .withKS(Drive.CFG.STEER_0_KS)
-    .withKV(Drive.CFG.STEER_0_KV)
-    .withKA(Drive.CFG.STEER_0_KA);
+    steerConfig.Slot0 =
+        new Slot0Configs()
+            .withKP(Drive.CFG.STEER_0_KP)
+            .withKI(Drive.CFG.STEER_0_KI)
+            .withKD(Drive.CFG.STEER_0_KD)
+            .withKS(Drive.CFG.STEER_0_KS)
+            .withKV(Drive.CFG.STEER_0_KV)
+            .withKA(Drive.CFG.STEER_0_KA);
 
     steerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    steerConfig.MotorOutput.Inverted = isSteerMotorInverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+    steerConfig.MotorOutput.Inverted =
+        isSteerMotorInverted
+            ? InvertedValue.Clockwise_Positive
+            : InvertedValue.CounterClockwise_Positive;
 
     steerConfig.Feedback.FeedbackRemoteSensorID = cancoderID;
     steerConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
     steerConfig.Feedback.RotorToSensorRatio = Drive.CFG.STEER_GEAR_RATIO;
-    steerConfig.MotionMagic.MotionMagicCruiseVelocity = Constants.maxVelTalonFX_rps / Drive.CFG.STEER_GEAR_RATIO;
-    steerConfig.MotionMagic.MotionMagicAcceleration = steerConfig.MotionMagic.MotionMagicCruiseVelocity / 0.100;
+    steerConfig.MotionMagic.MotionMagicCruiseVelocity =
+        Constants.maxVelTalonFX_rps / Drive.CFG.STEER_GEAR_RATIO;
+    steerConfig.MotionMagic.MotionMagicAcceleration =
+        steerConfig.MotionMagic.MotionMagicCruiseVelocity / 0.100;
     steerConfig.MotionMagic.MotionMagicExpo_kV = 0.12 * Drive.CFG.STEER_GEAR_RATIO;
     steerConfig.MotionMagic.MotionMagicExpo_kA = 0.1;
 
     steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
-    
 
     StatusCode response = cancoder.getConfigurator().apply(cancoderConfig);
-    if(response.isError()){
+    if (response.isError()) {
       System.out.print(Drive.CFG.CAN_BUS + cancoderID + " CAN FAILURE: " + response.toString());
     }
 
-    response = driveTalon.getConfigurator().apply(driveConfig);    
-    if(response.isError()){
+    response = driveTalon.getConfigurator().apply(driveConfig);
+    if (response.isError()) {
       System.out.print(Drive.CFG.CAN_BUS + driveID + " CAN FAILURE: " + response.toString());
     }
 
     response = steerTalon.getConfigurator().apply(steerConfig);
-    if(response.isError()){
+    if (response.isError()) {
       System.out.print(Drive.CFG.CAN_BUS + steerID + " CAN FAILURE: " + response.toString());
     }
 
-    //setBrake(true);
-
+    // setBrake(true);
 
     timestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
 
@@ -202,7 +214,6 @@ public class ModuleIOTalonFX implements ModuleIO {
     double metersPerWheelRot = 2.0 * Math.PI * Drive.CFG.WHEEL_RADIUS_m;
     driveFactor_rpmeter = rotPerWheelRot / metersPerWheelRot;
 
-
     // Make control requests synchronous
     driveDCOut.UpdateFreqHz = 0;
     driveVelOut.UpdateFreqHz = 0;
@@ -210,7 +221,6 @@ public class ModuleIOTalonFX implements ModuleIO {
     steerPosOut.UpdateFreqHz = 0;
     steerPosOut2.UpdateFreqHz = 0;
     steerPosOut3.UpdateFreqHz = 0;
-
   }
 
   @Override
@@ -277,7 +287,7 @@ public class ModuleIOTalonFX implements ModuleIO {
   }
 
   @Override
-  public void setDriveVel(double vel_mps){
+  public void setDriveVel(double vel_mps) {
     double vel_rps = vel_mps * driveFactor_rpmeter;
     /* Back out the expected shimmy the drive motor will see */
     /* Find the angular rate to determine what to back out */
@@ -295,7 +305,7 @@ public class ModuleIOTalonFX implements ModuleIO {
   }
 
   @Override
-  public void setTurnPos(double measured_rad, double pos_rad){
+  public void setTurnPos(double measured_rad, double pos_rad) {
     steerTalon.setControl(steerPosOut.withPosition(Units.radiansToRotations(pos_rad)));
   }
 

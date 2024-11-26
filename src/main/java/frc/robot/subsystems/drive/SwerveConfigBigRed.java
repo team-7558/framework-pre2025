@@ -5,13 +5,14 @@ import edu.wpi.first.math.util.Units;
 public class SwerveConfigBigRed implements ISwerveConfig {
 
   /******************************************************
-  *      Modules
-  ***/
-  // Measured  
+   *      Modules
+   ***/
+  // Measured
   public final double DRIVE_GEAR_RATIO = 6.746031746031747;
+
   public final double STEER_GEAR_RATIO = 21.428571428571427;
   public final double COUPLE_RATIO = 3.5714285714285716;
-  
+
   // Current
   public final double DRIVE_STATOR_LIMIT_A = 150.0; // Slip current
   public final double DRIVE_SUPPLY_LIMIT_A = 60.0;
@@ -28,7 +29,6 @@ public class SwerveConfigBigRed implements ISwerveConfig {
   public final double DRIVE_0_KV = 1.5;
   public final double DRIVE_0_KA = 0.0;
 
-  
   public final double STEER_0_KP = 3.0;
   public final double STEER_0_KI = 0.0;
   public final double STEER_0_KD = 0.0;
@@ -37,43 +37,43 @@ public class SwerveConfigBigRed implements ISwerveConfig {
   public final double STEER_0_KA = 0.0;
 
   // Pigeon
-  public final int     PIGEON_ID            = 20;  
+  public final int PIGEON_ID = 20;
 
   // FL
-  public final int     FL_ID_DRIVE          = 1;  
-  public final int     FL_ID_STEER          = 2;
-  public final int     FL_ID_CANCODER       = 9;  
-  public final double  FL_ABS_OFFSET        = 0.079833984375;
-  public final boolean FL_INVERT_DRIVE      = false;
-  public final boolean FL_INVERT_STEER      = false;
-  
+  public final int FL_ID_DRIVE = 1;
+  public final int FL_ID_STEER = 2;
+  public final int FL_ID_CANCODER = 9;
+  public final double FL_ABS_OFFSET = 0.079833984375;
+  public final boolean FL_INVERT_DRIVE = false;
+  public final boolean FL_INVERT_STEER = false;
+
   // FR
-  public final int     FR_ID_DRIVE          = 3;  
-  public final int     FR_ID_STEER          = 4;
-  public final int     FR_ID_CANCODER       = 10;  
-  public final double  FR_ABS_OFFSET        = -0.180908203125;
-  public final boolean FR_INVERT_DRIVE      = true;
-  public final boolean FR_INVERT_STEER      = false;
-  
+  public final int FR_ID_DRIVE = 3;
+  public final int FR_ID_STEER = 4;
+  public final int FR_ID_CANCODER = 10;
+  public final double FR_ABS_OFFSET = -0.180908203125;
+  public final boolean FR_INVERT_DRIVE = true;
+  public final boolean FR_INVERT_STEER = false;
+
   // BL
-  public final int     BL_ID_DRIVE          = 7;  
-  public final int     BL_ID_STEER          = 8;
-  public final int     BL_ID_CANCODER       = 12;  
-  public final double  BL_ABS_OFFSET        = -0.296630859375;
-  public final boolean BL_INVERT_DRIVE      = false;
-  public final boolean BL_INVERT_STEER      = false;
-  
+  public final int BL_ID_DRIVE = 7;
+  public final int BL_ID_STEER = 8;
+  public final int BL_ID_CANCODER = 12;
+  public final double BL_ABS_OFFSET = -0.296630859375;
+  public final boolean BL_INVERT_DRIVE = false;
+  public final boolean BL_INVERT_STEER = false;
+
   // BR
-  public final int     BR_ID_DRIVE          = 5;  
-  public final int     BR_ID_STEER          = 6;
-  public final int     BR_ID_CANCODER       = 11;  
-  public final double  BR_ABS_OFFSET        = -0.3173828125;
-  public final boolean BR_INVERT_DRIVE      = true;
-  public final boolean BR_INVERT_STEER      = false;
+  public final int BR_ID_DRIVE = 5;
+  public final int BR_ID_STEER = 6;
+  public final int BR_ID_CANCODER = 11;
+  public final double BR_ABS_OFFSET = -0.3173828125;
+  public final boolean BR_INVERT_DRIVE = true;
+  public final boolean BR_INVERT_STEER = false;
 
   /******************************************************
-  *       Swerve
-  ***/
+   *       Swerve
+   ***/
 
   public final String CAN_BUS = "canivore";
 
@@ -99,7 +99,7 @@ public class SwerveConfigBigRed implements ISwerveConfig {
 
   // Constraints
   public final double MAX_VOLTAGE_V = 12.0;
-  public final double MAX_LINEAR_VEL_mps = 4.33;
+  public final double MAX_LINEAR_VEL_mps = 4.483;
   public final double MAX_LINEAR_VEL_CONTROLLED_mps = 4.0;
   public final double MAX_LINEAR_VEL_THROTTLED_mps = 3.5;
   public final double MAX_ANGULAR_VEL_radps = MAX_LINEAR_VEL_mps / DRIVE_BASE_RADIUS_m;
@@ -115,5 +115,4 @@ public class SwerveConfigBigRed implements ISwerveConfig {
   public final double KV_T = 1.0 / 5.5;
   public final double KP_T = 2.5;
   public final double KP_R = 3.0;
-
 }

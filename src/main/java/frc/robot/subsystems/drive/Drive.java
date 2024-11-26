@@ -60,10 +60,34 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
           instance =
               new Drive(
                   new GyroIOPigeon2(),
-                  new ModuleIOTalonFX(CFG.FL_ID_DRIVE, CFG.FL_ID_STEER, CFG.FL_ID_CANCODER, CFG.FL_ABS_OFFSET, CFG.FL_INVERT_DRIVE, CFG.FL_INVERT_STEER),
-                  new ModuleIOTalonFX(CFG.FR_ID_DRIVE, CFG.FR_ID_STEER, CFG.FR_ID_CANCODER, CFG.FR_ABS_OFFSET, CFG.FR_INVERT_DRIVE, CFG.FR_INVERT_STEER),
-                  new ModuleIOTalonFX(CFG.BL_ID_DRIVE, CFG.BL_ID_STEER, CFG.BL_ID_CANCODER, CFG.BL_ABS_OFFSET, CFG.BL_INVERT_DRIVE, CFG.BL_INVERT_STEER),
-                  new ModuleIOTalonFX(CFG.BR_ID_DRIVE, CFG.BR_ID_STEER, CFG.BR_ID_CANCODER, CFG.BR_ABS_OFFSET, CFG.BR_INVERT_DRIVE, CFG.BR_INVERT_STEER),
+                  new ModuleIOTalonFX(
+                      CFG.FL_ID_DRIVE,
+                      CFG.FL_ID_STEER,
+                      CFG.FL_ID_CANCODER,
+                      CFG.FL_ABS_OFFSET,
+                      CFG.FL_INVERT_DRIVE,
+                      CFG.FL_INVERT_STEER),
+                  new ModuleIOTalonFX(
+                      CFG.FR_ID_DRIVE,
+                      CFG.FR_ID_STEER,
+                      CFG.FR_ID_CANCODER,
+                      CFG.FR_ABS_OFFSET,
+                      CFG.FR_INVERT_DRIVE,
+                      CFG.FR_INVERT_STEER),
+                  new ModuleIOTalonFX(
+                      CFG.BL_ID_DRIVE,
+                      CFG.BL_ID_STEER,
+                      CFG.BL_ID_CANCODER,
+                      CFG.BL_ABS_OFFSET,
+                      CFG.BL_INVERT_DRIVE,
+                      CFG.BL_INVERT_STEER),
+                  new ModuleIOTalonFX(
+                      CFG.BR_ID_DRIVE,
+                      CFG.BR_ID_STEER,
+                      CFG.BR_ID_CANCODER,
+                      CFG.BR_ABS_OFFSET,
+                      CFG.BR_INVERT_DRIVE,
+                      CFG.BR_INVERT_STEER),
                   null);
 
         case SIM:
@@ -475,8 +499,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     translations[FL] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
     translations[FR] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
     translations[BL] = new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
-    translations[BR] =
-        new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
+    translations[BR] = new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
     return translations;
   }
 
