@@ -3,9 +3,6 @@ package frc.robot.subsystems.drive;
 import edu.wpi.first.math.util.Units;
 
 public class SwerveConfigVentura implements ISwerveConfig {
-  // Indexing
-  public final int FL = 0, FR = 1, BL = 2, BR = 3;
-
   // Measured
   public final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
   public final double TURN_GEAR_RATIO = 150.0 / 7.0;

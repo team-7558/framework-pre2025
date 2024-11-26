@@ -44,9 +44,9 @@ public class ModuleIOIdeal implements ModuleIO {
   }
 
   @Override
-  public void setDriveDC(double percentage) {
-    outputs.driveVolts_V = percentage * 12.0;
-    setDriveVel(percentage * Drive.CFG.MAX_LINEAR_VEL_mps);
+  public void setDriveDC(double vel_mps) {
+    outputs.driveVolts_V = vel_mps / Drive.CFG.MAX_LINEAR_VEL_mps * 12.0;
+    setDriveVel(vel_mps);
   }
 
   @Override

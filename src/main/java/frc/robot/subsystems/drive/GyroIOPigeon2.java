@@ -24,7 +24,7 @@ import java.util.Queue;
 
 /** IO implementation for Pigeon2 */
 public class GyroIOPigeon2 implements GyroIO {
-  private final Pigeon2 pigeon = new Pigeon2(20);
+  private final Pigeon2 pigeon = new Pigeon2(Drive.CFG.PIGEON_ID);
   private final StatusSignal<Double> yaw = pigeon.getYaw();
   private final StatusSignal<Double> pitch = pigeon.getPitch();
   private final StatusSignal<Double> roll = pigeon.getRoll();
@@ -32,7 +32,7 @@ public class GyroIOPigeon2 implements GyroIO {
   private final Queue<Double> yawTimestampQueue;
   private final StatusSignal<Double> yawVelocity = pigeon.getAngularVelocityZWorld();
 
-  public GyroIOPigeon2(boolean phoenixDrive) {
+  public GyroIOPigeon2() {
     pigeon.getConfigurator().apply(new Pigeon2Configuration());
     pigeon.getConfigurator().setYaw(0.0);
     yaw.setUpdateFrequency(Drive.CFG.ODOMETRY_FREQUENCY_Hz);
@@ -41,13 +41,9 @@ public class GyroIOPigeon2 implements GyroIO {
 
     yawVelocity.setUpdateFrequency(100.0);
     pigeon.optimizeBusUtilization();
-    if (phoenixDrive) {
-      yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
-      yawPositionQueue =
+    yawTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
+    yawPositionQueue =
           PhoenixOdometryThread.getInstance().registerSignal(pigeon, pigeon.getYaw());
-    } else {
-      throw new RuntimeException("What you mean its not Phoenix??");
-    }
   }
 
   @Override

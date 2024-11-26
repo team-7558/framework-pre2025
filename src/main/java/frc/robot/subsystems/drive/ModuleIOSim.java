@@ -68,8 +68,8 @@ public class ModuleIOSim implements ModuleIO {
   }
 
   @Override
-  public void setDriveDC(double percentage) {
-    sim.requestDriveVoltageOut(percentage * 12.0);
+  public void setDriveDC(double vel_mps) {
+    sim.requestDriveVoltageOut(vel_mps / Drive.CFG.MAX_LINEAR_VEL_mps * 12.0);
   }
 
   @Override

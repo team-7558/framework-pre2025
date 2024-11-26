@@ -13,8 +13,6 @@
 
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
-
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -48,8 +46,10 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Drive extends StateMachineSubsystemBase<PathingMode> {
+  // Indexing
+  public static final int FL = 0, FR = 1, BL = 2, BR = 3;
 
-  public static final SwerveConfigVentura CFG = new SwerveConfigVentura();
+  public static final SwerveConfigBigRed CFG = new SwerveConfigBigRed();
   public static final Lock odometryLock = new ReentrantLock();
   private static Drive instance;
 
@@ -59,11 +59,11 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         case REAL:
           instance =
               new Drive(
-                  new GyroIOPigeon2(true),
-                  new ModuleIOTalonFX(CFG.FL),
-                  new ModuleIOTalonFX(CFG.FR),
-                  new ModuleIOTalonFX(CFG.BL),
-                  new ModuleIOTalonFX(CFG.BR),
+                  new GyroIOPigeon2(),
+                  new ModuleIOTalonFX(CFG.FL_ID_DRIVE, CFG.FL_ID_STEER, CFG.FL_ID_CANCODER, CFG.FL_ABS_OFFSET, CFG.FL_INVERT_DRIVE, CFG.FL_INVERT_STEER),
+                  new ModuleIOTalonFX(CFG.FR_ID_DRIVE, CFG.FR_ID_STEER, CFG.FR_ID_CANCODER, CFG.FR_ABS_OFFSET, CFG.FR_INVERT_DRIVE, CFG.FR_INVERT_STEER),
+                  new ModuleIOTalonFX(CFG.BL_ID_DRIVE, CFG.BL_ID_STEER, CFG.BL_ID_CANCODER, CFG.BL_ABS_OFFSET, CFG.BL_INVERT_DRIVE, CFG.BL_INVERT_STEER),
+                  new ModuleIOTalonFX(CFG.BR_ID_DRIVE, CFG.BR_ID_STEER, CFG.BR_ID_CANCODER, CFG.BR_ABS_OFFSET, CFG.BR_INVERT_DRIVE, CFG.BR_INVERT_STEER),
                   null);
 
         case SIM:
@@ -92,10 +92,10 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
                       gyroSimulation), // GyroIOSim is a wrapper around gyro simulation, that reads
                   // the simulation result
                   /* ModuleIOSim are edited such that they also wraps around module simulations */
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.FL]),
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.FR]),
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.BL]),
-                  new ModuleIOSim(swerveDriveSimulation.getModules()[CFG.BR]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[FL]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[FR]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[BL]),
+                  new ModuleIOSim(swerveDriveSimulation.getModules()[BR]),
                   swerveDriveSimulation);
           break;
         default:
@@ -143,10 +143,10 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     super("Drive");
     sim = driveSim;
     this.gyroIO = gyroIO;
-    this.modules[CFG.FL] = new Module(flModuleIO, CFG.FL);
-    this.modules[CFG.FR] = new Module(frModuleIO, CFG.FR);
-    this.modules[CFG.BL] = new Module(blModuleIO, CFG.BL);
-    this.modules[CFG.BR] = new Module(brModuleIO, CFG.BR);
+    this.modules[FL] = new Module(flModuleIO, FL);
+    this.modules[FR] = new Module(frModuleIO, FR);
+    this.modules[BL] = new Module(blModuleIO, BL);
+    this.modules[BR] = new Module(brModuleIO, BR);
 
     kin = new SwerveDriveKinematics(getModuleTranslations());
     rawYaw_Rot2d = new Rotation2d();
@@ -472,10 +472,10 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   /** Returns an array of module translations. */
   public static Translation2d[] getModuleTranslations() {
     Translation2d[] translations = new Translation2d[4];
-    translations[CFG.FL] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
-    translations[CFG.FR] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
-    translations[CFG.BL] = new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
-    translations[CFG.BR] =
+    translations[FL] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
+    translations[FR] = new Translation2d(CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
+    translations[BL] = new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, CFG.TRACK_WIDTH_Y_m / 2.0);
+    translations[BR] =
         new Translation2d(-CFG.TRACK_WIDTH_X_m / 2.0, -CFG.TRACK_WIDTH_Y_m / 2.0);
     return translations;
   }

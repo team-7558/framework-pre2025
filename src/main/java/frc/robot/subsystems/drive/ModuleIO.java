@@ -39,7 +39,7 @@ public interface ModuleIO {
   public default void updateInputs(ModuleIOInputs inputs) {}
 
   /** Run the drive motor at the specified duty cycle. */
-  public default void setDriveDC(double percentage) {}
+  public default void setDriveDC(double vel_mps) {}
 
   /** Run the drive motor at the specified velocity. */
   public default void setDriveVel(double vel_mps) {}

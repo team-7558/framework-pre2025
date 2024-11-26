@@ -103,7 +103,7 @@ public class Module {
         if (mode == Mode.HIGH_CONTROL) {
           io.setDriveVel(compensatedDriveVel_mps);
         } else {
-          io.setDriveDC(compensatedDriveVel_mps / Drive.CFG.MAX_LINEAR_VEL_mps);
+          io.setDriveDC(compensatedDriveVel_mps);
         }
       }
     }
