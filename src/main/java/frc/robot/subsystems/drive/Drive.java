@@ -89,7 +89,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
                       CFG.BR_INVERT_DRIVE,
                       CFG.BR_INVERT_STEER),
                   null);
-
+          break;
         case SIM:
           final GyroSimulation gyroSimulation = GyroSimulation.createPigeon2();
 
@@ -131,6 +131,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
                   new ModuleIO() {},
                   new ModuleIO() {},
                   null);
+          break;
       }
     }
     return instance;
@@ -185,7 +186,6 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     poseEstimator = new SwerveDrivePoseEstimator(kin, rawYaw_Rot2d, prevModulePos, Poses.START);
 
     // Start threads (no-op for each if no signals have been created)
-    PhoenixOdometryThread.getInstance().start();
 
     // Configure AutoBuilder for PathPlanner
     RobotConfig config = null;
@@ -197,11 +197,16 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     }
 
     // Simulation
-    SimulatedArena.getInstance()
-        .addDriveTrainSimulation(sim); // register the drive train simulation
 
-    // reset the field for auto (placing game-pieces in positions)
-    SimulatedArena.getInstance().resetFieldForAuto();
+    if (sim != null) {
+      SimulatedArena.getInstance()
+          .addDriveTrainSimulation(sim); // register the drive train simulation
+
+      // reset the field for auto (placing game-pieces in positions)
+      SimulatedArena.getInstance().resetFieldForAuto();
+    }
+    System.out.println("STARTING THREAD");
+    PhoenixOdometryThread.getInstance().start();
 
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(

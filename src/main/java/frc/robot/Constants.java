@@ -22,7 +22,7 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.SIM;
+  public static final Mode currentMode = Mode.REAL;
   public static final double globalDelta_s = 0.02; // 0.02 = 50Hz
   public static final double globalDelta_Hz = 1.0 / globalDelta_s; // 0.02 = 50Hz
 

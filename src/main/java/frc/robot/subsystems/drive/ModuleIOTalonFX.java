@@ -306,6 +306,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   @Override
   public void setTurnPos(double measured_rad, double pos_rad) {
+    System.out.println("running " + pos_rad);
     steerTalon.setControl(steerPosOut.withPosition(Units.radiansToRotations(pos_rad)));
   }
 
