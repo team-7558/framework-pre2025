@@ -2,11 +2,11 @@ package frc.robot.superstructure;
 
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
+import frc.robot.subsystems.pinkarm.elevModes;
+import frc.robot.subsystems.pinkarm.pinkarm;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
 import org.littletonrobotics.junction.Logger;
-import frc.robot.subsystems.pinkarm.pinkarm;
-import frc.robot.subsystems.pinkarm.elevModes;
 
 public class SS implements IStateMachine<InternalState> {
 
@@ -59,7 +59,7 @@ public class SS implements IStateMachine<InternalState> {
           queueState(InternalState.IDLE);
         }
         break;
-      case ELEV_MOVING: 
+      case ELEV_MOVING:
         pinkarm.queueState(elevModes.TRAVELLING);
       default:
         break;

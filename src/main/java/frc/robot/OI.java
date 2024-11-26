@@ -20,9 +20,13 @@ public class OI extends XboxController {
     double res = 0.0;
 
     if (Math.abs(jsValue) > DEADBAND_RADIUS) {
-      res = Math.copySign(Util.remap(DEADBAND_RADIUS, 1.0, Math.abs(jsValue), 0.0, 1.0), jsValue);
+      if (Math.abs(jsValue) >= 1.0 - DEADBAND_RADIUS) {
+        res = 1.0;
+      } else {
+        res =
+            Math.copySign(Util.remap(DEADBAND_RADIUS, 0.95, Math.abs(jsValue), 0.0, 1.0), jsValue);
+      }
     }
-
     return res;
   }
 

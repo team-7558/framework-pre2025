@@ -112,6 +112,7 @@ public class Robot extends LoggedRobot {
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
     double elevcontrol = Util.sqInput(1.0 - OI.deadband(OI.DR.getRightTriggerAxis()));
+
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
     drive.setInput(input);
 

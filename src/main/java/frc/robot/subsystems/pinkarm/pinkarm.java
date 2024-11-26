@@ -12,12 +12,12 @@
 // GNU General Public License for more details.
 
 package frc.robot.subsystems.pinkarm;
+
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 public class pinkarm extends StateMachineSubsystemBase<elevModes> {
-
 
   private static pinkarm instance;
   private final pinkarmIO io;
@@ -27,24 +27,20 @@ public class pinkarm extends StateMachineSubsystemBase<elevModes> {
     if (instance == null) {
       switch (Constants.currentMode) {
         case REAL:
-            break;
+          break;
         case SIM:
-
-          instance =
-              new pinkarm(new pinkarmIOSim());
+          instance = new pinkarm(new pinkarmIOSim());
           break;
         default:
-            break;
+          break;
       }
     }
     return instance;
   }
 
-
   private final pinkarmInputsAutoLogged inputs = new pinkarmInputsAutoLogged();
   private double targetlength_m; // Added missing variable
 
-  
   public pinkarm(pinkarmIO io) {
     super("pinkarm");
     this.io = io;
@@ -82,13 +78,12 @@ public class pinkarm extends StateMachineSubsystemBase<elevModes> {
 
   public void set(double meters) {
     if (io != null) {
-        io.goToPos(meters);
+      io.goToPos(meters);
     }
   }
 
-    // Added a setter for targetHeight_m
-    public void setTargetLength(double targetlength_m) {
-        this.targetlength_m = targetlength_m;
-    }
-
+  // Added a setter for targetHeight_m
+  public void setTargetLength(double targetlength_m) {
+    this.targetlength_m = targetlength_m;
+  }
 }

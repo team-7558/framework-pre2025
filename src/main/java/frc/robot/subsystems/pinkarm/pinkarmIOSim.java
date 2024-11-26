@@ -14,8 +14,6 @@ public class pinkarmIOSim implements pinkarmIO {
 
   private final PIDController anglePID = new PIDController(0.0, 0.0, 0.0);
 
-
-
   @Override
   public void updateInputs(pinkarmInputs inputs) {
     // Update inputs based on current state
@@ -35,14 +33,12 @@ public class pinkarmIOSim implements pinkarmIO {
   @Override
   public void setAngle(double degrees) {
     anglePID.setSetpoint(degrees);
-
   }
 
   @Override
   public void goToPos(double meters) {
     elev_posPid.setSetpoint(meters);
     setelevVoltage(elev_posPid.calculate(sim.getPositionMeters()));
-
   }
 
   @Override
