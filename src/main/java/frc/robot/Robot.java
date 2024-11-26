@@ -35,6 +35,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private SwerveInput si;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -90,6 +91,8 @@ public class Robot extends LoggedRobot {
 
     // init subsystems
     drive = Drive.getInstance();
+
+    si = new SwerveInput(SwerveInput.ZERO);
   }
 
   /** This function is called periodically during all modes. */
@@ -101,12 +104,11 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
 
-    double x_ = OI.deadband(-OI.DR.getLeftY());
-    double y_ = OI.deadband(-OI.DR.getLeftX());
-    double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
-    double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
-    SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
-    drive.setInput(input);
+    si.xi = OI.deadband(-OI.DR.getLeftY());
+    si.yi = OI.deadband(-OI.DR.getLeftX());
+    si.wi = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
+    si.throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
+    drive.setInput(si);
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
