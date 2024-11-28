@@ -2,8 +2,8 @@ package frc.robot.superstructure;
 
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
+import frc.robot.subsystems.pinkarm.Pinkarm;
 import frc.robot.subsystems.pinkarm.elevModes;
-import frc.robot.subsystems.pinkarm.pinkarm;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
 import org.littletonrobotics.junction.Logger;
@@ -18,7 +18,7 @@ public class SS implements IStateMachine<InternalState> {
 
   private Drive drive;
 
-  private pinkarm pinkarm;
+  private Pinkarm pinkarm;
 
   private AltTimer timer;
   private Intention intention;
