@@ -72,7 +72,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   // Controls
   private final DutyCycleOut driveDCOut = new DutyCycleOut(0);
-  private final VelocityVoltage driveVelOut = new VelocityVoltage(0);
+  private final VelocityVoltage driveVelOut = new VelocityVoltage(0).withEnableFOC(true);
   private final VoltageOut steerVOut = new VoltageOut(0);
   private final MotionMagicVoltage steerPosOut = new MotionMagicVoltage(0);
   private final MotionMagicExpoVoltage steerPosOut2 = new MotionMagicExpoVoltage(0);
@@ -306,8 +306,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
   @Override
   public void setTurnPos(double measured_rad, double pos_rad) {
-    System.out.println("running " + pos_rad);
-    steerTalon.setControl(steerPosOut.withPosition(Units.radiansToRotations(pos_rad)));
+    steerTalon.setControl(steerPosOut2.withPosition(Units.radiansToRotations(pos_rad)));
   }
 
   @Override

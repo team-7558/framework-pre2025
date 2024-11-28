@@ -24,6 +24,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -154,6 +155,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   private SwerveModulePosition[] prevModulePos; // For delta tracking
   private Translation2d centerOfRotation;
   private SwerveDrivePoseEstimator poseEstimator;
+  private SwerveDriveOdometry odom;
 
   private PathingOverride override;
 
@@ -184,6 +186,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         };
     centerOfRotation = new Translation2d(CFG.COR_OFFSET_X_m, CFG.COR_OFFSET_Y_m);
     poseEstimator = new SwerveDrivePoseEstimator(kin, rawYaw_Rot2d, prevModulePos, Poses.START);
+    odom = new SwerveDriveOdometry(kin, rawYaw_Rot2d, prevModulePos, Poses.START);
 
     // Start threads (no-op for each if no signals have been created)
 
@@ -206,7 +209,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
       SimulatedArena.getInstance().resetFieldForAuto();
     }
     System.out.println("STARTING THREAD");
-    PhoenixOdometryThread.getInstance().start();
+    // PhoenixOdometryThread.getInstance().start();
 
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
@@ -270,7 +273,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
       }
 
       // Apply update
-      poseEstimator.updateWithTime(sampleTimestamps[i], rawYaw_Rot2d, modulePositions);
+      // poseEstimator.updateWithTime(sampleTimestamps[i], rawYaw_Rot2d, modulePositions);
+      odom.update(rawYaw_Rot2d, modulePositions);
     }
   }
 
@@ -463,7 +467,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   /** Returns the current odometry pose. */
   @AutoLogOutput(key = "Drive/Odom")
   public Pose2d getPose() {
-    return poseEstimator.getEstimatedPosition();
+    // return poseEstimator.getEstimatedPosition();
+    return odom.getPoseMeters();
   }
 
   /** Returns the current odometry rotation. */
@@ -482,6 +487,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(rawYaw_Rot2d, getModulePositions(), pose);
+    odom.resetPosition(rawYaw_Rot2d, getModulePositions(), pose);
   }
 
   public ChassisSpeeds getChassisSpeeds() {

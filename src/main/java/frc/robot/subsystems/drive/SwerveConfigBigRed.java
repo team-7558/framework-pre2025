@@ -22,14 +22,14 @@ public class SwerveConfigBigRed implements ISwerveConfig {
   public final double STEER_SUPPLY_LIMIT_A = 80.0;
 
   // Gains
-  public final double DRIVE_0_KP = 100.0;
+  public final double DRIVE_0_KP = 0.5;
   public final double DRIVE_0_KI = 0.0;
-  public final double DRIVE_0_KD = 0.2;
+  public final double DRIVE_0_KD = 0.3; // 0.2;
   public final double DRIVE_0_KS = 0.0;
   public final double DRIVE_0_KV = 1.5;
   public final double DRIVE_0_KA = 0.0;
 
-  public final double STEER_0_KP = 3.0;
+  public final double STEER_0_KP = 30; // 3.0;
   public final double STEER_0_KI = 0.0;
   public final double STEER_0_KD = 0.0;
   public final double STEER_0_KS = 0.0;
@@ -99,7 +99,7 @@ public class SwerveConfigBigRed implements ISwerveConfig {
 
   // Constraints
   public final double MAX_VOLTAGE_V = 12.0;
-  public final double MAX_LINEAR_VEL_mps = 4.483;
+  public final double MAX_LINEAR_VEL_mps = 4.0; // 4.483;
   public final double MAX_LINEAR_VEL_CONTROLLED_mps = 4.0;
   public final double MAX_LINEAR_VEL_THROTTLED_mps = 3.5;
   public final double MAX_ANGULAR_VEL_radps = MAX_LINEAR_VEL_mps / DRIVE_BASE_RADIUS_m;
