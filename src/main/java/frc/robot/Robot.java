@@ -107,7 +107,10 @@ public class Robot extends LoggedRobot {
     double y_ = OI.deadband(-OI.DR.getLeftX());
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
-    double elevcontrol = Util.sqInput(1.0 - OI.deadband(OI.DR.getRightTriggerAxis()));
+    boolean a_button = OI.DR.getAButton();
+    boolean x_button = OI.DR.getXButton();
+    boolean y_button = OI.DR.getYButton();
+    boolean b_button = OI.DR.getBButton();
 
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
     drive.setInput(input);
@@ -117,8 +120,22 @@ public class Robot extends LoggedRobot {
     // swerve.periodic();
     PerfTracker.periodic();
 
+    if (a_button) {
+      arm.PlaceEndEffector(5, 5);
+    } else if (x_button) {
+      arm.PlaceEndEffector(7, 3);
+    } else if (y_button) {
+      arm.PlaceEndEffector(-5, 5);
+    } else if (b_button) {
+      arm.PlaceEndEffector(5, 0);
+    } else {
+      arm.PlaceEndEffector(0, 0);
+    }
+
+
+
+
     CommandScheduler.getInstance().run();
-    arm.PlaceEndEffector(-10, 5);
 
     arm.periodic();
     // ^ will be gone later just keeping now to not break shit

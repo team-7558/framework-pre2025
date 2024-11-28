@@ -2,8 +2,9 @@ package frc.robot.subsystems.pinkarm;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.robot.subsystems.pinkarm.PinkarmIO.PinkarmInputs;
 
 public class PinkarmIOSim implements PinkarmIO {
 
@@ -19,9 +20,7 @@ public class PinkarmIOSim implements PinkarmIO {
           5,
           null);
 
-  private SingleJointedArmSim ArmSim =
-      new SingleJointedArmSim(DCMotor.getFalcon500Foc(1), 45, 3.67, 0.5, 0, 10, false, 5, null);
-
+  private DCMotorSim ArmSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 45, 3.67);
   private PIDController elev_posPid = new PIDController(0.0, 0.0, 0.0);
   private double elev_appliedVolts = 0.0;
   private double arm_appliedVolts = 0.0;
@@ -39,8 +38,8 @@ public class PinkarmIOSim implements PinkarmIO {
         new double[] {ElevSim.getCurrentDrawAmps(), ElevSim.getCurrentDrawAmps()};
 
     ArmSim.update(0.05);
-    inputs.arm_posDegrees = Math.toDegrees(ArmSim.getAngleRads());
-    inputs.arm_velDegPS = Math.toDegrees(ArmSim.getVelocityRadPerSec());
+    inputs.arm_posDegrees = Math.toDegrees(ArmSim.getAngularPositionRad());
+    inputs.arm_velDegPS = Math.toDegrees(ArmSim.getAngularVelocityRadPerSec());
     inputs.arm_volts = arm_appliedVolts;
     inputs.arm_currents = new double[] {ArmSim.getCurrentDrawAmps(), ArmSim.getCurrentDrawAmps()};
   }
@@ -60,7 +59,7 @@ public class PinkarmIOSim implements PinkarmIO {
   @Override
   public void goToAngle(double degrees) {
     arm_posPid.setSetpoint(degrees);
-    setArmVoltage(arm_posPid.calculate(ArmSim.getAngleRads()));
+    setArmVoltage(arm_posPid.calculate(ArmSim.getAngularPositionRad()));
   }
 
   @Override
