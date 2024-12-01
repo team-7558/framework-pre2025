@@ -132,9 +132,6 @@ public class Robot extends LoggedRobot {
       arm.PlaceEndEffector(0, 0);
     }
 
-
-
-
     CommandScheduler.getInstance().run();
 
     arm.periodic();
