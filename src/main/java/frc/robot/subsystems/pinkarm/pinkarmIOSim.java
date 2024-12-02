@@ -22,11 +22,11 @@ public class PinkarmIOSim implements PinkarmIO {
           null);
 
   private DCMotorSim ArmSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 45, 3.67);
-  private PIDController elev_posPid = new PIDController(2, 0.0, 0.0);
+  private PIDController elev_posPid = new PIDController(20, 1, 4);
   private double elev_appliedVolts = 0.0;
   private double arm_appliedVolts = 0.0;
 
-  private PIDController arm_posPid = new PIDController(2.5, 0.0, 0.0);
+  private PIDController arm_posPid = new PIDController(50, 1, 4);
 
   @Override
   public void updateInputs(PinkarmInputs inputs) {
