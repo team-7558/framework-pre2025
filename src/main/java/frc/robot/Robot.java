@@ -129,7 +129,7 @@ public class Robot extends LoggedRobot {
     } else if (b_button) {
       arm.PlaceEndEffector(5, 0);
     } else {
-      arm.PlaceEndEffector(0, 0);
+      arm.PlaceEndEffector(0, 5);
     }
 
     CommandScheduler.getInstance().run();
