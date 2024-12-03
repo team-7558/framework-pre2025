@@ -18,6 +18,9 @@ import static edu.wpi.first.units.Units.*;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -25,14 +28,20 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.Odometry;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.subsystems.drive.Module.Mode;
+import frc.robot.subsystems.drive.OdometryState.OdometryObservation;
+import frc.robot.subsystems.drive.OdometryState.VisionObservation;
 import frc.robot.util.ChassisAcceleration;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.Util;
@@ -51,6 +60,9 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
 
   public static final SwerveConfigVentura CFG = new SwerveConfigVentura();
   public static final Lock odometryLock = new ReentrantLock();
+
+  public static final Matrix<N3, N1> odometryStdDevs = VecBuilder.fill(0.005, 0.005, 0.001);
+  
   private static Drive instance;
 
   public static Drive getInstance() {
@@ -128,7 +140,6 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   private Rotation2d rawYaw_Rot2d;
   private SwerveModulePosition[] prevModulePos; // For delta tracking
   private Translation2d centerOfRotation;
-  private SwerveDrivePoseEstimator poseEstimator;
 
   private PathingOverride override;
 
@@ -158,7 +169,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
           new SwerveModulePosition()
         };
     centerOfRotation = new Translation2d(CFG.COR_OFFSET_X_m, CFG.COR_OFFSET_Y_m);
-    poseEstimator = new SwerveDrivePoseEstimator(kin, rawYaw_Rot2d, prevModulePos, Poses.START);
+    OdometryState.getInstance().resetPose(Poses.START);
 
     // Start threads (no-op for each if no signals have been created)
     PhoenixOdometryThread.getInstance().start();
@@ -171,6 +182,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
       // Handle exception as needed
       e.printStackTrace();
     }
+
+    
 
     // Simulation
     SimulatedArena.getInstance()
@@ -241,9 +254,12 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
       }
 
       // Apply update
-      poseEstimator.updateWithTime(sampleTimestamps[i], rawYaw_Rot2d, modulePositions);
+      OdometryState.getInstance().addOdometryObservation(new OdometryObservation(new SwerveDriveWheelPositions(modulePositions), rawYaw_Rot2d, sampleTimestamps[i]));
     }
   }
+
+
+
 
   @Override
   public void handleStateMachine() {
@@ -434,7 +450,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   /** Returns the current odometry pose. */
   @AutoLogOutput(key = "Drive/Odom")
   public Pose2d getPose() {
-    return poseEstimator.getEstimatedPosition();
+    return OdometryState.getInstance().getEstimatedPose();
   }
 
   /** Returns the current odometry rotation. */
@@ -452,11 +468,15 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
 
   /** Resets the current odometry pose. */
   public void setPose(Pose2d pose) {
-    poseEstimator.resetPosition(rawYaw_Rot2d, getModulePositions(), pose);
+    OdometryState.getInstance().resetPose(pose);
   }
 
   public ChassisSpeeds getChassisSpeeds() {
     return kin.toChassisSpeeds(getModuleStates());
+  }
+
+  public SwerveDriveKinematics getKinematics() {
+    return this.kin;
   }
 
   /**
@@ -465,8 +485,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
    * @param visionPose The pose of the robot as measured by the vision camera.
    * @param timestamp The timestamp of the vision measurement in seconds.
    */
-  public void addVisionMeasurement(Pose2d visionPose, double timestamp) {
-    poseEstimator.addVisionMeasurement(visionPose, timestamp);
+  public void addVisionMeasurement(Pose2d visionPose, double timestamp, Matrix<N3,N1> stdDevs) {
+    OdometryState.getInstance().addVisionObservation(new VisionObservation(visionPose, timestamp, stdDevs));
   }
 
   /** Returns an array of module translations. */
