@@ -43,6 +43,9 @@ public class PinkarmIOSim implements PinkarmIO {
     inputs.arm_velDegPS = Units.radiansToDegrees(ArmSim.getAngularVelocityRadPerSec());
     inputs.arm_volts = arm_appliedVolts;
     inputs.arm_currents = new double[] {ArmSim.getCurrentDrawAmps(), ArmSim.getCurrentDrawAmps()};
+
+    // Update trapezoidal profiles for elevator and arm
+
   }
 
   @Override

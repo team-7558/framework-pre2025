@@ -13,13 +13,19 @@
 
 package frc.robot.subsystems.pinkarm;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
+import frc.robot.util.AltTimer;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
-  private final Pinkarm2d mech = new Pinkarm2d();
+  private final Pinkarm2d mech = new Pinkarm2d("ArmActual", new Color8Bit(100, 0, 0));
+  private final Pinkarm2d targetmech = new Pinkarm2d("ArmTarget", new Color8Bit(0, 0, 100));
+
   private static Pinkarm instance;
   private final PinkarmIO io;
 
@@ -49,6 +55,24 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
   public static final double ELEV_MIN_ANGLE_DEG = 0;
   public static final double ELEV_MAX_ANGLE_DEG = 180;
 
+
+
+  private TrapezoidProfile.Constraints elevConstraints =
+      new TrapezoidProfile.Constraints(0.5, 0.2); // Max velocity: 1m/s, Max acceleration: 0.5m/s²
+  private TrapezoidProfile.Constraints armConstraints =
+      new TrapezoidProfile.Constraints(
+          Units.degreesToRadians(90),
+          Units.degreesToRadians(45)); // Max velocity: 90°/s, Max acceleration: 45°/s²
+
+  private TrapezoidProfile.State elevSetpoint;
+  private TrapezoidProfile.State elevStartpoint;
+  private TrapezoidProfile.State elevGoal;
+
+  private TrapezoidProfile.State armSetpoint;
+  private TrapezoidProfile.State armStartpoint;
+  private TrapezoidProfile.State armGoal;
+
+
   private Pinkarm(PinkarmIO io) {
     super("pinkarm");
     this.io = io;
@@ -70,6 +94,19 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
       case IDLE:
         break;
       case TRAVELLING:
+        if (stateInit()) {
+          elevStartpoint = new TrapezoidProfile.State(inputs.elev_posMeters, inputs.elev_velMPS);
+          armStartpoint = new TrapezoidProfile.State(inputs.arm_posDegrees, inputs.arm_velDegPS);
+
+          armGoal = new TrapezoidProfile.State(targetangle_deg, 0);
+          elevGoal = new TrapezoidProfile.State(targetlength_m, 0);
+
+          TrapezoidProfile elevProfile = new TrapezoidProfile(elevConstraints);
+          elevSetpoint = elevProfile.calculate(0.02, elevStartpoint, elevGoal);
+
+          TrapezoidProfile armProfile = new TrapezoidProfile(armConstraints);
+          armSetpoint = armProfile.calculate(0.02, armStartpoint, armGoal);
+        }
         setTargetLength(ELEV_MIN_HEIGHT_M + 0.115);
         break;
       case HOLDING:
@@ -81,13 +118,19 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
 
   @Override
   public void outputPeriodic() {
-    io.goToPos(targetlength_m);
-    mech.setLength(inputs.elev_posMeters);
 
-    io.goToAngle(targetangle_deg);
+
+    io.goToPos(elevGoal.position);
+    mech.setLength(inputs.elev_posMeters);
+    targetmech.setLength(elevGoal.position);
+
+    io.goToAngle(armGoal.position);
     mech.setAngle(inputs.arm_posDegrees);
+    targetmech.setAngle(armGoal.position);
 
     mech.periodic();
+    targetmech.periodic();
+
     Logger.recordOutput("pinkarm/Targetlength_m", targetlength_m);
     Logger.recordOutput("pinkarm/Targetangle_deg", targetangle_deg);
   }
