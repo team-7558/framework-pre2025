@@ -13,9 +13,14 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
+import frc.robot.subsystems.elevatorWithArm.ElevatorWithArm;
+import frc.robot.subsystems.elevatorWithArm.ElevatorWithArm2d;
+import frc.robot.subsystems.elevatorWithArm.ElevatorWithArmStates;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -35,6 +40,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private ElevatorWithArm elevArm;
+  private ElevatorWithArm2d mech;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -90,6 +97,8 @@ public class Robot extends LoggedRobot {
 
     // init subsystems
     drive = Drive.getInstance();
+    elevArm = ElevatorWithArm.getInstance();
+    mech = ElevatorWithArm2d.getInstance();
   }
 
   /** This function is called periodically during all modes. */
@@ -103,13 +112,30 @@ public class Robot extends LoggedRobot {
 
     double x_ = OI.deadband(-OI.DR.getLeftY());
     double y_ = OI.deadband(-OI.DR.getLeftX());
+    boolean xb_ = OI.DR.getXButton();
+    boolean ab_ = OI.DR.getAButton();
+    if (xb_) {
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
+      elevArm.targetHeight_m = 3;
+    } else {
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
+      elevArm.targetHeight_m = 0.5;
+    }
+    if (ab_) {
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGARM);
+      elevArm.angleRad = Units.degreesToRadians(90);
+    }else {
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGARM);
+      elevArm.angleRad = 0;
+    }
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
     drive.setInput(input);
-
     SS.getInstance().handleStateMachine();
     drive.periodic();
+    mech.periodic();
+    elevArm.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
 
