@@ -6,15 +6,17 @@ import frc.robot.util.Util;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorWithArm extends StateMachineSubsystemBase<ElevatorWithArmStates> {
-  private final ElevatorWithArmIO io;
-  private final ElevatorWithArmIOInputsAutoLogged inputs = new ElevatorWithArmIOInputsAutoLogged();
+  public final ElevatorWithArmIO io;
+  public final ElevatorWithArmIOInputsAutoLogged inputs = new ElevatorWithArmIOInputsAutoLogged();
   public static ElevatorWithArm instance;
   public double targetHeight_m;
   public double angleRad;
+  private ElevatorWithArm2d mech;
 
   public ElevatorWithArm(ElevatorWithArmIO io) {
     super("Elevator With Arm");
     this.io = io;
+    mech = ElevatorWithArm2d.getInstance();
     queueState(ElevatorWithArmStates.DISABLED);
     targetHeight_m = 0.5;
     angleRad = 0;
@@ -46,10 +48,12 @@ public class ElevatorWithArm extends StateMachineSubsystemBase<ElevatorWithArmSt
 
   public void TravelPosElev(double pos) {
     io.TravelPosElev(pos);
+    mech.setHeight(inputs.elevPositionM);
   }
 
   public void TravelArm(double armAngle) {
     io.TravelAngleArm(armAngle);
+    mech.setAngle(inputs.armPositionM);
   }
 
   public void holdPosElev(double pos_m) {
@@ -103,35 +107,38 @@ public class ElevatorWithArm extends StateMachineSubsystemBase<ElevatorWithArmSt
           TravelPosElev(targetHeight_m);
         } else {
           queueState(ElevatorWithArmStates.HOLDINGELEVATOR);
-        } break;
+        }
+        break;
       case HOLDINGELEVATOR:
         if (atTargetHeight()) {
           holdPosElev(targetHeight_m);
         } else {
           queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
-        }break;
+        }
+        break;
       case TRAVELLINGARM:
         if (!atTargetAngle()) {
           TravelArm(angleRad);
         } else {
           queueState(ElevatorWithArmStates.HOLDINGARM);
-        }break;
+        }
+        break;
       case HOLDINGARM:
         if (atTargetAngle()) {
           holdPosElev(angleRad);
         } else {
           queueState(ElevatorWithArmStates.TRAVELLINGARM);
-        }break;
+        }
+        break;
       default:
     }
   }
 
   @Override
   public void outputPeriodic() {
-
     io.updateInputs(inputs);
     Logger.processInputs("ElevatorWithArm", inputs);
     Logger.recordOutput("TargetDistance", targetHeight_m);
-    Logger.recordOutput("TargetAngle",angleRad);
+    Logger.recordOutput("TargetAngle", angleRad);
   }
 }

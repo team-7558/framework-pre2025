@@ -12,18 +12,18 @@ import org.littletonrobotics.junction.Logger;
 public class ElevatorWithArm2d {
   Mechanism2d mech;
   MechanismRoot2d root;
-  MechanismLigament2d elev;
-  MechanismLigament2d arm;
+  public MechanismLigament2d elev;
+  public MechanismLigament2d arm;
+  ElevatorWithArm elevArm;
+  ElevatorWithArmIOInputsAutoLogged input;
   public static ElevatorWithArm2d instance;
 
   public ElevatorWithArm2d() {
     mech = new Mechanism2d(4, 4);
     root = mech.getRoot("Root", 2, 0.5);
 
-    MechanismLigament2d elev =
-        root.append(new MechanismLigament2d("elevator", 0.5, 90, 2, new Color8Bit(255, 0, 0)));
-    MechanismLigament2d arm =
-        elev.append(new MechanismLigament2d("arm", 0.5, 90, 2, new Color8Bit(0, 255, 0)));
+    elev = root.append(new MechanismLigament2d("elevator", 0.5, 90, 2, new Color8Bit(255, 0, 0)));
+    arm = elev.append(new MechanismLigament2d("arm", 0.5, 90, 2, new Color8Bit(0, 255, 0)));
   }
 
   public void setHeight(double height) {
