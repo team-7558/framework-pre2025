@@ -19,15 +19,16 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.util.AltTimer;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
+
   private final Pinkarm2d mech = new Pinkarm2d("ArmActual", new Color8Bit(100, 0, 0));
   private final Pinkarm2d targetmech = new Pinkarm2d("ArmTarget", new Color8Bit(0, 0, 100));
 
   private static Pinkarm instance;
   private final PinkarmIO io;
+  private AltTimer timer = new AltTimer();
 
   public static Pinkarm getInstance() {
     if (instance == null) {
@@ -55,15 +56,6 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
   public static final double ELEV_MIN_ANGLE_DEG = 0;
   public static final double ELEV_MAX_ANGLE_DEG = 180;
 
-
-
-  private TrapezoidProfile.Constraints elevConstraints =
-      new TrapezoidProfile.Constraints(0.5, 0.2); // Max velocity: 1m/s, Max acceleration: 0.5m/s²
-  private TrapezoidProfile.Constraints armConstraints =
-      new TrapezoidProfile.Constraints(
-          Units.degreesToRadians(90),
-          Units.degreesToRadians(45)); // Max velocity: 90°/s, Max acceleration: 45°/s²
-
   private TrapezoidProfile.State elevSetpoint;
   private TrapezoidProfile.State elevStartpoint;
   private TrapezoidProfile.State elevGoal;
@@ -72,6 +64,11 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
   private TrapezoidProfile.State armStartpoint;
   private TrapezoidProfile.State armGoal;
 
+  private TrapezoidProfile.Constraints elevConstraints = new TrapezoidProfile.Constraints(1, 0.5);
+  private TrapezoidProfile.Constraints armConstraints = new TrapezoidProfile.Constraints(90, 45);
+
+  private TrapezoidProfile elevProfile = new TrapezoidProfile(elevConstraints);
+  private TrapezoidProfile armProfile = new TrapezoidProfile(armConstraints);
 
   private Pinkarm(PinkarmIO io) {
     super("pinkarm");
@@ -94,22 +91,30 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
       case IDLE:
         break;
       case TRAVELLING:
-        if (stateInit()) {
-          elevStartpoint = new TrapezoidProfile.State(inputs.elev_posMeters, inputs.elev_velMPS);
-          armStartpoint = new TrapezoidProfile.State(inputs.arm_posDegrees, inputs.arm_velDegPS);
+        if ((Math.abs(targetlength_m - inputs.elev_posMeters) < 0.5)
+            && (Math.abs(inputs.arm_posDegrees - targetangle_deg) < 5)) {
+          queueState(elevModes.HOLDING);
+        } else {
 
-          armGoal = new TrapezoidProfile.State(targetangle_deg, 0);
-          elevGoal = new TrapezoidProfile.State(targetlength_m, 0);
+          if (stateInit()) {
+            timer.reset();
 
-          TrapezoidProfile elevProfile = new TrapezoidProfile(elevConstraints);
-          elevSetpoint = elevProfile.calculate(0.02, elevStartpoint, elevGoal);
+            armGoal = new TrapezoidProfile.State(targetangle_deg, 0);
+            elevGoal = new TrapezoidProfile.State(targetlength_m, 0);
 
-          TrapezoidProfile armProfile = new TrapezoidProfile(armConstraints);
-          armSetpoint = armProfile.calculate(0.02, armStartpoint, armGoal);
+            elevStartpoint = new TrapezoidProfile.State(inputs.elev_posMeters, inputs.elev_velMPS);
+            armStartpoint = new TrapezoidProfile.State(inputs.arm_posDegrees, inputs.arm_velDegPS);
+          }
+
+          elevSetpoint = elevProfile.calculate(timer.time(), elevStartpoint, elevGoal);
+
+          armSetpoint = armProfile.calculate(timer.time(), armStartpoint, armGoal);
         }
-        setTargetLength(ELEV_MIN_HEIGHT_M + 0.115);
+
         break;
       case HOLDING:
+        io.setArmVoltage(0);
+        io.setelevVoltage(0);
         break;
       default:
         break;
@@ -119,20 +124,21 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
   @Override
   public void outputPeriodic() {
 
-
-    io.goToPos(elevGoal.position);
+    io.goToPos(elevSetpoint.position);
     mech.setLength(inputs.elev_posMeters);
-    targetmech.setLength(elevGoal.position);
+    targetmech.setLength(elevSetpoint.position);
 
-    io.goToAngle(armGoal.position);
+    io.goToAngle(armSetpoint.position);
     mech.setAngle(inputs.arm_posDegrees);
-    targetmech.setAngle(armGoal.position);
+    targetmech.setAngle(armSetpoint.position);
 
     mech.periodic();
     targetmech.periodic();
 
     Logger.recordOutput("pinkarm/Targetlength_m", targetlength_m);
     Logger.recordOutput("pinkarm/Targetangle_deg", targetangle_deg);
+    Logger.recordOutput("pinkarm/elevSetpoint", elevSetpoint.position);
+    Logger.recordOutput("pinkarm/armSetpoint", armSetpoint.position);
   }
 
   public void set(double meters, double angle) {

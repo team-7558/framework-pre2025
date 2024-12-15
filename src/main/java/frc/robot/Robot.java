@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.subsystems.pinkarm.Pinkarm;
+import frc.robot.subsystems.pinkarm.elevModes;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -121,14 +122,19 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     if (a_button) {
+      arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(5, 5);
     } else if (x_button) {
+      arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(7, 3);
     } else if (y_button) {
+      arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(-5, 5);
     } else if (b_button) {
+      arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(5, 0);
     } else {
+      arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(0, 5);
     }
 

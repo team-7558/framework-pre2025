@@ -26,7 +26,7 @@ public class PinkarmIOSim implements PinkarmIO {
   private double elev_appliedVolts = 0.0;
   private double arm_appliedVolts = 0.0;
 
-  private PIDController arm_posPid = new PIDController(50, 1, 4);
+  private PIDController arm_posPid = new PIDController(70, 1, 4);
 
   @Override
   public void updateInputs(PinkarmInputs inputs) {
