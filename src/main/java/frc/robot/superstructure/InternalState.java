@@ -6,5 +6,5 @@ public enum InternalState implements IState {
   DISABLED,
   IDLE,
   BOOT,
-  ELEV_MOVING
+  PICK_UP_CONE
 }

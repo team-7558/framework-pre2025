@@ -2,6 +2,9 @@ package frc.robot.superstructure;
 
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
+import frc.robot.subsystems.pinkarm.Claw;
+import frc.robot.subsystems.pinkarm.ClawInputsAutoLogged;
+import frc.robot.subsystems.pinkarm.ClawModes;
 import frc.robot.subsystems.pinkarm.Pinkarm;
 import frc.robot.subsystems.pinkarm.elevModes;
 import frc.robot.util.AltTimer;
@@ -19,6 +22,7 @@ public class SS implements IStateMachine<InternalState> {
   private Drive drive;
 
   private Pinkarm pinkarm;
+  private Claw claw;
 
   private AltTimer timer;
   private Intention intention;
@@ -26,6 +30,7 @@ public class SS implements IStateMachine<InternalState> {
   private boolean firstStep;
 
   private boolean booted;
+  private ClawInputsAutoLogged clawinputs = new ClawInputsAutoLogged();
 
   private SS() {
     intention = Intention.IDLE;
@@ -59,8 +64,14 @@ public class SS implements IStateMachine<InternalState> {
           queueState(InternalState.IDLE);
         }
         break;
-      case ELEV_MOVING:
+      case PICK_UP_CONE:
+        claw.queueState(ClawModes.OPEN);
         pinkarm.queueState(elevModes.TRAVELLING);
+        pinkarm.PlaceEndEffector(0, 5);
+        if (clawinputs.gamepiece == true) {
+          claw.queueState(ClawModes.CLOSED);
+        }
+        break;
       default:
         break;
     }
