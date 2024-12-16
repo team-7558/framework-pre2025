@@ -6,7 +6,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
-
 public class PinkarmIOSim implements PinkarmIO {
 
   private final ElevatorSim elevatorSim =
