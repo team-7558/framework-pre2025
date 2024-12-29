@@ -131,8 +131,7 @@ public class Robot extends LoggedRobot {
       arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(-5, 5);
     } else if (b_button) {
-      arm.queueState(elevModes.TRAVELLING);
-      arm.PlaceEndEffector(5, 0);
+      SS.getInstance().queueState(InternalState.PICK_UP_CONE);
     } else {
       arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(0, 5);

@@ -30,6 +30,7 @@ public class SS implements IStateMachine<InternalState> {
   private boolean firstStep;
 
   private boolean booted;
+  private boolean cone_picked_up = false;
   private ClawInputsAutoLogged clawinputs = new ClawInputsAutoLogged();
 
   private SS() {
@@ -41,6 +42,8 @@ public class SS implements IStateMachine<InternalState> {
     booted = false;
 
     drive = Drive.getInstance();
+    claw = Claw.getInstance();
+    pinkarm = Pinkarm.getInstance();
   }
 
   @Override
@@ -65,12 +68,17 @@ public class SS implements IStateMachine<InternalState> {
         }
         break;
       case PICK_UP_CONE:
+        if (pinkarm.getState() == elevModes.HOLDING) {
+          System.out.println("Exit");
+          claw.queueState(ClawModes.IDLE);
+          pinkarm.queueState(elevModes.HOLDING);
+          queueState(InternalState.IDLE);
+          break;
+        }
         claw.queueState(ClawModes.OPEN);
         pinkarm.queueState(elevModes.TRAVELLING);
-        pinkarm.PlaceEndEffector(0, 5);
-        if (clawinputs.gamepiece == true) {
-          claw.queueState(ClawModes.CLOSED);
-        }
+        pinkarm.PlaceEndEffector(-1, 3.5);
+        claw.queueState(ClawModes.CLOSED);
         break;
       default:
         break;
