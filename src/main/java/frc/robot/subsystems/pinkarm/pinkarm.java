@@ -96,6 +96,7 @@ public class Pinkarm extends StateMachineSubsystemBase<elevModes> {
           queueState(elevModes.HOLDING);
         } else {
           if (stateInit()) {
+            System.out.println("Travelling once");
             timer.reset();
 
             armGoal = new TrapezoidProfile.State(targetAngleDegrees, 0);

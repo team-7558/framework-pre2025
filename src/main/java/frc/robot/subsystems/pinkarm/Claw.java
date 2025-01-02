@@ -12,7 +12,9 @@ public class Claw extends StateMachineSubsystemBase<ClawModes> {
   private boolean OPEN_OR_CLOSE;
 
   private Claw(ClawIO io) {
-    super("Claw");
+
+    super("claw");
+    System.out.println("here");
     this.io = io;
     queueState(ClawModes.IDLE);
   }
@@ -57,7 +59,6 @@ public class Claw extends StateMachineSubsystemBase<ClawModes> {
 
   @Override
   public void outputPeriodic() {
-    System.out.println("Outpute");
     io.open(OPEN_OR_CLOSE);
     Logger.recordOutput("claw/open_or_not", OPEN_OR_CLOSE);
     Logger.recordOutput("claw/opened", true);

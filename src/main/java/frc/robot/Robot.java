@@ -16,6 +16,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
+import frc.robot.subsystems.pinkarm.Claw;
+import frc.robot.subsystems.pinkarm.ClawModes;
 import frc.robot.subsystems.pinkarm.Pinkarm;
 import frc.robot.subsystems.pinkarm.elevModes;
 import frc.robot.superstructure.InternalState;
@@ -38,6 +40,7 @@ public class Robot extends LoggedRobot {
 
   private Drive drive;
   private Pinkarm arm = Pinkarm.getInstance();
+  private Claw claw = Claw.getInstance();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -122,8 +125,7 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     if (a_button) {
-      arm.queueState(elevModes.TRAVELLING);
-      arm.PlaceEndEffector(5, 5);
+      claw.queueState(ClawModes.OPEN);
     } else if (x_button) {
       arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(7, 3);
@@ -132,6 +134,11 @@ public class Robot extends LoggedRobot {
       arm.PlaceEndEffector(-5, 5);
     } else if (b_button) {
       SS.getInstance().queueState(InternalState.PICK_UP_CONE);
+    } else if (!b_button) {
+      arm.queueState(elevModes.TRAVELLING);
+      arm.PlaceEndEffector(0, 5);
+      SS.getInstance().queueState(InternalState.IDLE);
+
     } else {
       arm.queueState(elevModes.TRAVELLING);
       arm.PlaceEndEffector(0, 5);
@@ -140,6 +147,7 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
 
     arm.periodic();
+    claw.periodic();
     // ^ will be gone later just keeping now to not break shit
   }
 

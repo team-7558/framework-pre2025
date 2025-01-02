@@ -32,6 +32,7 @@ public class SS implements IStateMachine<InternalState> {
   private boolean booted;
   private boolean cone_picked_up = false;
   private ClawInputsAutoLogged clawinputs = new ClawInputsAutoLogged();
+  public Enum pinkCurrentState;
 
   private SS() {
     intention = Intention.IDLE;
@@ -58,6 +59,7 @@ public class SS implements IStateMachine<InternalState> {
         break;
       case IDLE:
         drive.queueState(PathingMode.FIELD_RELATIVE);
+        claw.queueState(ClawModes.OPEN);
         break;
       case BOOT:
         drive.queueState(PathingMode.DISABLED);
@@ -68,17 +70,14 @@ public class SS implements IStateMachine<InternalState> {
         }
         break;
       case PICK_UP_CONE:
-        if (pinkarm.getState() == elevModes.HOLDING) {
-          System.out.println("Exit");
-          claw.queueState(ClawModes.IDLE);
-          pinkarm.queueState(elevModes.HOLDING);
-          queueState(InternalState.IDLE);
-          break;
+        if (stateInit()) {
+          pinkarm.queueState(elevModes.TRAVELLING);
+          pinkarm.PlaceEndEffector(5, 5);
         }
-        claw.queueState(ClawModes.OPEN);
-        pinkarm.queueState(elevModes.TRAVELLING);
-        pinkarm.PlaceEndEffector(-1, 3.5);
-        claw.queueState(ClawModes.CLOSED);
+        if (pinkarm.isState(elevModes.HOLDING)) {
+          claw.queueState(ClawModes.CLOSED);
+        }
+
         break;
       default:
         break;
@@ -92,6 +91,7 @@ public class SS implements IStateMachine<InternalState> {
     Logger.recordOutput("SS/Intention", intention);
     Logger.recordOutput("SS/State", state);
     Logger.recordOutput("SS/StateTimer", timer.time());
+    pinkCurrentState = pinkarm.getState();
   }
 
   public void intend(Intention intention) {

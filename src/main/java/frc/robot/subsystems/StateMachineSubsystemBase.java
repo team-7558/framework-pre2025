@@ -21,6 +21,7 @@ public abstract class StateMachineSubsystemBase<T extends Enum<T> & IState>
   private boolean firstStep;
 
   public final T getState() {
+
     return currentState;
   }
 
@@ -49,6 +50,7 @@ public abstract class StateMachineSubsystemBase<T extends Enum<T> & IState>
   /** Creates a new StateMachineSubsystem. */
   public StateMachineSubsystemBase(String name) {
     this.name = name;
+    System.out.println(this.name);
     firstStep = true;
     timer = new AltTimer();
   }
