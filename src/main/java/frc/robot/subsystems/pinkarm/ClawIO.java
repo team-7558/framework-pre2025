@@ -6,6 +6,7 @@ public interface ClawIO {
   @AutoLog
   public static class ClawInputs {
     public boolean gamepiece = false;
+
   }
 
   public default void updateInputs(ClawInputs inputs) {}
