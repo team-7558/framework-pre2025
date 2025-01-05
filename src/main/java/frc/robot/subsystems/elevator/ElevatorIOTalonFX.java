@@ -13,6 +13,8 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.AnalogAccelerometer;
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import org.littletonrobotics.junction.Logger;
 
@@ -45,8 +47,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     posControl = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
     mmPosControl = new MotionMagicVoltage(0, true, 0, 1, false, false, false);
 
-    motor = new TalonFX(1);
-    hallEffect = new DigitalInput(5);
+    motor = new TalonFX(2);
+    hallEffect = new DigitalInput(2);
 
     pos_m = motor.getPosition();
     vel_mps = motor.getVelocity();
@@ -68,12 +70,12 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     motorConfig.MotionMagic.MotionMagicExpo_kV = 0.5;
     motorConfig.MotionMagic.MotionMagicExpo_kA = 0.5;
 
-    // Position control gains
-    motorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    motorConfig.Slot0.kG = 0.07;
-    motorConfig.Slot0.kP = 176;
-    motorConfig.Slot0.kI = 0;
-    motorConfig.Slot0.kD = 4; // 16;
+    // // Position control gains
+    // motorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+    // motorConfig.Slot0.kG = 0.07;
+    // motorConfig.Slot0.kP = 176;
+    // motorConfig.Slot0.kI = 0;
+    // motorConfig.Slot0.kD = 4; // 16;
 
     // MotionMagic Position gains
     motorConfig.Slot1.GravityType = GravityTypeValue.Elevator_Static;
@@ -84,16 +86,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     motorConfig.Slot1.kP = 0.06;
     motorConfig.Slot1.kI = 0;
     motorConfig.Slot1.kD = 0.0;
-
-    // MotionMagic Velocity control
-    motorConfig.Slot2.GravityType = GravityTypeValue.Elevator_Static;
-    motorConfig.Slot2.kG = 0;
-    motorConfig.Slot2.kV = 0.0;
-    motorConfig.Slot2.kS = 0.0;
-    motorConfig.Slot2.kA = 0.0;
-    motorConfig.Slot2.kP = 0.0;
-    motorConfig.Slot2.kI = 0.0;
-    motorConfig.Slot2.kD = 0.0;
 
     motor.getConfigurator().apply(motorConfig);
     motor.getConfigurator().apply(motorConfig);
@@ -139,12 +131,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 @Override
   public void travelToPos(double position) {
     motor.setControl(mmPosControl.withPosition(position - posOffset_m));
-    motor.setControl(mmPosControl.withPosition(position - posOffset_m));
   }
 
 @Override
   public void setVoltage(double volts_V) {
-    motor.setControl(voltageControl.withOutput(volts_V));
     motor.setControl(voltageControl.withOutput(volts_V));
   }
 
@@ -167,7 +157,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     config.Inverted = InvertedValue.Clockwise_Positive;
     config.NeutralMode = isBraked ? NeutralModeValue.Coast : NeutralModeValue.Brake;
     isBraked = !isBraked;
-    motor.getConfigurator().apply(config);
     motor.getConfigurator().apply(config);
   }
 
