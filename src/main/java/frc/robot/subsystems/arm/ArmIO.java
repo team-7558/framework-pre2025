@@ -27,11 +27,11 @@ public interface ArmIO {
     public default void updateInputs(ArmIOInputs inputs) {
     }
 
-    public default void setPosition() {
+    public default void setPosition(double position) {
 
     }
 
-    public default void setVelocity() {
+    public default void setWheels(double velocity) {
 
     }
 

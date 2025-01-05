@@ -8,6 +8,7 @@ public enum ArmState implements IState {
     TRAVELLING,
     HOLDING,
     ZEROING,
+    PICKUP,
     
 
 }
