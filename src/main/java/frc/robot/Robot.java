@@ -104,6 +104,10 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
 
+    if (OI.DR.getStartButton()) {
+      drive.zeroGyro();
+    }
+
     si.xi = OI.deadband(-OI.DR.getLeftY());
     si.yi = OI.deadband(-OI.DR.getLeftX());
     si.wi = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));

@@ -490,6 +490,12 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     odom.resetPosition(rawYaw_Rot2d, getModulePositions(), pose);
   }
 
+  public void zeroGyro() {
+    gyroIO.zero();
+    Pose2d p = getPose();
+    setPose(new Pose2d(p.getTranslation(), Rotation2d.fromRotations(0)));
+  }
+
   public ChassisSpeeds getChassisSpeeds() {
     return kin.toChassisSpeeds(getModuleStates());
   }

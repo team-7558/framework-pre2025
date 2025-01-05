@@ -22,18 +22,18 @@ public class SwerveConfigBigRed implements ISwerveConfig {
   public final double STEER_SUPPLY_LIMIT_A = 80.0;
 
   // Gains
-  public final double DRIVE_0_KP = 0.5;
+  public final double DRIVE_0_KP = 3.0;
   public final double DRIVE_0_KI = 0.0;
-  public final double DRIVE_0_KD = 0.3; // 0.2;
+  public final double DRIVE_0_KD = 0.0;
   public final double DRIVE_0_KS = 0.0;
-  public final double DRIVE_0_KV = 1.5;
+  public final double DRIVE_0_KV = 0.0;
   public final double DRIVE_0_KA = 0.0;
 
-  public final double STEER_0_KP = 30; // 3.0;
+  public final double STEER_0_KP = 100;
   public final double STEER_0_KI = 0.0;
-  public final double STEER_0_KD = 0.0;
+  public final double STEER_0_KD = 0; // 0.2;
   public final double STEER_0_KS = 0.0;
-  public final double STEER_0_KV = 0.0;
+  public final double STEER_0_KV = 0; // 1.5;
   public final double STEER_0_KA = 0.0;
 
   // Pigeon

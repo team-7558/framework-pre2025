@@ -100,7 +100,7 @@ public class Module {
             driveSetpoint_mps * Math.cos(turnFeedback.getPositionError());
 
         // Run drive controller
-        if (mode == Mode.HIGH_CONTROL) {
+        if (mode == Mode.HIGH_CONTROL && false) {
           io.setDriveVel(compensatedDriveVel_mps);
         } else {
           io.setDriveDC(compensatedDriveVel_mps);
