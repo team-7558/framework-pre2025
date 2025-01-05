@@ -1,5 +1,6 @@
 package frc.robot.subsystems.arm;
 
+import frc.robot.OI;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 
 public class Arm extends StateMachineSubsystemBase<ArmState> {
@@ -50,13 +51,18 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
                 io.setArmPosition(armMinimum);
             case ZEROING:
                 if(!inputs.arm_halleffect) {
-                    io.setArmVoltage(-0.2);
+                    io.setArmVoltage(-0.4);
                 } else {
                     io.zero();
                     io.setArmVoltage(0);
                     queueState(ArmState.IDLE);
                     zeroed = true;
                 }
+                break;
+            case MANUAL:
+                // io.setArmVoltage(OI.DR.getXButton() ? 1.5 : 0);
+                // io.setArmVoltage(OI.DR.getYButton() ? -1.5 : 0);
+                break;
             default:
                 break;
 

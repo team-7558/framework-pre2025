@@ -4,6 +4,9 @@ import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
+import frc.robot.subsystems.elevator.ElevatorState;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
 import org.littletonrobotics.junction.Logger;
@@ -18,6 +21,7 @@ public class SS implements IStateMachine<InternalState> {
 
   private Drive drive;
   private Arm arm;
+  private Elevator elevator;
 
   private AltTimer timer;
   private Intention intention;
@@ -36,6 +40,7 @@ public class SS implements IStateMachine<InternalState> {
 
     drive = Drive.getInstance();
     arm = new Arm("arm");
+    elevator = new Elevator();
   }
 
   @Override
@@ -49,16 +54,21 @@ public class SS implements IStateMachine<InternalState> {
         drive.queueState(PathingMode.DISABLED);
         break;
       case IDLE:
-        arm.queueState(ArmState.IDLE);
+        // arm.queueState(ArmState.IDLE);
+        elevator.queueState(ElevatorState.MANUAL);
         drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
         drive.queueState(PathingMode.DISABLED);
-        arm.queueState(ArmState.ZEROING);
-        if (timer.after(0.1) && arm.getZeroed()) {
-          // zero elevator after 
-          booted = true;
-          queueState(InternalState.IDLE);
+        elevator.queueState(ElevatorState.ZEROING);
+        if (timer.after(0.1) && (elevator.getZeroed())) {
+          // zero arm after
+          arm.queueState(ArmState.ZEROING);
+          if(arm.getZeroed()) {
+            booted = true;
+            queueState(InternalState.IDLE);
+          }
+
         }
         break;
       default:

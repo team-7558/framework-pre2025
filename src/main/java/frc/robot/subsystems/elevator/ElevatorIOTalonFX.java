@@ -14,10 +14,11 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
-import frc.robot.Constants;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
+
+
 
   private final TalonFX motor;
   private final DigitalInput hallEffect;
@@ -76,11 +77,11 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     // MotionMagic Position gains
     motorConfig.Slot1.GravityType = GravityTypeValue.Elevator_Static;
-    motorConfig.Slot1.kG = 0.07;
-    motorConfig.Slot1.kV = 38;
+    motorConfig.Slot1.kG = 0.043;
+    motorConfig.Slot1.kV = 0;
     motorConfig.Slot1.kS = 0.0;
     motorConfig.Slot1.kA = 0; // 1;
-    motorConfig.Slot1.kP = 23;
+    motorConfig.Slot1.kP = 0.06;
     motorConfig.Slot1.kI = 0;
     motorConfig.Slot1.kD = 0.0;
 
@@ -121,7 +122,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   @Override
   public void setVelocity(double vel_mps) {
     double v = MathUtil.clamp(vel_mps, -0.3, 0.3);
-    motor.setControl(mmVelControl.withVelocity(v));
     motor.setControl(mmVelControl.withVelocity(v));
   }
 
@@ -173,10 +173,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
   @Override 
   public void zero() {
-    while (hallEffect.get() == false) {
-        setVoltage(-0.6);
-    } 
-    setVoltage(0);
     motor.setPosition(0);
   }
 }

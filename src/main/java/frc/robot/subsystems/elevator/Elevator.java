@@ -13,6 +13,7 @@
 
 package frc.robot.subsystems.elevator;
 import frc.robot.Constants;
+import frc.robot.OI;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -20,36 +21,23 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
     private static Elevator instance;
 
+    private boolean zeroed = false;
+
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
     private double targetLengthMeters;
 
-    public static final double ELEV_MIN_HEIGHT_M = 0.5;
-    public static final double ELEV_MAX_HEIGHT_M = 1.5;
+    public static final double ELEV_MIN_HEIGHT_M = 0;
+    public static final double ELEV_MAX_HEIGHT_M = 10000;
     public static final double ELEV_MIN_ANGLE_DEG = 0;
     public static final double ELEV_MAX_ANGLE_DEG = 180;
 
-    private Elevator(ElevatorIO io) {
+    public Elevator() {
         super("Elevator");
-        this.io = io;
+        this.io = new ElevatorIOTalonFX();
         setTargetLength(0.7);
         queueState(ElevatorState.IDLE);
-    }
-
-    public static Elevator getInstance() {
-        if (instance == null) {
-            switch (Constants.currentMode) {
-                case SIM:
-                    break;
-                case REAL:
-                    instance = new Elevator(new ElevatorIOTalonFX());
-                    break;
-                default:
-                    break;
-            }
-        }
-        return instance;
     }
 
     @Override
@@ -63,16 +51,29 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
         switch (getState()) {
             case DISABLED:
                 break;
+            case ZEROING:
+                if(!inputs.hallEffectHit) {
+                    io.setVoltage(-0.6);
+                } else {
+                    io.zero();
+                    io.setVoltage(0);
+                    zeroed = true;
+                }
+                break;
             case IDLE:
                 break;
             case TRAVELLING:
-                if (Math.abs(targetLengthMeters - inputs.position_m) < 0.5) {
+                if (Math.abs(targetLengthMeters - inputs.position_m) < 0.2) {
                     queueState(ElevatorState.HOLDING);
                 }
                 break;
             case HOLDING:
-                io.setVoltage(0);
+                io.travelToPos(targetLengthMeters);
                 break;
+
+            case MANUAL:
+                io.setVoltage(OI.DR.getAButton() ? 1.5 : 0);
+                io.setVoltage(OI.DR.getBButton() ? -1.5 : 0);
             default:
                 break;
         }
@@ -91,5 +92,9 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
     public void setTargetLength(double targetLengthMeters) {
         this.targetLengthMeters = targetLengthMeters;
+    }
+
+    public boolean getZeroed() {
+        return zeroed;
     }
 }

@@ -31,6 +31,10 @@ public interface ArmIO {
 
     }
 
+    public default void setWristAngle(double a) {
+        
+    }
+
     public default void setWheels(double velocity) {
 
     }
