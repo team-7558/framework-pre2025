@@ -4,7 +4,6 @@ import frc.robot.subsystems.StateMachineSubsystemBase;
 
 public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
-    
 
     public Elevator(String name) {
         super(name);
