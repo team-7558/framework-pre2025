@@ -112,17 +112,27 @@ public class Robot extends LoggedRobot {
     double y_ = OI.deadband(-OI.DR.getLeftX());
     boolean xb_ = OI.DR.getXButton();
     boolean ab_ = OI.DR.getAButton();
+    if (xb_ && ab_) {
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
+      elevArm.targetHeight_m = 3;
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGARM);
+      elevArm.angleRad = Units.degreesToRadians(90);
+    } else if (!xb_ && !ab_) {
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
+      elevArm.targetHeight_m = 3;
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGARM);
+      elevArm.angleRad = Units.degreesToRadians(90);
+    }
     if (xb_) {
       elevArm.queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
       elevArm.targetHeight_m = 3;
-    } else {
-      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
-      elevArm.targetHeight_m = 0.5;
-    }
-    if (ab_) {
+    } else if (ab_) {
       elevArm.queueState(ElevatorWithArmStates.TRAVELLINGARM);
       elevArm.angleRad = Units.degreesToRadians(90);
-    } else {
+    } else if (!xb_) {
+      elevArm.queueState(ElevatorWithArmStates.TRAVELLINGELEVATOR);
+      elevArm.targetHeight_m = 0.5;
+    } else if (!ab_) {
       elevArm.queueState(ElevatorWithArmStates.TRAVELLINGARM);
       elevArm.angleRad = Units.degreesToRadians(180);
     }

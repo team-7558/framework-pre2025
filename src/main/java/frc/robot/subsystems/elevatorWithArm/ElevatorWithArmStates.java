@@ -8,5 +8,6 @@ public enum ElevatorWithArmStates implements IState {
   TRAVELLINGELEVATOR,
   HOLDINGELEVATOR,
   TRAVELLINGARM,
-  HOLDINGARM
+  BOTHTRAVELLING,
+  BOTHHOLDING
 }

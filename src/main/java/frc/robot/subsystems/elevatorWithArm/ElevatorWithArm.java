@@ -3,6 +3,9 @@ package frc.robot.subsystems.elevatorWithArm;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.util.Util;
+
+import javax.lang.model.util.ElementScanner14;
+
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorWithArm extends StateMachineSubsystemBase<ElevatorWithArmStates> {
@@ -77,7 +80,7 @@ public class ElevatorWithArm extends StateMachineSubsystemBase<ElevatorWithArmSt
   }
 
   public boolean atTargetAngle() {
-    return atAngleHeight(0.02);
+    return atAngleHeight(0.01);
   }
 
   public boolean atAngleHeight(double tol) {
@@ -120,16 +123,20 @@ public class ElevatorWithArm extends StateMachineSubsystemBase<ElevatorWithArmSt
         if (!atTargetAngle()) {
           TravelArm(angleRad);
         } else {
-          queueState(ElevatorWithArmStates.HOLDINGARM);
+          queueState(ElevatorWithArmStates.IDLE);
         }
         break;
-      case HOLDINGARM:
-        if (atTargetAngle()) {
-          holdPosElev(angleRad);
+      case BOTHTRAVELLING:
+        if (!atTargetHeight()) {
+          TravelPosElev(targetHeight_m);
+        } else if (!atTargetAngle()) {
+          TravelArm(angleRad);
         } else {
-          queueState(ElevatorWithArmStates.TRAVELLINGARM);
+          queueState(ElevatorWithArmStates.BOTHHOLDING);
         }
         break;
+      case BOTHHOLDING:
+        
       default:
     }
   }
