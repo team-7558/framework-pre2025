@@ -1,5 +1,7 @@
 package frc.robot.superstructure;
 
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
 import frc.robot.util.AltTimer;
@@ -15,6 +17,7 @@ public class SS implements IStateMachine<InternalState> {
   }
 
   private Drive drive;
+  private Arm arm;
 
   private AltTimer timer;
   private Intention intention;
@@ -32,6 +35,7 @@ public class SS implements IStateMachine<InternalState> {
     booted = false;
 
     drive = Drive.getInstance();
+    arm = new Arm("arm");
   }
 
   @Override
@@ -45,12 +49,14 @@ public class SS implements IStateMachine<InternalState> {
         drive.queueState(PathingMode.DISABLED);
         break;
       case IDLE:
+        arm.queueState(ArmState.IDLE);
         drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
         drive.queueState(PathingMode.DISABLED);
-
-        if (timer.after(0.1)) {
+        arm.queueState(ArmState.ZEROING);
+        if (timer.after(0.1) && arm.getZeroed()) {
+          // zero elevator after 
           booted = true;
           queueState(InternalState.IDLE);
         }
