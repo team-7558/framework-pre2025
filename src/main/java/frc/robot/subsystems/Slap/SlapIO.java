@@ -13,5 +13,13 @@ public interface SlapIO {
 
     public default void updateInputs(SlapIOInputs inputs) {}
 
+    public default void setVelocity(double velocity) {}
 
+    public default void setVolts(double volts) {}
+
+    public default void up_down(boolean up_or_not) {}
+
+    public default void stop() {}
+
+    public default void toggleBrake() {}
 }
