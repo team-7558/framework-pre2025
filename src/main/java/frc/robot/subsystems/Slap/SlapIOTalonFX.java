@@ -1,5 +1,3 @@
 package frc.robot.subsystems.Slap;
 
-public class SlapIOTalonFX {
-    
-}
+public class SlapIOTalonFX {}

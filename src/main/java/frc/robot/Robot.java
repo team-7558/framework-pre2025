@@ -14,6 +14,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.Slap.Slap;
+import frc.robot.subsystems.Slap.SlapStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.superstructure.InternalState;
@@ -35,7 +37,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
-
+  private Slap slap = Slap.getInstance();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -115,6 +117,12 @@ public class Robot extends LoggedRobot {
 
     CommandScheduler.getInstance().run();
 
+    if (OI.DR.getAButton()) {
+      slap.queueState(SlapStates.TRAVELLING);
+      slap.setTargetAngle(90);
+    }
+
+    slap.periodic();
     // ^ will be gone later just keeping now to not break shit
   }
 
