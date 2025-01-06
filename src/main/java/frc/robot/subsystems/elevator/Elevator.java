@@ -12,89 +12,93 @@
 // GNU General Public License for more details.
 
 package frc.robot.subsystems.elevator;
-import frc.robot.Constants;
-import frc.robot.OI;
+
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
-    private static Elevator instance;
+  private boolean zeroed = false;
 
-    private boolean zeroed = false;
+  private final ElevatorIO io;
+  private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
-    private final ElevatorIO io;
-    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+  private static Elevator instance;
 
-    private double targetLengthMeters;
+  private double targetLengthMeters;
 
-    public static final double ELEV_MIN_HEIGHT_M = 0;
-    public static final double ELEV_MAX_HEIGHT_M = 10000;
-    public static final double ELEV_MIN_ANGLE_DEG = 0;
-    public static final double ELEV_MAX_ANGLE_DEG = 180;
+  public static final double ELEV_MIN_HEIGHT_M = 0;
+  public static final double ELEV_MAX_HEIGHT_M = 3.6;
+  public static final double ELEV_MIN_ANGLE_DEG = 0;
+  public static final double ELEV_MAX_ANGLE_DEG = 180;
 
-    public Elevator() {
-        super("Elevator");
-        this.io = new ElevatorIOTalonFX();
-        setTargetLength(0.7);
-        queueState(ElevatorState.IDLE);
+  public Elevator() {
+    super("Elevator");
+    this.io = new ElevatorIOTalonFX();
+    setTargetLength(0);
+    queueState(ElevatorState.IDLE);
+  }
+
+  @Override
+  public void inputPeriodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("Elevator", inputs);
+  }
+
+  public static Elevator getInstance() {
+    if (instance == null) {
+      instance = new Elevator();
     }
+    return instance;
+  }
 
-    @Override
-    public void inputPeriodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("Elevator", inputs);
-    }
-
-    @Override
-    public void handleStateMachine() {
-        switch (getState()) {
-            case DISABLED:
-                break;
-            case ZEROING:
-                if(!inputs.hallEffectHit) {
-                    io.setVoltage(-0.6);
-                } else {
-                    io.zero();
-                    io.setVoltage(0);
-                    zeroed = true;
-                }
-                break;
-            case IDLE:
-                break;
-            case TRAVELLING:
-                if (Math.abs(targetLengthMeters - inputs.position_m) < 0.2) {
-                    queueState(ElevatorState.HOLDING);
-                }
-                break;
-            case HOLDING:
-                io.travelToPos(targetLengthMeters);
-                break;
-
-            case MANUAL:
-                io.setVoltage(OI.DR.getAButton() ? 1.5 : 0);
-                io.setVoltage(OI.DR.getBButton() ? -1.5 : 0);
-            default:
-                break;
+  @Override
+  public void handleStateMachine() {
+    System.out.println(getState().name());
+    switch (getState()) {
+      case DISABLED:
+        break;
+      case ZEROING:
+        if (!inputs.hallEffectHit) {
+          io.setVoltage(-0.4);
+        } else {
+          io.zero();
+          io.setVoltage(0);
+          zeroed = true;
+          queueState(ElevatorState.IDLE);
         }
-    }
-
-    @Override
-    public void outputPeriodic() {
+        break;
+      case IDLE:
+        break;
+      case HOLDING:
         io.travelToPos(targetLengthMeters);
-        Logger.recordOutput("Elevator/TargetLengthMeters", targetLengthMeters);
-    }
+        break;
 
-    public void set(double meters) {
-        meters = Math.max(ELEV_MIN_HEIGHT_M, Math.min(ELEV_MAX_HEIGHT_M, meters));
-        setTargetLength(meters);
+      case MANUAL:
+        // io.setVoltage(OI.DR.getAButton() ? 2.5 : 0);
+        // io.setVoltage(OI.DR.getBButton() ? 2 : 0);
+        break;
+      default:
+        break;
     }
+  }
 
-    public void setTargetLength(double targetLengthMeters) {
-        this.targetLengthMeters = targetLengthMeters;
-    }
+  @Override
+  public void outputPeriodic() {
+    io.travelToPos(targetLengthMeters);
+    Logger.recordOutput("Elevator/TargetLengthMeters", targetLengthMeters);
+  }
 
-    public boolean getZeroed() {
-        return zeroed;
-    }
+  public void set(double meters) {
+    meters = Math.max(ELEV_MIN_HEIGHT_M, Math.min(ELEV_MAX_HEIGHT_M, meters));
+    setTargetLength(meters);
+  }
+
+  public void setTargetLength(double targetLengthMeters) {
+    this.targetLengthMeters = targetLengthMeters;
+  }
+
+  public boolean getZeroed() {
+    return zeroed;
+  }
 }

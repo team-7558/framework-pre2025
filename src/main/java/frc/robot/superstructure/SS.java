@@ -1,11 +1,8 @@
 package frc.robot.superstructure;
 
-import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
 import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.elevator.ElevatorIOTalonFX;
 import frc.robot.subsystems.elevator.ElevatorState;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
@@ -20,7 +17,7 @@ public class SS implements IStateMachine<InternalState> {
   }
 
   private Drive drive;
-  private Arm arm;
+  // private Arm arm;
   private Elevator elevator;
 
   private AltTimer timer;
@@ -39,8 +36,8 @@ public class SS implements IStateMachine<InternalState> {
     booted = false;
 
     drive = Drive.getInstance();
-    arm = new Arm("arm");
-    elevator = new Elevator();
+    // arm = new Arm("arm");
+    elevator = Elevator.getInstance();
   }
 
   @Override
@@ -52,23 +49,24 @@ public class SS implements IStateMachine<InternalState> {
     switch (state) {
       case DISABLED:
         drive.queueState(PathingMode.DISABLED);
+        elevator.queueState(ElevatorState.DISABLED);
         break;
       case IDLE:
         // arm.queueState(ArmState.IDLE);
-        elevator.queueState(ElevatorState.MANUAL);
         drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
         drive.queueState(PathingMode.DISABLED);
         elevator.queueState(ElevatorState.ZEROING);
-        if (timer.after(0.1) && (elevator.getZeroed())) {
+        if (elevator.getZeroed()) {
           // zero arm after
-          arm.queueState(ArmState.ZEROING);
-          if(arm.getZeroed()) {
-            booted = true;
-            queueState(InternalState.IDLE);
-          }
-
+          // arm.queueState(ArmState.ZEROING);
+          // if (arm.getZeroed()) {
+          //   booted = true;
+          //   queueState(InternalState.IDLE);
+          // }
+          booted = true;
+          queueState(InternalState.IDLE);
         }
         break;
       default:

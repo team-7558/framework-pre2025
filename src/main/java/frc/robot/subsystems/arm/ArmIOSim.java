@@ -4,26 +4,16 @@ import frc.robot.subsystems.StateMachineSubsystemBase;
 
 public class ArmIOSim extends StateMachineSubsystemBase<ArmState> {
 
+  public ArmIOSim(String name) {
+    super(name);
+  }
 
-    
+  @Override
+  public void handleStateMachine() {}
 
-    public ArmIOSim(String name) {
-        super(name);
-    }
+  @Override
+  protected void inputPeriodic() {}
 
-    @Override
-    public void handleStateMachine() {
-
-    }
-
-    @Override
-    protected void inputPeriodic() {
-        
-    }
-
-    @Override
-    public void outputPeriodic() {
-
-    }
-    
+  @Override
+  public void outputPeriodic() {}
 }

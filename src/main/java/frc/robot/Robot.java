@@ -14,8 +14,11 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorState;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -35,6 +38,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private Elevator elevator;
+  private Arm arm;
   private SwerveInput si;
 
   /**
@@ -91,6 +96,8 @@ public class Robot extends LoggedRobot {
 
     // init subsystems
     drive = Drive.getInstance();
+    arm = Arm.getInstance();
+    elevator = Elevator.getInstance();
 
     si = new SwerveInput(SwerveInput.ZERO);
   }
@@ -108,6 +115,12 @@ public class Robot extends LoggedRobot {
       drive.zeroGyro();
     }
 
+    if (OI.DR.getAButton()) {
+      elevator.set(3.5);
+      elevator.queueState(ElevatorState.HOLDING);
+      System.out.println("queuing holding!!!");
+    }
+
     si.xi = OI.deadband(-OI.DR.getLeftY());
     si.yi = OI.deadband(-OI.DR.getLeftX());
     si.wi = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
@@ -116,6 +129,7 @@ public class Robot extends LoggedRobot {
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
+    elevator.periodic();
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();

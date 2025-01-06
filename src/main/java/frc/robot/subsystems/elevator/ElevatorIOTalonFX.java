@@ -13,14 +13,10 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.AnalogAccelerometer;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-
-
 
   private final TalonFX motor;
   private final DigitalInput hallEffect;
@@ -40,14 +36,15 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   private double posOffset_m = 0.0;
 
   public ElevatorIOTalonFX() {
+    System.out.println("ELEVATOR CTOR");
     var motorConfig = new TalonFXConfiguration();
 
     voltageControl = new VoltageOut(0);
-    mmVelControl = new MotionMagicVelocityVoltage(0, 0, true, 0, 2, false, false, false);
-    posControl = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
-    mmPosControl = new MotionMagicVoltage(0, true, 0, 1, false, false, false);
+    mmVelControl = new MotionMagicVelocityVoltage(0, 0, false, 0, 2, false, false, false);
+    posControl = new PositionVoltage(0, 0, false, 0, 0, false, false, false);
+    mmPosControl = new MotionMagicVoltage(0, false, 0, 1, false, false, false);
 
-    motor = new TalonFX(2);
+    motor = new TalonFX(16);
     hallEffect = new DigitalInput(2);
 
     pos_m = motor.getPosition();
@@ -61,7 +58,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
     motorConfig.Feedback.SensorToMechanismRatio = 16.0;
-    motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     motorConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
@@ -70,29 +66,29 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     motorConfig.MotionMagic.MotionMagicExpo_kV = 0.5;
     motorConfig.MotionMagic.MotionMagicExpo_kA = 0.5;
 
-    // // Position control gains
-    // motorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    // motorConfig.Slot0.kG = 0.07;
-    // motorConfig.Slot0.kP = 176;
-    // motorConfig.Slot0.kI = 0;
-    // motorConfig.Slot0.kD = 4; // 16;
+    // Position control gains
+    motorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+    motorConfig.Slot0.kG = 0;
+    motorConfig.Slot0.kP = 0.1;
+    motorConfig.Slot0.kI = 0;
+    motorConfig.Slot0.kD = 0; // 16;
 
     // MotionMagic Position gains
     motorConfig.Slot1.GravityType = GravityTypeValue.Elevator_Static;
-    motorConfig.Slot1.kG = 0.043;
-    motorConfig.Slot1.kV = 0;
+    motorConfig.Slot1.kG = 0.2;
+    motorConfig.Slot1.kV = 1.1;
     motorConfig.Slot1.kS = 0.0;
     motorConfig.Slot1.kA = 0; // 1;
-    motorConfig.Slot1.kP = 0.06;
-    motorConfig.Slot1.kI = 0;
+    motorConfig.Slot1.kP = 2;
+    motorConfig.Slot1.kI = 0.01;
     motorConfig.Slot1.kD = 0.0;
 
-    motor.getConfigurator().apply(motorConfig);
+    motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
     motor.getConfigurator().apply(motorConfig);
     // motor.setControl(new Follower(motor.getDeviceID(), false).withUpdateFreqHz(50));
     BaseStatusSignal.setUpdateFrequencyForAll(
         1.0 / 0.015, pos_m, vel_mps, volts_V, leftCurrent_A, rightCurrent_A);
-    motor.optimizeBusUtilization();
     motor.optimizeBusUtilization();
 
     resetPos(0);
@@ -110,15 +106,13 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     inputs.hallEffectHit = !hallEffect.get();
   }
 
-  
   @Override
   public void setVelocity(double vel_mps) {
     double v = MathUtil.clamp(vel_mps, -0.3, 0.3);
     motor.setControl(mmVelControl.withVelocity(v));
   }
 
-
-  /* 
+  /*
   @Override
   public void holdPos(double position) {
     motor.setControl(posControl.withPosition(position - posOffset_m));
@@ -127,13 +121,12 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
   */
 
-
-@Override
+  @Override
   public void travelToPos(double position) {
-    motor.setControl(mmPosControl.withPosition(position - posOffset_m));
+    motor.setControl(mmPosControl.withPosition(position));
   }
 
-@Override
+  @Override
   public void setVoltage(double volts_V) {
     motor.setControl(voltageControl.withOutput(volts_V));
   }
@@ -147,7 +140,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
   @Override
   public void stop() {
     motor.stopMotor();
-    motor.stopMotor();
   }
 
   @Override
@@ -160,7 +152,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     motor.getConfigurator().apply(config);
   }
 
-  @Override 
+  @Override
   public void zero() {
     motor.setPosition(0);
   }
