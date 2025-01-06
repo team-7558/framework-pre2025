@@ -8,29 +8,16 @@ public interface CoralIO {
         public double intakeVelocityMPS = 0.0;
         public double intakeAppliedVolts = 0.0;
         public double[] intakecurrentAmps = new double[] {};
-
-
-        public double slapDownVelocityMPS = 0.0;
-        public double slapDownAppliedVolts = 0.0;
-        public double[] slapDowncurrentAmps = new double[] {}; 
-
-
         public boolean beamBreakActivated = false;
     }
 
     public default void updateInputs(CoralIOInputs inputs) {}
 
-    public default void setWheelVelocity(double velocity) {}
+    public default void setVelocity(double velocity) {}
 
-    public default void setWheelVolts(double volts) {}
+    public default void setVolts(double volts) {}
 
-    public default void stopWheel() {}
-
-    public default void setSlapVelocity(double velocity) {}
-
-    public default void setSlapVolts(double volts) {}
-
-    public default void stopSlap() {}
+    public default void stop() {}
 
     public default void toggleBrake() {}
 }
