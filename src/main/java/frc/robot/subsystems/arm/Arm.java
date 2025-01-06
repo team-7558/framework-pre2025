@@ -47,22 +47,20 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
         break;
 
       case HOLDING:
-        io.setArmPosition(armPosition);
+        // io.setArmPosition(armPosition);
         break;
       case IDLE:
-        io.setArmPosition(armMinimum);
+        System.out.println("in idle setting arm pos");
+        io.setArmPosition(45);
+        // io.setArmPosition(armMinimum);
         break;
       case PICKUP:
-        io.setArmPosition(armMinimum);
+        // io.setArmPosition(armMinimum);
       case ZEROING:
-        if (!inputs.arm_halleffect) {
-          io.setArmVoltage(-0.4);
-        } else {
-          io.zero();
-          io.setArmVoltage(0);
-          queueState(ArmState.IDLE);
-          zeroed = true;
-        }
+        io.zero();
+        io.setArmVoltage(0);
+        queueState(ArmState.IDLE);
+        // System.out.println("zeroed? and queuing");
         break;
       case MANUAL:
         // io.setArmVoltage(OI.DR.getXButton() ? 1.5 : 0);

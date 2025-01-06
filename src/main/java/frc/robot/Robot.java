@@ -129,6 +129,7 @@ public class Robot extends LoggedRobot {
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
+    // arm.periodic();
     elevator.periodic();
     PerfTracker.periodic();
 

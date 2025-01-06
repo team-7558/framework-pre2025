@@ -1,5 +1,7 @@
 package frc.robot.superstructure;
 
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
 import frc.robot.subsystems.elevator.Elevator;
@@ -17,7 +19,7 @@ public class SS implements IStateMachine<InternalState> {
   }
 
   private Drive drive;
-  // private Arm arm;
+  private Arm arm;
   private Elevator elevator;
 
   private AltTimer timer;
@@ -36,7 +38,7 @@ public class SS implements IStateMachine<InternalState> {
     booted = false;
 
     drive = Drive.getInstance();
-    // arm = new Arm("arm");
+    arm = Arm.getInstance();
     elevator = Elevator.getInstance();
   }
 
@@ -52,13 +54,15 @@ public class SS implements IStateMachine<InternalState> {
         elevator.queueState(ElevatorState.DISABLED);
         break;
       case IDLE:
-        // arm.queueState(ArmState.IDLE);
+        arm.queueState(ArmState.IDLE);
         drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
         drive.queueState(PathingMode.DISABLED);
         elevator.queueState(ElevatorState.ZEROING);
         if (elevator.getZeroed()) {
+          System.out.println("ss going to armstate zero");
+          arm.queueState(ArmState.ZEROING);
           // zero arm after
           // arm.queueState(ArmState.ZEROING);
           // if (arm.getZeroed()) {
@@ -66,6 +70,7 @@ public class SS implements IStateMachine<InternalState> {
           //   queueState(InternalState.IDLE);
           // }
           booted = true;
+          arm.queueState(ArmState.IDLE);
           queueState(InternalState.IDLE);
         }
         break;

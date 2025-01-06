@@ -19,14 +19,14 @@ public class ArmIOSparkMax {
   // arm motor
   private final CANSparkMax armMotor = new CANSparkMax(11, MotorType.kBrushless);
   private final RelativeEncoder armEncoder = armMotor.getEncoder();
-  private final DigitalInput m_hallEffect = new DigitalInput(5);
+  private final DigitalInput m_hallEffect = new DigitalInput(1);
   private final SparkPIDController armPid = armMotor.getPIDController();
 
   private final CANSparkMax wheelsMotor = new CANSparkMax(12, MotorType.kBrushless);
 
-  private final CANSparkMax wristMotor = new CANSparkMax(13, MotorType.kBrushless);
-  private final RelativeEncoder wristEncoder = wristMotor.getEncoder();
-  private final SparkPIDController wristPid = wristMotor.getPIDController();
+  // private final CANSparkMax wristMotor = new CANSparkMax(13, MotorType.kBrushless);
+  // private final RelativeEncoder wristEncoder = wristMotor.getEncoder();
+  // private final SparkPIDController wristPid = wristMotor.getPIDController();
 
   double armZeroOffset = 0;
 
@@ -42,19 +42,21 @@ public class ArmIOSparkMax {
     armPid.setOutputRange(-0.5, 0.5);
 
     armEncoder.setPosition(0);
-    wristEncoder.setPosition(0);
+    // wristEncoder.setPosition(0);
 
-    armPid.setP(0.15);
+    armPid.setP(0.05);
     armPid.setI(0);
     armPid.setD(0);
 
-    wristPid.setP(0.15);
-    wristPid.setI(0);
-    wristPid.setD(0);
-    wristPid.setOutputRange(-0.5, 0.5);
+    // wristPid.setP(0.15);
+    // wristPid.setI(0);
+    // wristPid.setD(0);
+    // wristPid.setOutputRange(-0.5, 0.5);
   }
 
   public void updateInputs(ArmIOInputs inputs) {
+
+    // System.out.println(m_hallEffect.get());
     inputs.arm_current_A = new double[] {armMotor.getOutputCurrent()};
     inputs.arm_halleffect = m_hallEffect.get();
     inputs.arm_position_r = armEncoder.getPosition();
@@ -65,10 +67,10 @@ public class ArmIOSparkMax {
     inputs.wheels_velocity_rps = wheelsMotor.getEncoder().getVelocity();
     inputs.wheels_volts_V = wheelsMotor.getBusVoltage();
 
-    inputs.wrist_current_A = new double[] {wristMotor.getOutputCurrent()};
-    inputs.wrist_position_r = wristEncoder.getPosition();
-    inputs.wrist_velocity_rps = wristEncoder.getVelocity();
-    inputs.wrist_volts_V = wristMotor.getBusVoltage();
+    // inputs.wrist_current_A = new double[] {wristMotor.getOutputCurrent()};
+    // inputs.wrist_position_r = wristEncoder.getPosition();
+    // inputs.wrist_velocity_rps = wristEncoder.getVelocity();
+    // inputs.wrist_volts_V = wristMotor.getBusVoltage();
   }
 
   public void setArmPosition(double position) {
@@ -78,8 +80,8 @@ public class ArmIOSparkMax {
   }
 
   public void setWristAngle(double angle) {
-    double rotations = angle / 5.8;
-    wristPid.setReference(Util.limit(rotations, 0, 180 / 5.8), ControlType.kPosition);
+    // double rotations = angle / 5.8;
+    // wristPid.setReference(Util.limit(rotations, 0, 180 / 5.8), ControlType.kPosition);
   }
 
   public void setArmVoltage(double volts) {

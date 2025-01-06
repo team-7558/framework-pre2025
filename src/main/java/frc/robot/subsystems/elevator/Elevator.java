@@ -18,7 +18,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
-  private boolean zeroed = false;
+  private boolean zeroed;
 
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
@@ -28,7 +28,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
   private double targetLengthMeters;
 
   public static final double ELEV_MIN_HEIGHT_M = 0;
-  public static final double ELEV_MAX_HEIGHT_M = 3.6;
+  public static final double ELEV_MAX_HEIGHT_M = 3.55;
   public static final double ELEV_MIN_ANGLE_DEG = 0;
   public static final double ELEV_MAX_ANGLE_DEG = 180;
 
@@ -37,6 +37,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
     this.io = new ElevatorIOTalonFX();
     setTargetLength(0);
     queueState(ElevatorState.IDLE);
+    zeroed = false;
   }
 
   @Override
@@ -54,7 +55,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   @Override
   public void handleStateMachine() {
-    System.out.println(getState().name());
+    // System.out.println(getState().name());
     switch (getState()) {
       case DISABLED:
         break;
