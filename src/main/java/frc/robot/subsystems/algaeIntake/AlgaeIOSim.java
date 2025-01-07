@@ -3,28 +3,35 @@ package frc.robot.subsystems.algaeIntake;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class AlgaeIOSim implements AlgaeIO {
-  private DCMotorSim motor = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
+  private SingleJointedArmSim motor = new SingleJointedArmSim(DCMotor.getKrakenX60Foc(1),1,1,0,0,360,false,0);
   private double algaeVolts;
   private double algaeAmps;
   public boolean beamBroken1;
   public boolean beamBroken2;
+  private Algae2d mech;
   private DigitalInput bb1 = new DigitalInput(1);
-  private DigitalInput bb2 = new DigitalInput(2);
 
   public AlgaeIOSim() {
     beamBroken1 = false;
     beamBroken2 = false;
+    mech = Algae2d.getInstance();
   }
 
   @Override
   public void updateInputs(AlgaeIOInputs inputs) {
+    mech.motor.setAngle(inputs.simOnlyRot);
+    if (inputs.beamBroken1) {
+      mech.bb.setColor(new Color8Bit(0, 255, 0));
+    }
     inputs.beamBroken1 = bb1.get();
-    inputs.beamBroken2 = bb2.get();
-    inputs.simOnlyRot = motor.getAngularPositionRotations();
+    inputs.simOnlyRot = motor.getAngleRads();
     beamBroken1 = inputs.beamBroken1;
-    beamBroken2 = inputs.beamBroken2;
+    inputs.algaeVolts = algaeVolts;
+    inputs.algaeSpeed = motor.getVelocityRadPerSec();
   }
 
   /*
@@ -35,16 +42,13 @@ public class AlgaeIOSim implements AlgaeIO {
 
   @Override
   public void setVoltage(double volts) {
+    algaeVolts = volts;
     motor.setInputVoltage(volts);
   }
 
   @Override
-  public void breakBeamManual(boolean trueOrFalse, int bb) {
-    if (bb == 1) {
-      beamBroken1 = trueOrFalse;
-    } else if (bb == 2) {
-      beamBroken2 = trueOrFalse;
-    }
+  public void breakBeamManual(boolean trueOrFalse) {
+    beamBroken1 = trueOrFalse;
   }
 
   @Override

@@ -10,7 +10,6 @@ public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
   public final Algae2d mech;
   public static Algae instance;
   public boolean beamBroken1;
-  public boolean beamBroken2;
   public int index;
 
   public Algae(AlgaeIO io) {
@@ -20,7 +19,6 @@ public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
     queueState(AlgaeStates.DISABLED);
     index = 0;
     beamBroken1 = inputs.beamBroken1;
-    beamBroken2 = inputs.beamBroken2;
   }
 
   public static Algae getInstance() {
@@ -48,23 +46,15 @@ public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
         break;
       case IDLE:
         io.stop();
-        if (index > 1) {
-          queueState(AlgaeStates.SPITTING);
-        }
         break;
       case INTAKING:
-        io.setVoltage(0.3);
+        io.setVoltage(5);
         if (beamBroken1) {
-          index += 1;
           queueState(AlgaeStates.IDLE);
         }
         break;
       case SPITTING:
-        io.setVoltage(-0.2);
-        if (beamBroken2) {
-          index = 0;
-          queueState(AlgaeStates.IDLE);
-        }
+        io.setVoltage(-3);
         break;
       default:
         break;

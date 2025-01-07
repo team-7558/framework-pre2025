@@ -3,17 +3,18 @@ package frc.robot.subsystems.algaeIntake;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
+import org.littletonrobotics.junction.Logger;
 
 public class Algae2d {
   private AlgaeIOInputsAutoLogged inputs;
   private Mechanism2d mech;
   private MechanismRoot2d root;
   private MechanismLigament2d frame;
-  private MechanismLigament2d bb;
-  private MechanismLigament2d motor;
-  private AlgaeIOInputsAutoLogged input;
+  public MechanismLigament2d bb;
+  public MechanismLigament2d motor;
   public static Algae2d instance;
 
   public Algae2d() {
@@ -41,10 +42,8 @@ public class Algae2d {
     return instance;
   }
 
-  public void update() {
-    motor.setAngle(inputs.simOnlyRot);
-    if (inputs.beamBroken1) {
-      bb.setColor(new Color8Bit(0, 255, 0));
-    }
+  public void periodic() {
+    SmartDashboard.putData("ALgae2d", mech);
+    Logger.recordOutput("ALgae2d", mech);
   }
 }

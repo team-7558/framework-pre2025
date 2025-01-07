@@ -14,6 +14,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.algaeIntake.Algae;
+import frc.robot.subsystems.algaeIntake.Algae2d;
+import frc.robot.subsystems.algaeIntake.AlgaeStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.superstructure.InternalState;
@@ -35,6 +38,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private Algae algae;
+  private Algae2d mech;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -90,6 +95,8 @@ public class Robot extends LoggedRobot {
 
     // init subsystems
     drive = Drive.getInstance();
+    algae = Algae.getInstance();
+    mech = Algae2d.getInstance();
   }
 
   /** This function is called periodically during all modes. */
@@ -105,11 +112,25 @@ public class Robot extends LoggedRobot {
     double y_ = OI.deadband(-OI.DR.getLeftX());
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
+    boolean xb = OI.DR.getXButton();
+    boolean yb = OI.DR.getYButton();
+    boolean ab = OI.DR.getAButton();
+    if (xb) {
+      algae.queueState(AlgaeStates.INTAKING);
+    } else if (yb) {
+      algae.queueState(AlgaeStates.SPITTING);
+    } else if (ab) {
+      algae.io.breakBeamManual(false);
+    } else {
+      algae.queueState(AlgaeStates.IDLE);
+    }
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
     drive.setInput(input);
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
+    algae.periodic();
+    mech.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
 
