@@ -4,31 +4,37 @@ import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.util.Units;
+
 public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
-  public final AlgaeIO io;
-  public final AlgaeIOInputsAutoLogged inputs = new AlgaeIOInputsAutoLogged();
-  public final Algae2d mech;
-  public static Algae instance;
-  public boolean beamBroken1;
-  public int index;
+  private static Algae instance;
+
+  private final AlgaeIO io;
+  private final AlgaeIOInputsAutoLogged inputs = new AlgaeIOInputsAutoLogged();
+  double kV = 0.5; // Volts per rad/s (example value)
+  double kS = 1.0; // Static friction voltage (example value)
+  boolean running = false;
 
   public Algae(AlgaeIO io) {
-    super("Algae Intake");
+    super("Algae");
     this.io = io;
-    mech = Algae2d.getInstance();
-    queueState(AlgaeStates.DISABLED);
-    index = 0;
-    beamBroken1 = inputs.beamBroken1;
+    queueState(AlgaeStates.IDLE);
+  }
+
+  @Override
+  public void inputPeriodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("coral", inputs);
   }
 
   public static Algae getInstance() {
     if (instance == null) {
       switch (Constants.currentMode) {
-        case REAL:
         case SIM:
           instance = new Algae(new AlgaeIOSim());
           break;
-        case REPLAY:
+        case REAL:
+          instance = new Algae(new AlgaeIOTalonFX());
           break;
         default:
           break;
@@ -37,24 +43,22 @@ public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
     return instance;
   }
 
+  @Override
   public void handleStateMachine() {
     switch (getState()) {
       case DISABLED:
-        if (stateInit()) {
-          io.stop(); // First time init stuff per entry of state
-        }
         break;
       case IDLE:
-        io.stop();
+        running = false;
+        setVelocity(0);
         break;
       case INTAKING:
-        io.setVoltage(5);
-        if (beamBroken1) {
-          queueState(AlgaeStates.IDLE);
-        }
+        running = true;
+        setVelocity(0.5);
         break;
       case SPITTING:
-        io.setVoltage(-3);
+        running = true;
+        setVelocity(-0.5);
         break;
       default:
         break;
@@ -62,8 +66,15 @@ public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
   }
 
   @Override
-  public void outputPeriodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Algae", inputs);
+  protected void outputPeriodic() {
+    Logger.recordOutput("coral/running", running);
+  }
+
+  public void setVelocity(double velocity_DPS) {
+    setVoltage(kV * Units.degreesToRadians(velocity_DPS) + kS);
+  }
+
+  public void setVoltage(double volts) {
+    io.setVoltage(volts);
   }
 }
