@@ -56,13 +56,15 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
       case IDLE:
         armPosition = armMinimum;
         io.setArmPosition(armPosition, maxDutyCycle);
-        io.runWheels(1);
+        // io.runWheels(-1);
         break;
-      case HOLDING:
-        System.out.println("setting to " + armPosition);
+      case HOLDING_PIECE:
+        // io.runWheels(-1);
         io.setArmPosition(armPosition, maxDutyCycle);
-        io.runWheels(0);
         break;
+      case SPITTING:
+        // io.runWheels(1);
+        io.setArmPosition(armPosition, maxDutyCycle);
       case ZEROING:
         io.zero();
         io.setArmVoltage(0);

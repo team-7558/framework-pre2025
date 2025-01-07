@@ -55,7 +55,7 @@ public class SS implements IStateMachine<InternalState> {
         break;
       case IDLE:
         arm.setArmTarget(15);
-        arm.queueState(ArmState.HOLDING);
+        arm.queueState(ArmState.HOLDING_PIECE);
         drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
@@ -72,9 +72,9 @@ public class SS implements IStateMachine<InternalState> {
         break;
       case SCORING_UP:
         elevator.set(Elevator.ELEV_SCORING_TOP);
-        arm.queueState(ArmState.HOLDING);
+        arm.queueState(ArmState.HOLDING_PIECE);
         elevator.queueState(ElevatorState.HOLDING);
-        if (elevator.getHeight() >= Elevator.ELEV_SCORING_TOP - 0.1) {
+        if (elevator.getHeight() >= Elevator.ELEV_SCORING_TOP - 1) {
           // System.out.println("at target!!!!!!!!!!!");
           arm.setArmTarget(30);
         } else {
@@ -83,14 +83,16 @@ public class SS implements IStateMachine<InternalState> {
         break;
       case SCORING_DOWN:
         if (elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN) {
-          arm.setArmTarget(20, 0.4);
+          arm.setArmTarget(20, 0.5);
+          arm.queueState(ArmState.HOLDING_PIECE);
         } else if (elevator.getHeight() <= Elevator.ELEV_SCORING_DOWN
-            && elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN - 0.6) {
-          arm.setArmTarget(30, 0.4);
+            && elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN - 0.4) {
+          arm.queueState(ArmState.SPITTING);
+          arm.setArmTarget(30, 0.5);
         } else if (elevator.getHeight() < Elevator.ELEV_SCORING_DOWN - 0.7) {
-          arm.setArmTarget(15, 0.2);
+          arm.setArmTarget(15, 0.3);
+          arm.queueState(ArmState.HOLDING_PIECE);
         }
-        arm.queueState(ArmState.HOLDING);
         elevator.set(0.2);
         elevator.queueState(ElevatorState.HOLDING);
         break;

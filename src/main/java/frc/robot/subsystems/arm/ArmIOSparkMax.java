@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
+import frc.robot.util.Util;
 
 public class ArmIOSparkMax {
 
@@ -83,6 +84,7 @@ public class ArmIOSparkMax {
   }
 
   public void setArmPosition(double position, double maxDutyCycle) {
+    position = Util.limit(position,30);
     double currentPosition = armEncoder.getPosition();
 
     double output = armPid.calculate(currentPosition, position);

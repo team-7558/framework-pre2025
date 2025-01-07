@@ -5,7 +5,8 @@ import frc.robot.util.IState;
 public enum ArmState implements IState {
   IDLE,
   DISABLED,
-  HOLDING,
+  HOLDING_PIECE,
+  SPITTING,
   ZEROING,
   MANUAL,
 }

@@ -127,8 +127,8 @@ public class Robot extends LoggedRobot {
       arm.queueState(ArmState.IDLE);
     }
 
-    si.xi = OI.deadband(-OI.DR.getLeftY());
-    si.yi = OI.deadband(-OI.DR.getLeftX());
+    si.xi = OI.deadband(OI.DR.getLeftY());
+    si.yi = OI.deadband(OI.DR.getLeftX());
     si.wi = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     si.throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
     drive.setInput(si);
