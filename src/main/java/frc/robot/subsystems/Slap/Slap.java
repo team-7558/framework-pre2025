@@ -4,6 +4,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.util.AltTimer;
 import org.littletonrobotics.junction.Logger;
@@ -16,17 +17,9 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
   private final Slap2d mech = new Slap2d("ArmActual", new Color8Bit(100, 0, 0));
   private final SlapIOInputsAutoLogged inputs = new SlapIOInputsAutoLogged();
   private final AltTimer timer = new AltTimer();
+  public boolean first_time = true;
 
   private double targetAngleDegrees;
-
-  private TrapezoidProfile.State armSetpoint;
-  private TrapezoidProfile.State armStartPoint;
-  private TrapezoidProfile.State armGoal;
-
-  private final TrapezoidProfile.Constraints armConstraints =
-      new TrapezoidProfile.Constraints(90, 45);
-
-  private final TrapezoidProfile armProfile = new TrapezoidProfile(armConstraints);
 
   private Slap(SlapIO io) {
     super("Slap");
@@ -63,18 +56,19 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
       case IDLE:
         break;
       case TRAVELLING:
-        if (Math.abs(inputs.pos_deg - targetAngleDegrees) < 0.5) {
-          queueState(SlapStates.HOLDING);
-        } else {
-          if (stateInit()) {
-            System.out.println("Travelling once");
-            timer.reset();
-
-            armGoal = new TrapezoidProfile.State(targetAngleDegrees, 0);
-            armStartPoint = new TrapezoidProfile.State(inputs.pos_deg, inputs.velDegPS);
-          }
-          armSetpoint = armProfile.calculate(timer.time(), armStartPoint, armGoal);
+        if (Constants.currentMode == Mode.SIM) {
+          if (Math.abs(inputs.pos_deg - targetAngleDegrees) < 0.5) {
+              queueState(SlapStates.HOLDING);
+            } else {
+              if (stateInit()) {
+                first_time = true;
+              } else {
+                first_time = false;
+              }
+              io.goToAngle(targetAngleDegrees, inputs, first_time);
+            }
         }
+ 
         break;
       case HOLDING:
         io.setVoltage(0);
@@ -87,17 +81,12 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
   @Override
   public void outputPeriodic() {
     System.out.println("Before");
-    if (armSetpoint != null) {
-      System.out.println("in");
-      io.goToAngle(armSetpoint.position);
-      System.out.println("out");
-    }
-    mech.setAngle(inputs.pos_deg);
 
+    mech.setAngle(inputs.pos_deg);
     mech.periodic();
 
+
     Logger.recordOutput("Slap/TargetAngleDegrees", targetAngleDegrees);
-    Logger.recordOutput("Slap/ArmSetpoint", armSetpoint.position);
   }
 
   public void PlaceEndEffector(double x, double y) {

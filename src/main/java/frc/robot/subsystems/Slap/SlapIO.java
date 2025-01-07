@@ -6,18 +6,23 @@ public interface SlapIO {
   @AutoLog
   public static class SlapIOInputs {
     public double pos_deg = 0.0;
-    public double velDegPS = 0.0;
-    public double volts = 0.0;
-    public double[] currents = new double[] {};
+    public double left_velDegPS = 0.0;
+    public double left_volts = 0.0;
+    public double[] left_currents = new double[] {};
+
+    public double right_velDegPS = 0.0;
+    public double right_volts = 0.0;
+    public double[] right_currents = new double[] {};
   }
 
   public default void updateInputs(SlapIOInputs inputs) {}
 
   public default void setVoltage(double volts) {}
 
-  public default void goToAngle(double pos_deg) {}
+  public default void goToAngle(double pos_deg, SlapIOInputs inputs, boolean first_time) {}
 
   public default void stop() {}
 
   public default void toggleBrake() {}
+
 }
