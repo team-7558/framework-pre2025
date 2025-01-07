@@ -14,6 +14,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.coral.Coral;
+import frc.robot.subsystems.coral.CoralStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.superstructure.InternalState;
@@ -35,7 +37,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
-
+  private Coral coral = Coral.getInstance();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -114,6 +116,14 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();
+
+    if (OI.DR.getAButton()) {
+      coral.queueState(CoralStates.INTAKING);
+    } else {
+      coral.queueState(CoralStates.IDLE);
+    }
+
+    coral.periodic();
 
     // ^ will be gone later just keeping now to not break shit
   }
