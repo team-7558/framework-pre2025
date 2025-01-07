@@ -7,5 +7,5 @@ public enum ElevatorState implements IState {
   IDLE,
   ZEROING,
   HOLDING,
-  MANUAL
+  MANUAL,
 }

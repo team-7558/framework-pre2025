@@ -1,16 +1,14 @@
 package frc.robot.subsystems.arm;
 
-import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
-import frc.robot.util.Util;
 
 public class ArmIOSparkMax {
 
@@ -20,7 +18,7 @@ public class ArmIOSparkMax {
   private final CANSparkMax armMotor = new CANSparkMax(11, MotorType.kBrushless);
   private final RelativeEncoder armEncoder = armMotor.getEncoder();
   private final DigitalInput m_hallEffect = new DigitalInput(1);
-  private final SparkPIDController armPid = armMotor.getPIDController();
+  private final PIDController armPid = new PIDController(0.1, 0, 0);
 
   private final CANSparkMax wheelsMotor = new CANSparkMax(12, MotorType.kBrushless);
 
@@ -39,14 +37,14 @@ public class ArmIOSparkMax {
     armMotor.setIdleMode(IdleMode.kBrake);
 
     armMotor.setInverted(true);
-    armPid.setOutputRange(-0.5, 0.5);
 
     armEncoder.setPosition(0);
     // wristEncoder.setPosition(0);
 
-    armPid.setP(0.05);
+    armPid.setP(0.15);
     armPid.setI(0);
     armPid.setD(0);
+    armPid.setTolerance(0.2);
 
     // wristPid.setP(0.15);
     // wristPid.setI(0);
@@ -74,9 +72,25 @@ public class ArmIOSparkMax {
   }
 
   public void setArmPosition(double position) {
+    double currentPosition = armEncoder.getPosition();
 
-    double rotations = position / 4;
-    armPid.setReference(Util.limit(rotations, 35, max), ControlType.kPosition);
+    double output = armPid.calculate(currentPosition, position);
+    output = Math.max(-0.4, Math.min(0.4, output));
+
+    double rotations = position / 2;
+    System.out.println("output to motor: " + output);
+    armMotor.set(output);
+  }
+
+  public void setArmPosition(double position, double maxDutyCycle) {
+    double currentPosition = armEncoder.getPosition();
+
+    double output = armPid.calculate(currentPosition, position);
+    output = Math.max(-maxDutyCycle, Math.min(maxDutyCycle, output));
+
+    double rotations = position / 2;
+    System.out.println("output to motor: " + output);
+    armMotor.set(output);
   }
 
   public void setWristAngle(double angle) {
@@ -86,6 +100,10 @@ public class ArmIOSparkMax {
 
   public void setArmVoltage(double volts) {
     armMotor.setVoltage(volts);
+  }
+
+  public void runWheels(double volts) {
+    wheelsMotor.set(volts);
   }
 
   public void zero() {

@@ -6,4 +6,7 @@ public enum InternalState implements IState {
   DISABLED,
   IDLE,
   BOOT,
+  SCORING_UP,
+  SCORING_DOWN,
+  INTAKING
 }

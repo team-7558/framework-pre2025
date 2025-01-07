@@ -32,6 +32,9 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
   public static final double ELEV_MIN_ANGLE_DEG = 0;
   public static final double ELEV_MAX_ANGLE_DEG = 180;
 
+  public static final double ELEV_SCORING_TOP = 3.3;
+  public static final double ELEV_SCORING_DOWN = 3;
+
   public Elevator() {
     super("Elevator");
     this.io = new ElevatorIOTalonFX();
@@ -61,7 +64,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
         break;
       case ZEROING:
         if (!inputs.hallEffectHit) {
-          io.setVoltage(-0.4);
+          io.setVoltage(-0.8);
         } else {
           io.zero();
           io.setVoltage(0);
@@ -101,5 +104,9 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   public boolean getZeroed() {
     return zeroed;
+  }
+
+  public double getHeight() {
+    return inputs.position_m;
   }
 }

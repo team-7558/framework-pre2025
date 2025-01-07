@@ -15,6 +15,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.subsystems.elevator.Elevator;
@@ -116,9 +117,14 @@ public class Robot extends LoggedRobot {
     }
 
     if (OI.DR.getAButton()) {
-      elevator.set(3.5);
-      elevator.queueState(ElevatorState.HOLDING);
-      System.out.println("queuing holding!!!");
+      SS.getInstance().queueState(InternalState.SCORING_UP);
+    }
+    if (OI.DR.getBButton()) {
+      SS.getInstance().queueState(InternalState.SCORING_DOWN);
+    } else if (OI.DR.getYButton()) {
+      elevator.queueState(ElevatorState.ZEROING);
+      arm.setArmTarget(15);
+      arm.queueState(ArmState.IDLE);
     }
 
     si.xi = OI.deadband(-OI.DR.getLeftY());
@@ -129,7 +135,7 @@ public class Robot extends LoggedRobot {
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
-    // arm.periodic();
+    arm.periodic();
     elevator.periodic();
     PerfTracker.periodic();
 

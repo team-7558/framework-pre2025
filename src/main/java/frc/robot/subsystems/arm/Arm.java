@@ -4,7 +4,6 @@ import frc.robot.subsystems.StateMachineSubsystemBase;
 
 public class Arm extends StateMachineSubsystemBase<ArmState> {
 
-  private ArmState state;
   private ArmIOSparkMax io;
   private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
 
@@ -14,9 +13,11 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
   private double wristPosition = 0;
   private double wheelsVelocity = 0;
 
-  private double armMinimum = 40;
-  private double armMax = 150;
+  private double armMinimum = 15;
+  private double armScoring = 30;
   private double armZeroing = 0;
+
+  private double maxDutyCycle = 0.5;
 
   private boolean zeroed = false;
 
@@ -24,7 +25,7 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
     super(name);
 
     io = new ArmIOSparkMax();
-    state = ArmState.ZEROING;
+    queueState(ArmState.IDLE);
   }
 
   @Override
@@ -39,28 +40,34 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
     return instance;
   }
 
+  public void zero() {
+    io.zero();
+  }
+
   @Override
   public void handleStateMachine() {
 
-    switch (state) {
+    // System.out.println(state.name());
+
+    switch (getState()) {
       case DISABLED:
         break;
 
-      case HOLDING:
-        // io.setArmPosition(armPosition);
-        break;
       case IDLE:
-        System.out.println("in idle setting arm pos");
-        io.setArmPosition(45);
-        // io.setArmPosition(armMinimum);
+        armPosition = armMinimum;
+        io.setArmPosition(armPosition, maxDutyCycle);
+        io.runWheels(1);
         break;
-      case PICKUP:
-        // io.setArmPosition(armMinimum);
+      case HOLDING:
+        System.out.println("setting to " + armPosition);
+        io.setArmPosition(armPosition, maxDutyCycle);
+        io.runWheels(0);
+        break;
       case ZEROING:
         io.zero();
         io.setArmVoltage(0);
         queueState(ArmState.IDLE);
-        // System.out.println("zeroed? and queuing");
+
         break;
       case MANUAL:
         // io.setArmVoltage(OI.DR.getXButton() ? 1.5 : 0);
@@ -69,6 +76,16 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
       default:
         break;
     }
+  }
+
+  public void setArmTarget(double a) {
+    this.armPosition = a;
+    this.maxDutyCycle = 0.5;
+  }
+
+  public void setArmTarget(double a, double maxDutyCycle) {
+    this.armPosition = a;
+    this.maxDutyCycle = maxDutyCycle;
   }
 
   @Override

@@ -60,10 +60,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     motorConfig.Feedback.SensorToMechanismRatio = 16.0;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    motorConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
-    motorConfig.MotionMagic.MotionMagicAcceleration = 1.0;
+    motorConfig.MotionMagic.MotionMagicCruiseVelocity = 2.5;
+    motorConfig.MotionMagic.MotionMagicAcceleration = 2.5;
     motorConfig.MotionMagic.MotionMagicJerk = 0;
-    motorConfig.MotionMagic.MotionMagicExpo_kV = 0.5;
+    motorConfig.MotionMagic.MotionMagicExpo_kV = 0.9;
     motorConfig.MotionMagic.MotionMagicExpo_kA = 0.5;
 
     // Position control gains
@@ -76,11 +76,11 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     // MotionMagic Position gains
     motorConfig.Slot1.GravityType = GravityTypeValue.Elevator_Static;
     motorConfig.Slot1.kG = 0.2;
-    motorConfig.Slot1.kV = 1.1;
+    motorConfig.Slot1.kV = 1.6;
     motorConfig.Slot1.kS = 0.0;
     motorConfig.Slot1.kA = 0; // 1;
-    motorConfig.Slot1.kP = 2;
-    motorConfig.Slot1.kI = 0.01;
+    motorConfig.Slot1.kP = 8;
+    motorConfig.Slot1.kI = 0.0;
     motorConfig.Slot1.kD = 0.0;
 
     motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;

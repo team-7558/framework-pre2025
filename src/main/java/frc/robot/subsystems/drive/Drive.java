@@ -299,7 +299,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
       y_ = y_ / inputMagnitude;
     }
 
-    inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x_, y_, w_, getPose().getRotation());
+    inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x_, y_, w_, getRotation());
 
     switch (getState()) {
       case DISABLED:
@@ -473,7 +473,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
 
   /** Returns the current odometry rotation. */
   public Rotation2d getRotation() {
-    return getPose().getRotation();
+    return gyroInputs.yaw_Rot2d;
   }
 
   public double getAngularVelocity() {

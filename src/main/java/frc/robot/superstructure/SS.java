@@ -54,25 +54,45 @@ public class SS implements IStateMachine<InternalState> {
         elevator.queueState(ElevatorState.DISABLED);
         break;
       case IDLE:
-        arm.queueState(ArmState.IDLE);
+        arm.setArmTarget(15);
+        arm.queueState(ArmState.HOLDING);
         drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
         drive.queueState(PathingMode.DISABLED);
         elevator.queueState(ElevatorState.ZEROING);
+        arm.queueState(ArmState.ZEROING);
         if (elevator.getZeroed()) {
-          System.out.println("ss going to armstate zero");
           arm.queueState(ArmState.ZEROING);
-          // zero arm after
-          // arm.queueState(ArmState.ZEROING);
-          // if (arm.getZeroed()) {
-          //   booted = true;
-          //   queueState(InternalState.IDLE);
-          // }
-          booted = true;
+          arm.setArmTarget(15);
           arm.queueState(ArmState.IDLE);
+          booted = true;
           queueState(InternalState.IDLE);
         }
+        break;
+      case SCORING_UP:
+        elevator.set(Elevator.ELEV_SCORING_TOP);
+        arm.queueState(ArmState.HOLDING);
+        elevator.queueState(ElevatorState.HOLDING);
+        if (elevator.getHeight() >= Elevator.ELEV_SCORING_TOP - 0.1) {
+          // System.out.println("at target!!!!!!!!!!!");
+          arm.setArmTarget(30);
+        } else {
+          arm.setArmTarget(15);
+        }
+        break;
+      case SCORING_DOWN:
+        if (elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN) {
+          arm.setArmTarget(20, 0.4);
+        } else if (elevator.getHeight() <= Elevator.ELEV_SCORING_DOWN
+            && elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN - 0.6) {
+          arm.setArmTarget(30, 0.4);
+        } else if (elevator.getHeight() < Elevator.ELEV_SCORING_DOWN - 0.7) {
+          arm.setArmTarget(15, 0.2);
+        }
+        arm.queueState(ArmState.HOLDING);
+        elevator.set(0.2);
+        elevator.queueState(ElevatorState.HOLDING);
         break;
       default:
         break;
