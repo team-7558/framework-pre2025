@@ -21,12 +21,10 @@ public class ClawIOSim implements ClawIO {
 
   private final AltTimer timer = new AltTimer();
 
-    private final PIDController armPositionPID = new PIDController(70, 1, 4);
+  private final PIDController armPositionPID = new PIDController(15, 1, 4);
 
-
-
-    DCMotorSim clawSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
-    DCMotorSim armSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
+  DCMotorSim clawSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
+  DCMotorSim armSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
   private double arm_applied_volts = 0.0;
   private double claw_applied_volts = 0.0;
 
@@ -57,7 +55,7 @@ public class ClawIOSim implements ClawIO {
     clawSim.setInputVoltage(volts);
   }
 
-    @Override
+  @Override
   public void setArmVoltage(double volts) {
     arm_applied_volts = volts;
     armSim.setInputVoltage(volts);
@@ -79,7 +77,7 @@ public class ClawIOSim implements ClawIO {
     double calculatedVoltage = armPositionPID.calculate(armSim.getAngularPositionRad());
     setArmVoltage(calculatedVoltage);
 
-    Logger.recordOutput("Claw/ArmSetpoint", armSetpoint.position);
+    Logger.recordOutput("claw/ArmSetpoint", armSetpoint.position);
   }
 
   @Override
@@ -91,6 +89,3 @@ public class ClawIOSim implements ClawIO {
     setClawVoltage(0.0);
   }
 }
-
-
-

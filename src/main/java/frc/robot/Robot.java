@@ -14,6 +14,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.claw.ClawStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.superstructure.InternalState;
@@ -35,6 +37,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private Claw claw = Claw.getInstance();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -114,6 +117,17 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();
+
+    if (OI.DR.getAButton()) {
+      //claw.queueState(ClawStates.OPEN);
+      claw.queueState(ClawStates.TRAVELLING);
+      claw.setAngle(90);
+    } else {
+      claw.queueState(ClawStates.IDLE);
+      //claw.queueState(ClawStates.IDLE);
+    }
+
+    claw.periodic();
 
     // ^ will be gone later just keeping now to not break shit
   }

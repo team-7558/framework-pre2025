@@ -29,7 +29,6 @@ public class Claw2d {
     claw_left = root.append(new MechanismLigament2d("claw_left", 0.5, 90, 10, color));
     claw_right = root.append(new MechanismLigament2d("claw_right", 0.5, 90, 10, color));
 
-
     MechanismLigament2d bottom =
         root.append(new MechanismLigament2d("bottom", 0.001, 0, 20, new Color8Bit(125, 0, 125)));
   }
@@ -47,9 +46,8 @@ public class Claw2d {
       claw_left.setAngle(90);
       claw_right.setAngle(90);
     }
-    
   }
-  
+
   /** Periodically updates the SmartDashboard and logs the mechanism state. */
   public void periodic() {
     SmartDashboard.putData(finalName, mech);

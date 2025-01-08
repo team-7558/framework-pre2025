@@ -2,7 +2,6 @@ package frc.robot.subsystems.claw;
 
 import org.littletonrobotics.junction.AutoLog;
 
-
 public interface ClawIO {
   @AutoLog
   public static class ClawIOInputs {
@@ -21,10 +20,12 @@ public interface ClawIO {
   public default void updateInputs(ClawIOInputs inputs) {}
 
   public default void setArmVoltage(double volts) {}
+
   public default void setClawVoltage(double volts) {}
 
   public default void goToAngle(double degrees, ClawIOInputs inputs, boolean first_time) {}
 
   public default void stop_arm() {}
+
   public default void stop_claw() {}
- }
+}
