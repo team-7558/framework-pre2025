@@ -11,9 +11,11 @@ public interface ClawIO {
 
     public double arm_absolute_pos_deg = 0.0;
     public double arm_pos_deg = 0.0;
-    public double arm_velocity_DegPS = 0.0;
+    public double arm_velocity_degps = 0.0;
     public double arm_volts_V = 0.0;
     public double[] arm_currents_A = new double[] {};
+
+    public boolean beambreakhit = false;
   }
 
   public default void updateInputs(ClawIOInputs inputs) {}

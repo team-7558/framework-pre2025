@@ -15,6 +15,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ClawIOTalonFX implements ClawIO {
   private final TalonFX arm_motor;
@@ -37,6 +38,8 @@ public class ClawIOTalonFX implements ClawIO {
   private final PositionVoltage posControl;
   private final MotionMagicVoltage mmPosControl;
 
+  private final DigitalInput beambreak;
+
   private final double maxPositionDegrees = 90;
   private final double minPositionDegrees = 0; // Set your desired minimum position here
 
@@ -46,6 +49,8 @@ public class ClawIOTalonFX implements ClawIO {
 
     armVoltageControl = new VoltageOut(0);
     armPosControl = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
+    beambreak = new DigitalInput(14);
+
 
     claw_voltage_out = new VoltageOut(0.0);
 
@@ -126,13 +131,15 @@ public class ClawIOTalonFX implements ClawIO {
     inputs.arm_currents_A = new double[] {arm_motor.getStatorCurrent().getValueAsDouble()};
     inputs.arm_pos_deg = Units.radiansToDegrees(arm_motor.getPosition().getValueAsDouble());
     inputs.arm_volts_V = arm_motor.getMotorVoltage().getValueAsDouble();
-    inputs.arm_velocity_DegPS = arm_motor.getVelocity().getValueAsDouble();
+    inputs.arm_velocity_degps = arm_motor.getVelocity().getValueAsDouble();
 
     inputs.arm_absolute_pos_deg = armAbsolutePosition.getValueAsDouble();
 
     inputs.claw_currents_A = new double[] {arm_motor.getStatorCurrent().getValueAsDouble()};
     inputs.claw_volts_V = arm_motor.getMotorVoltage().getValueAsDouble();
     inputs.claw_velocity_degps = arm_motor.getVelocity().getValueAsDouble();
+
+    inputs.beambreakhit = beambreak.get();
   }
 
   public void goToAngle(double position_deg, boolean first_time) {

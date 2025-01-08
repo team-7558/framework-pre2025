@@ -129,9 +129,9 @@ public class Robot extends LoggedRobot {
     }
     */
     if (OI.DR.getBButton()) {
-      claw.queueState(ClawStates.OPEN);
+      claw.queueState(ClawStates.GETGAMEPIECE);
     } else {
-      claw.queueState(ClawStates.CLOSE);
+      claw.queueState(ClawStates.SPITGAMEPIECE);
 
       // claw.queueState(ClawStates.IDLE);
     }

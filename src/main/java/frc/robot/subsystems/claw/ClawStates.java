@@ -7,7 +7,7 @@ public enum ClawStates implements IState {
   IDLE,
   TRAVELLING,
   HOLDING,
-  OPEN,
-  CLOSE,
+  GETGAMEPIECE,
+  SPITGAMEPIECE,
   ZEROING
 }

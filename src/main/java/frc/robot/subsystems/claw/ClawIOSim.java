@@ -53,7 +53,7 @@ public class ClawIOSim implements ClawIO {
 
     armSim.update(0.02); // 20 ms update
     inputs.arm_pos_deg = Units.radiansToDegrees(armSim.getAngleRads());
-    inputs.arm_velocity_DegPS = Units.radiansToDegrees(armSim.getVelocityRadPerSec());
+    inputs.arm_velocity_degps = Units.radiansToDegrees(armSim.getVelocityRadPerSec());
     inputs.arm_volts_V = arm_applied_volts;
     inputs.arm_currents_A =
         new double[] {
@@ -79,7 +79,7 @@ public class ClawIOSim implements ClawIO {
       System.out.println("Travelling once");
       timer.reset();
       armGoal = new TrapezoidProfile.State(degrees, 0);
-      armStartPoint = new TrapezoidProfile.State(inputs.arm_pos_deg, inputs.arm_velocity_DegPS);
+      armStartPoint = new TrapezoidProfile.State(inputs.arm_pos_deg, inputs.arm_velocity_degps);
     }
 
     armSetpoint = armProfile.calculate(timer.time(), armStartPoint, armGoal);

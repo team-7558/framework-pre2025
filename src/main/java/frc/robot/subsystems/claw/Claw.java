@@ -71,10 +71,13 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
       case HOLDING:
         io.setArmVoltage(0);
         break;
-      case OPEN:
+      case GETGAMEPIECE:
+        if (inputs.beambreakhit) {
+            queueState(ClawStates.IDLE);
+        }
         setClawVelocity(10);
         break;
-      case CLOSE:
+      case SPITGAMEPIECE:
         setClawVelocity(-10);
         break;
       case ZEROING:
