@@ -17,8 +17,7 @@ import edu.wpi.first.math.util.Units;
 public class SlapIOTalonFX implements SlapIO {
 
     // Arm motor
-    private final TalonFX leftMotor;
-    private final TalonFX rightMotor;
+    private final TalonFX  motor;
     private final VoltageOut armVoltageControl;
     private final PositionVoltage armPosControl;
 
@@ -39,14 +38,12 @@ public class SlapIOTalonFX implements SlapIO {
 
 
     public SlapIOTalonFX() {
-        var leaderConfig = new TalonFXConfiguration();
-        var followerConfig = new TalonFXConfiguration();
+        var motorConfig = new TalonFXConfiguration();
 
         armVoltageControl = new VoltageOut(0);
         armPosControl = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
 
-        leftMotor = new TalonFX(11);
-        rightMotor = new TalonFX(12);
+        motor = new TalonFX(11);
 
         // Configure arm motor
 
@@ -55,76 +52,72 @@ public class SlapIOTalonFX implements SlapIO {
         posControl = new PositionVoltage(minPositionDegrees, 0, true, 0, 0, false, false, false);
         mmPosControl = new MotionMagicVoltage(minPositionDegrees, true, 0, 1, false, false, false);
 
-        pos_m = rightMotor.getPosition();
-        vel_mps = rightMotor.getVelocity();
-        acc_mps2 = rightMotor.getAcceleration();
-        leftCurrent_A = rightMotor.getStatorCurrent();
-        rightCurrent_A = rightMotor.getStatorCurrent();
-        volts_V = leftMotor.getMotorVoltage();
+        pos_m = motor.getPosition();
+        vel_mps = motor.getVelocity();
+        acc_mps2 = motor.getAcceleration();
+        leftCurrent_A = motor.getStatorCurrent();
+        rightCurrent_A = motor.getStatorCurrent();
+        volts_V = motor.getMotorVoltage();
 
-        leaderConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
-        leaderConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        leaderConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
-        leaderConfig.Feedback.SensorToMechanismRatio = 5;
-        leaderConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        leaderConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        motorConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
+        motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
+        motorConfig.Feedback.SensorToMechanismRatio = 5;
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        leaderConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
-        leaderConfig.MotionMagic.MotionMagicAcceleration = 1.0;
-        leaderConfig.MotionMagic.MotionMagicJerk = 0;
-        leaderConfig.MotionMagic.MotionMagicExpo_kV = 0.5;
-        leaderConfig.MotionMagic.MotionMagicExpo_kA = 0.5;
+        motorConfig.MotionMagic.MotionMagicCruiseVelocity = 1.0;
+        motorConfig.MotionMagic.MotionMagicAcceleration = 1.0;
+        motorConfig.MotionMagic.MotionMagicJerk = 0;
+        motorConfig.MotionMagic.MotionMagicExpo_kV = 0.5;
+        motorConfig.MotionMagic.MotionMagicExpo_kA = 0.5;
 
         // Position control gains
-        leaderConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-        leaderConfig.Slot0.kG = 0.07;
-        leaderConfig.Slot0.kP = 176;
-        leaderConfig.Slot0.kI = 0;
-        leaderConfig.Slot0.kD = 4; // 16;
+        motorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+        motorConfig.Slot0.kG = 0.07;
+        motorConfig.Slot0.kP = 176;
+        motorConfig.Slot0.kI = 0;
+        motorConfig.Slot0.kD = 4; // 16;
 
         // MotionMagic Position gains
-        leaderConfig.Slot1.GravityType = GravityTypeValue.Elevator_Static;
-        leaderConfig.Slot1.kG = 0.07;
-        leaderConfig.Slot1.kV = 38;
-        leaderConfig.Slot1.kS = 0.0;
-        leaderConfig.Slot1.kA = 0; // 1;
-        leaderConfig.Slot1.kP = 23;
-        leaderConfig.Slot1.kI = 0;
-        leaderConfig.Slot1.kD = 0.0;
+        motorConfig.Slot1.GravityType = GravityTypeValue.Elevator_Static;
+        motorConfig.Slot1.kG = 0.07;
+        motorConfig.Slot1.kV = 38;
+        motorConfig.Slot1.kS = 0.0;
+        motorConfig.Slot1.kA = 0; // 1;
+        motorConfig.Slot1.kP = 23;
+        motorConfig.Slot1.kI = 0;
+        motorConfig.Slot1.kD = 0.0;
 
         // MotionMagic Velocity control
-        leaderConfig.Slot2.GravityType = GravityTypeValue.Elevator_Static;
-        leaderConfig.Slot2.kG = 0;
-        leaderConfig.Slot2.kV = 0.0;
-        leaderConfig.Slot2.kS = 0.0;
-        leaderConfig.Slot2.kA = 0.0;
-        leaderConfig.Slot2.kP = 0.0;
-        leaderConfig.Slot2.kI = 0.0;
-        leaderConfig.Slot2.kD = 0.0;
+        motorConfig.Slot2.GravityType = GravityTypeValue.Elevator_Static;
+        motorConfig.Slot2.kG = 0;
+        motorConfig.Slot2.kV = 0.0;
+        motorConfig.Slot2.kS = 0.0;
+        motorConfig.Slot2.kA = 0.0;
+        motorConfig.Slot2.kP = 0.0;
+        motorConfig.Slot2.kI = 0.0;
+        motorConfig.Slot2.kD = 0.0;
 
-        leftMotor.getConfigurator().apply(leaderConfig);
-        rightMotor.getConfigurator().apply(leaderConfig);
+        motor.getConfigurator().apply(motorConfig);
+        motor.getConfigurator().apply(motorConfig);
     }
 
     public void updateInputs(SlapIOInputs inputs) {
         BaseStatusSignal.refreshAll();
-        inputs.left_currents = new double[] { leftMotor.getStatorCurrent().getValueAsDouble() };
-        inputs.pos_deg  = Units.radiansToDegrees(leftMotor.getPosition().getValueAsDouble());
-        inputs.left_volts = leftMotor.getMotorVoltage().getValueAsDouble();
-        inputs.left_velDegPS = leftMotor.getVelocity().getValueAsDouble();
-
-        inputs.right_currents = new double[] { rightMotor.getStatorCurrent().getValueAsDouble() };
-        inputs.right_velDegPS = rightMotor.getVelocity().getValueAsDouble();
-        inputs.right_volts = rightMotor.getMotorVoltage().getValueAsDouble();
+        inputs.left_currents = new double[] { motor.getStatorCurrent().getValueAsDouble() };
+        inputs.pos_deg  = Units.radiansToDegrees(motor.getPosition().getValueAsDouble());
+        inputs.left_volts = motor.getMotorVoltage().getValueAsDouble();
+        inputs.left_velDegPS = motor.getVelocity().getValueAsDouble();
     }
 
     public void goToAngle(double position_deg) {
         double rotations = position_deg / 360;
-        leftMotor.setControl(armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
+        motor.setControl(armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
     }
 
     public void setVoltage(double volts) {
-        leftMotor.setControl(armVoltageControl.withOutput(volts));
+        motor.setControl(armVoltageControl.withOutput(volts));
     }
 
     @Override

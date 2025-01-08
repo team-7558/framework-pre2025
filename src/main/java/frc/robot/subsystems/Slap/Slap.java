@@ -1,12 +1,10 @@
 package frc.robot.subsystems.Slap;
 
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
+
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.subsystems.StateMachineSubsystemBase;
-import frc.robot.util.AltTimer;
 import org.littletonrobotics.junction.Logger;
 
 public class Slap extends StateMachineSubsystemBase<SlapStates> {
@@ -16,7 +14,6 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
   private final SlapIO io;
   private final Slap2d mech = new Slap2d("ArmActual", new Color8Bit(100, 0, 0));
   private final SlapIOInputsAutoLogged inputs = new SlapIOInputsAutoLogged();
-  private final AltTimer timer = new AltTimer();
   public boolean first_time = true;
 
   private double targetAngleDegrees;
@@ -89,14 +86,9 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
     Logger.recordOutput("Slap/TargetAngleDegrees", targetAngleDegrees);
   }
 
-  public void PlaceEndEffector(double x, double y) {
-    double magnitude = Math.sqrt(0.1 * x * 0.1 * x + 0.1 * y * 0.1 * y);
-    double angle = Units.radiansToDegrees(Math.atan2(0.1 * y, 0.1 * x));
 
-    set(magnitude, angle);
-  }
 
-  public void set(double meters, double angle) {
+  public void set(double angle) {
     setTargetAngle(angle);
   }
 
