@@ -9,10 +9,6 @@ public interface SlapIO {
     public double left_velDegPS = 0.0;
     public double left_volts = 0.0;
     public double[] left_currents = new double[] {};
-
-    public double right_velDegPS = 0.0;
-    public double right_volts = 0.0;
-    public double[] right_currents = new double[] {};
   }
 
   public default void updateInputs(SlapIOInputs inputs) {}
