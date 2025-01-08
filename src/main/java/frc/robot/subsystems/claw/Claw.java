@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.MathUtil;
 
 public class Claw extends StateMachineSubsystemBase<ClawStates> {
 
@@ -117,6 +118,6 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
   }
 
   public void setTargetAngle(double targetAngleDegrees) {
-    this.targetAngleDegrees = targetAngleDegrees;
+    this.targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, -360, 360);
   }
 }

@@ -142,9 +142,9 @@ public class ClawIOTalonFX implements ClawIO {
   }
 
   public void goToAngle(double position_deg, boolean first_time) {
-    double rotations = position_deg / 360;
+    double rotations = position_deg/ 360.0;
     arm_motor.setControl(
-        armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
+        armPosControl.withPosition(rotations));
   }
 
   public void setArmVoltage(double volts) {
