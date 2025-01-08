@@ -13,10 +13,12 @@ public class AlgaeIOTalonFX implements AlgaeIO {
 
   private final TalonFX motor;
   private final VoltageOut voltage_out;
+    private final DigitalInput beambreak;
 
   public AlgaeIOTalonFX() {
     motor = new TalonFX(13);
     var motorConfig = new TalonFXConfiguration();
+    beambreak = new DigitalInput(0);
 
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
     motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -29,7 +31,7 @@ public class AlgaeIOTalonFX implements AlgaeIO {
     voltage_out = new VoltageOut(0.0);
   }
 
-  public void updateInputs(CoralIOInputs inputs) {
+  public void updateInputs(AlgaeIOInputs inputs) {
     // Refresh all signals to get updated data
     BaseStatusSignal.refreshAll();
 
