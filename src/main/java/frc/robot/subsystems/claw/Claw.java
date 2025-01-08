@@ -85,7 +85,11 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
     @Override
     public void outputPeriodic() {
         System.out.println("Before");
-
+        if(Math.abs(inputs.claw_velocityDegPS) > 0) {
+            mech.Open(true);
+        } else {
+            mech.Open(false);
+        }
         mech.periodic();
 
         Logger.recordOutput("Claw/TargetAngleDegrees", targetAngleDegrees);
