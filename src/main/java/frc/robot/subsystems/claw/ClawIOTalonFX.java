@@ -2,11 +2,13 @@ package frc.robot.subsystems.claw;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -17,6 +19,9 @@ import edu.wpi.first.math.util.Units;
 public class ClawIOTalonFX implements ClawIO {
   private final TalonFX arm_motor;
   private final TalonFX claw_motor;
+  private final CANcoder cancoder;
+
+  private final StatusSignal<Double> armAbsolutePosition;
   private final VoltageOut armVoltageControl;
   private final VoltageOut claw_voltage_out;
   private final PositionVoltage armPosControl;
@@ -46,6 +51,7 @@ public class ClawIOTalonFX implements ClawIO {
 
     arm_motor = new TalonFX(11);
     claw_motor = new TalonFX(12);
+    cancoder = new CANcoder(13);
     // Configure arm arm_motor
 
     voltageControl = new VoltageOut(0);
@@ -109,6 +115,10 @@ public class ClawIOTalonFX implements ClawIO {
     clawmotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     claw_motor.getConfigurator().apply(clawmotorConfig);
+
+    cancoder.getConfigurator().apply(new CANcoderConfiguration());
+
+    armAbsolutePosition = cancoder.getAbsolutePosition();
   }
 
   public void updateInputs(ClawIOInputs inputs) {
@@ -116,14 +126,16 @@ public class ClawIOTalonFX implements ClawIO {
     inputs.arm_currents_A = new double[] {arm_motor.getStatorCurrent().getValueAsDouble()};
     inputs.arm_pos_deg = Units.radiansToDegrees(arm_motor.getPosition().getValueAsDouble());
     inputs.arm_volts_V = arm_motor.getMotorVoltage().getValueAsDouble();
-    inputs.arm_velocityDegPS = arm_motor.getVelocity().getValueAsDouble();
+    inputs.arm_velocity_DegPS = arm_motor.getVelocity().getValueAsDouble();
+
+    inputs.arm_absolute_pos_deg = armAbsolutePosition.getValueAsDouble();
 
     inputs.claw_currents_A = new double[] {arm_motor.getStatorCurrent().getValueAsDouble()};
     inputs.claw_volts_V = arm_motor.getMotorVoltage().getValueAsDouble();
-    inputs.claw_velocityDegPS = arm_motor.getVelocity().getValueAsDouble();
+    inputs.claw_velocity_degps = arm_motor.getVelocity().getValueAsDouble();
   }
 
-  public void goToAngle(double position_deg, ClawIOInputs inputs, boolean first_time) {
+  public void goToAngle(double position_deg, boolean first_time) {
     double rotations = position_deg / 360;
     arm_motor.setControl(
         armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));

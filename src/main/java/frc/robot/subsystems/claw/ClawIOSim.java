@@ -5,6 +5,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.util.AltTimer;
 import org.littletonrobotics.junction.Logger;
 
@@ -13,6 +14,7 @@ public class ClawIOSim implements ClawIO {
   private TrapezoidProfile.State armSetpoint;
   private TrapezoidProfile.State armStartPoint;
   private TrapezoidProfile.State armGoal;
+  private ClawIOInputs inputs;
 
   private final TrapezoidProfile.Constraints armConstraints =
       new TrapezoidProfile.Constraints(90, 45);
@@ -24,7 +26,16 @@ public class ClawIOSim implements ClawIO {
   private final PIDController armPositionPID = new PIDController(15, 1, 4);
 
   DCMotorSim clawSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
-  DCMotorSim armSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
+  private final SingleJointedArmSim armSim =
+      new SingleJointedArmSim(
+          DCMotor.getKrakenX60Foc(1),
+          45,
+          3.67,
+          0.5,
+          Units.degreesToRadians(0),
+          Units.degreesToRadians(90),
+          false,
+          Units.degreesToRadians(0)); // Custom arm motor simulation
   private double arm_applied_volts = 0.0;
   private double claw_applied_volts = 0.0;
 
@@ -32,7 +43,8 @@ public class ClawIOSim implements ClawIO {
   public void updateInputs(ClawIOInputs inputs) {
     // Update elevator simulation
     clawSim.update(0.02); // 20 ms update
-    inputs.claw_velocityDegPS = Units.radiansToDegrees(clawSim.getAngularVelocityRadPerSec());
+    this.inputs = inputs;
+    inputs.claw_velocity_degps = Units.radiansToDegrees(clawSim.getAngularVelocityRadPerSec());
     inputs.claw_volts_V = claw_applied_volts;
     inputs.claw_currents_A =
         new double[] {
@@ -40,8 +52,8 @@ public class ClawIOSim implements ClawIO {
         }; // Simulate multiple motor left_currents
 
     armSim.update(0.02); // 20 ms update
-    inputs.arm_pos_deg = Units.radiansToDegrees(armSim.getAngularPositionRad());
-    inputs.arm_velocityDegPS = Units.radiansToDegrees(armSim.getAngularVelocityRadPerSec());
+    inputs.arm_pos_deg = Units.radiansToDegrees(armSim.getAngleRads());
+    inputs.arm_velocity_DegPS = Units.radiansToDegrees(armSim.getVelocityRadPerSec());
     inputs.arm_volts_V = arm_applied_volts;
     inputs.arm_currents_A =
         new double[] {
@@ -62,19 +74,19 @@ public class ClawIOSim implements ClawIO {
   }
 
   @Override
-  public void goToAngle(double degrees, ClawIOInputs inputs, boolean first_time) {
+  public void goToAngle(double degrees, boolean first_time) {
     if (first_time) {
       System.out.println("Travelling once");
       timer.reset();
       armGoal = new TrapezoidProfile.State(degrees, 0);
-      armStartPoint = new TrapezoidProfile.State(inputs.arm_pos_deg, inputs.arm_velocityDegPS);
+      armStartPoint = new TrapezoidProfile.State(inputs.arm_pos_deg, inputs.arm_velocity_DegPS);
     }
 
     armSetpoint = armProfile.calculate(timer.time(), armStartPoint, armGoal);
     // Check if the target is valid (optional safety check)
     double targetRadians = Units.degreesToRadians(armSetpoint.position);
     armPositionPID.setSetpoint(targetRadians);
-    double calculatedVoltage = armPositionPID.calculate(armSim.getAngularPositionRad());
+    double calculatedVoltage = armPositionPID.calculate(armSim.getAngleRads());
     setArmVoltage(calculatedVoltage);
 
     Logger.recordOutput("claw/ArmSetpoint", armSetpoint.position);

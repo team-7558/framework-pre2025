@@ -117,14 +117,23 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     CommandScheduler.getInstance().run();
-
+    /*/
     if (OI.DR.getAButton()) {
-      //claw.queueState(ClawStates.OPEN);
+      // claw.queueState(ClawStates.OPEN);
       claw.queueState(ClawStates.TRAVELLING);
       claw.setAngle(90);
     } else {
-      claw.queueState(ClawStates.IDLE);
-      //claw.queueState(ClawStates.IDLE);
+      claw.queueState(ClawStates.TRAVELLING);
+      claw.setAngle(0);
+      // claw.queueState(ClawStates.IDLE);
+    }
+    */
+    if (OI.DR.getBButton()) {
+      claw.queueState(ClawStates.OPEN);
+    } else {
+      claw.queueState(ClawStates.CLOSE);
+
+      // claw.queueState(ClawStates.IDLE);
     }
 
     claw.periodic();

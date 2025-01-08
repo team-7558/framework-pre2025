@@ -65,7 +65,7 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
           } else {
             first_time = false;
           }
-          io.goToAngle(targetAngleDegrees, inputs, first_time);
+          io.goToAngle(targetAngleDegrees, first_time);
         }
         break;
       case HOLDING:
@@ -77,6 +77,9 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
       case CLOSE:
         setClawVelocity(-10);
         break;
+      case ZEROING:
+        queueState(ClawStates.TRAVELLING);
+        setTargetAngle(inputs.arm_absolute_pos_deg);
       default:
         break;
     }
@@ -87,10 +90,12 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
     if (Math.abs(inputs.claw_volts_V) > 0) {
       mech.Open(true);
     } else {
-        System.out.println("IN");
-    
+      System.out.println("IN");
       mech.Open(false);
     }
+
+    mech.setAngle(inputs.arm_pos_deg);
+
     mech.periodic();
 
     Logger.recordOutput("Claw/TargetAngleDegrees", targetAngleDegrees);

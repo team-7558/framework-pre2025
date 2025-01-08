@@ -8,5 +8,6 @@ public enum ClawStates implements IState {
   TRAVELLING,
   HOLDING,
   OPEN,
-  CLOSE
+  CLOSE,
+  ZEROING
 }
