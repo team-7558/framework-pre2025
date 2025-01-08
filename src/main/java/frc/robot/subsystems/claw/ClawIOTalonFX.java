@@ -51,7 +51,6 @@ public class ClawIOTalonFX implements ClawIO {
     armPosControl = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
     beambreak = new DigitalInput(14);
 
-
     claw_voltage_out = new VoltageOut(0.0);
 
     arm_motor = new TalonFX(11);

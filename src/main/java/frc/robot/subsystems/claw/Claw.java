@@ -73,12 +73,12 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
         break;
       case GETGAMEPIECE:
         if (inputs.beambreakhit) {
-            queueState(ClawStates.IDLE);
+          queueState(ClawStates.IDLE);
         }
-        setClawVelocity(10);
+        setClawVoltage(2);
         break;
       case SPITGAMEPIECE:
-        setClawVelocity(-10);
+        setClawVoltage(-2);
         break;
       case ZEROING:
         queueState(ClawStates.TRAVELLING);
@@ -110,10 +110,6 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
 
   public void setArmVoltage(double volts) {
     io.setArmVoltage(volts);
-  }
-
-  public void setClawVelocity(double velocity_DPS) {
-    setClawVoltage(kV * Units.degreesToRadians(velocity_DPS) + kS);
   }
 
   public void setClawVoltage(double volts) {
