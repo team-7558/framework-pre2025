@@ -1,13 +1,12 @@
 package frc.robot.subsystems.Slap;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.util.AltTimer;
+import org.littletonrobotics.junction.Logger;
 
 public class SlapIOSim implements SlapIO {
 
@@ -22,29 +21,36 @@ public class SlapIOSim implements SlapIO {
 
   private final AltTimer timer = new AltTimer();
 
-
-  private final DCMotorSim motorSim =
-      new DCMotorSim(DCMotor.getKrakenX60Foc(1), 45, 3.67); // Custom arm motor simulation
+  private final SingleJointedArmSim armSim =
+      new SingleJointedArmSim(
+          DCMotor.getKrakenX60Foc(1),
+          45,
+          3.67,
+          0.5,
+          Units.degreesToRadians(0),
+          Units.degreesToRadians(90),
+          false,
+          Units.degreesToRadians(0)); // Custom arm motor simulation
   private final PIDController armPositionPID = new PIDController(70, 1, 4);
   private double applied_volts = 0.0;
 
   @Override
   public void updateInputs(SlapIOInputs inputs) {
     // Update elevator simulation
-    motorSim.update(0.02); // 20 ms update
-    inputs.pos_deg = Units.radiansToDegrees(motorSim.getAngularPositionRad());
-    inputs.left_velDegPS = Units.radiansToDegrees(motorSim.getAngularVelocityRadPerSec());
+    armSim.update(0.02); // 20 ms update
+    inputs.pos_deg = Units.radiansToDegrees(armSim.getAngleRads());
+    inputs.left_velDegPS = Units.radiansToDegrees(armSim.getVelocityRadPerSec());
     inputs.left_volts = applied_volts;
     inputs.left_currents =
         new double[] {
-          motorSim.getCurrentDrawAmps(), motorSim.getCurrentDrawAmps()
+          armSim.getCurrentDrawAmps(), armSim.getCurrentDrawAmps()
         }; // Simulate multiple motor left_currents
   }
 
   @Override
   public void setVoltage(double left_volts) {
     applied_volts = left_volts;
-    motorSim.setInputVoltage(left_volts);
+    armSim.setInputVoltage(left_volts);
   }
 
   @Override
@@ -60,19 +66,14 @@ public class SlapIOSim implements SlapIO {
     // Check if the target is valid (optional safety check)
     double targetRadians = Units.degreesToRadians(armSetpoint.position);
     armPositionPID.setSetpoint(targetRadians);
-    double calculatedVoltage = armPositionPID.calculate(motorSim.getAngularPositionRad());
+    double calculatedVoltage = armPositionPID.calculate(armSim.getAngleRads());
     setVoltage(calculatedVoltage);
 
     Logger.recordOutput("Slap/ArmSetpoint", armSetpoint.position);
   }
 
-
-
-
   @Override
   public void stop() {
     setVoltage(0.0);
   }
-
-  
 }

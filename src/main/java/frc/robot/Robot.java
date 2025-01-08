@@ -120,6 +120,9 @@ public class Robot extends LoggedRobot {
     if (OI.DR.getAButton()) {
       slap.queueState(SlapStates.TRAVELLING);
       slap.setTargetAngle(90);
+    } else {
+      slap.queueState(SlapStates.TRAVELLING);
+      slap.setTargetAngle(0);
     }
 
     slap.periodic();

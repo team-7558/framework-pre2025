@@ -1,6 +1,5 @@
 package frc.robot.subsystems.Slap;
 
-
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
@@ -52,19 +51,17 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
       case IDLE:
         break;
       case TRAVELLING:
-    
         if (Math.abs(inputs.pos_deg - targetAngleDegrees) < 0.5) {
-            queueState(SlapStates.HOLDING);
+          queueState(SlapStates.HOLDING);
+        } else {
+          if (stateInit()) {
+            first_time = true;
           } else {
-            if (stateInit()) {
-              first_time = true;
-            } else {
-              first_time = false;
-            }
-            io.goToAngle(targetAngleDegrees, inputs, first_time);
+            first_time = false;
           }
-        
- 
+          io.goToAngle(targetAngleDegrees, inputs, first_time);
+        }
+
         break;
       case HOLDING:
         io.setVoltage(0);
@@ -81,11 +78,8 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
     mech.setAngle(inputs.pos_deg);
     mech.periodic();
 
-
     Logger.recordOutput("Slap/TargetAngleDegrees", targetAngleDegrees);
   }
-
-
 
   public void set(double angle) {
     setTargetAngle(angle);

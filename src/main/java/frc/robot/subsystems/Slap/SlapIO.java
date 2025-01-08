@@ -20,5 +20,4 @@ public interface SlapIO {
   public default void stop() {}
 
   public default void toggleBrake() {}
-
 }
