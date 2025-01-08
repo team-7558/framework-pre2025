@@ -109,4 +109,12 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
   public double getHeight() {
     return inputs.position_m;
   }
+
+  public boolean atTargetHeight(double tolerance) {
+    return Math.abs(targetLengthMeters - getHeight()) <= tolerance;
+  }
+
+  public boolean atTargetHeight() {
+    return atTargetHeight(0.1);
+  }
 }

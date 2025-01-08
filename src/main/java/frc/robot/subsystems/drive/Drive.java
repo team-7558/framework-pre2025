@@ -13,7 +13,10 @@
 
 package frc.robot.subsystems.drive;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -175,6 +178,14 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     this.modules[BL] = new Module(blModuleIO, BL);
     this.modules[BR] = new Module(brModuleIO, BR);
 
+    RobotConfig config = null;
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+
     kin = new SwerveDriveKinematics(getModuleTranslations());
     rawYaw_Rot2d = new Rotation2d();
     prevModulePos =
@@ -187,17 +198,19 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     centerOfRotation = new Translation2d(CFG.COR_OFFSET_X_m, CFG.COR_OFFSET_Y_m);
     poseEstimator = new SwerveDrivePoseEstimator(kin, rawYaw_Rot2d, prevModulePos, Poses.START);
     odom = new SwerveDriveOdometry(kin, rawYaw_Rot2d, prevModulePos, Poses.START);
+    AutoBuilder.configure(
+        () -> getPose(),
+        this::setPose,
+        () -> getChassisSpeeds(),
+        (speeds, feedforwards) -> run(speeds),
+        new PPHolonomicDriveController(new PIDConstants(5.0, 0, 0), new PIDConstants(5.0, 0, 0)),
+        config,
+        () -> shouldFlip(),
+        null);
 
     // Start threads (no-op for each if no signals have been created)
 
     // Configure AutoBuilder for PathPlanner
-    RobotConfig config = null;
-    try {
-      config = RobotConfig.fromGUISettings();
-    } catch (Exception e) {
-      // Handle exception as needed
-      e.printStackTrace();
-    }
 
     // Simulation
 
@@ -228,6 +241,15 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     acc = new ChassisSpeeds();
     override = PathingOverride.NONE;
     queueState(PathingMode.DISABLED);
+  }
+
+  public void run(ChassisSpeeds run) {
+    setInput(
+        new SwerveInput(run.vxMetersPerSecond, run.vyMetersPerSecond, run.omegaRadiansPerSecond));
+  }
+
+  public boolean shouldFlip() {
+    return true;
   }
 
   @Override

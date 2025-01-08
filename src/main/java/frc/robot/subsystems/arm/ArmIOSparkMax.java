@@ -84,14 +84,14 @@ public class ArmIOSparkMax {
   }
 
   public void setArmPosition(double position, double maxDutyCycle) {
-    position = Util.limit(position,30);
+    position = Util.limit(position, 30);
     double currentPosition = armEncoder.getPosition();
 
     double output = armPid.calculate(currentPosition, position);
     output = Math.max(-maxDutyCycle, Math.min(maxDutyCycle, output));
 
     double rotations = position / 2;
-    System.out.println("output to motor: " + output);
+    // System.out.println("output to motor: " + output);
     armMotor.set(output);
   }
 

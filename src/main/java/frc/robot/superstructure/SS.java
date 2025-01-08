@@ -69,6 +69,7 @@ public class SS implements IStateMachine<InternalState> {
           booted = true;
           queueState(InternalState.IDLE);
         }
+        intend(Intention.IDLE);
         break;
       case SCORING_UP:
         elevator.set(Elevator.ELEV_SCORING_TOP);
@@ -92,6 +93,8 @@ public class SS implements IStateMachine<InternalState> {
         } else if (elevator.getHeight() < Elevator.ELEV_SCORING_DOWN - 0.7) {
           arm.setArmTarget(15, 0.3);
           arm.queueState(ArmState.HOLDING_PIECE);
+        } else if (elevator.getHeight() < 0.25) {
+          queueState(InternalState.IDLE);
         }
         elevator.set(0.2);
         elevator.queueState(ElevatorState.HOLDING);

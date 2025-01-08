@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.util.Util;
 
 /** Add your docs here. */
@@ -34,6 +35,12 @@ public class SwerveInput {
 
   public SwerveInput(double x, double y, double w) {
     this(x, y, w, 1.0);
+  }
+
+  public SwerveInput(ChassisSpeeds speeds) {
+    this(
+        new SwerveInput(
+            speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond));
   }
 
   public SwerveInput(SwerveInput other) {

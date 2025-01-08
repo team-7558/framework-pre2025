@@ -1,0 +1,91 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "toscore"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "scoringUp"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.5
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "scoringDown"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "scoretopickup1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "stopIntake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "pickuptoscore2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "score2topickup3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "pickup3toscore3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "score3topickup4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "pickup4toscore4"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

@@ -5,5 +5,5 @@ import frc.robot.util.IState;
 public enum Intention implements IState {
   IDLE,
   PICKUP,
-  SCORING
+  SCORE,
 }
