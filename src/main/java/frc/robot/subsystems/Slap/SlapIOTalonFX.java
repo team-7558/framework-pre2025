@@ -111,7 +111,7 @@ public class SlapIOTalonFX implements SlapIO {
         inputs.left_velDegPS = motor.getVelocity().getValueAsDouble();
     }
 
-    public void goToAngle(double position_deg) {
+    public void goToAngle(double position_deg, SlapIOInputs inputs, boolean first_time) {
         double rotations = position_deg / 360;
         motor.setControl(armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
     }

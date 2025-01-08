@@ -3,7 +3,6 @@ package frc.robot.subsystems.Slap;
 
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
-import frc.robot.Constants.Mode;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -53,18 +52,18 @@ public class Slap extends StateMachineSubsystemBase<SlapStates> {
       case IDLE:
         break;
       case TRAVELLING:
-        if (Constants.currentMode == Mode.SIM) {
-          if (Math.abs(inputs.pos_deg - targetAngleDegrees) < 0.5) {
-              queueState(SlapStates.HOLDING);
+    
+        if (Math.abs(inputs.pos_deg - targetAngleDegrees) < 0.5) {
+            queueState(SlapStates.HOLDING);
+          } else {
+            if (stateInit()) {
+              first_time = true;
             } else {
-              if (stateInit()) {
-                first_time = true;
-              } else {
-                first_time = false;
-              }
-              io.goToAngle(targetAngleDegrees, inputs, first_time);
+              first_time = false;
             }
-        }
+            io.goToAngle(targetAngleDegrees, inputs, first_time);
+          }
+        
  
         break;
       case HOLDING:
