@@ -6,15 +6,18 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class CoralIOTalonFX implements CoralIO {
 
   private final TalonFX motor;
   private final VoltageOut voltage_out;
+  private final DigitalInput beambreak;
 
   public CoralIOTalonFX() {
     motor = new TalonFX(13);
     var motorConfig = new TalonFXConfiguration();
+    beambreak = new DigitalInput(0);
 
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
     motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
