@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 public class Claw2d {
 
   private final MechanismLigament2d claw_left;
+  private final MechanismLigament2d claw_right;
   private final Mechanism2d mech;
   private final String finalName;
 
@@ -25,7 +26,10 @@ public class Claw2d {
     mech = new Mechanism2d(3, 3);
     MechanismRoot2d root = mech.getRoot("root", 1.5, 0.5);
 
-    arm = root.append(new MechanismLigament2d("arm", 0.5, 90, 10, color));
+    claw_left = root.append(new MechanismLigament2d("claw_left", 0.5, 90, 10, color));
+    claw_right = root.append(new MechanismLigament2d("claw_right", 0.5, 90, 10, color));
+
+
     MechanismLigament2d bottom =
         root.append(new MechanismLigament2d("bottom", 0.001, 0, 20, new Color8Bit(125, 0, 125)));
   }
@@ -37,12 +41,15 @@ public class Claw2d {
    */
   public void Open(boolean open_or_not) {
     if (open_or_not) {
-        
+      claw_left.setAngle(0);
+      claw_right.setAngle(180);
+    } else {
+      claw_left.setAngle(90);
+      claw_right.setAngle(90);
     }
     
   }
-
-
+  
   /** Periodically updates the SmartDashboard and logs the mechanism state. */
   public void periodic() {
     SmartDashboard.putData(finalName, mech);
