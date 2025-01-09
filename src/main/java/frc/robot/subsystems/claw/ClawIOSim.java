@@ -33,7 +33,7 @@ public class ClawIOSim implements ClawIO {
           3.67,
           0.5,
           Units.degreesToRadians(0),
-          Units.degreesToRadians(90),
+          Units.degreesToRadians(360),
           false,
           Units.degreesToRadians(0)); // Custom arm motor simulation
   private double arm_applied_volts = 0.0;
@@ -101,3 +101,4 @@ public class ClawIOSim implements ClawIO {
     setClawVoltage(0.0);
   }
 }
+

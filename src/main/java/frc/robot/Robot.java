@@ -15,6 +15,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.claw.Claw;
+import frc.robot.subsystems.claw.ClawIOSim;
 import frc.robot.subsystems.claw.ClawStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
@@ -37,8 +38,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
-  private Claw claw = Claw.getInstance();
 
+  private Claw claw = Claw.getInstance();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -116,27 +117,19 @@ public class Robot extends LoggedRobot {
     // swerve.periodic();
     PerfTracker.periodic();
 
-    CommandScheduler.getInstance().run();
-    /*/
+     
     if (OI.DR.getAButton()) {
-      // claw.queueState(ClawStates.OPEN);
       claw.queueState(ClawStates.TRAVELLING);
-      claw.setAngle(90);
+      claw.setTargetAngle(360);
+      
     } else {
       claw.queueState(ClawStates.TRAVELLING);
-      claw.setAngle(0);
-      // claw.queueState(ClawStates.IDLE);
-    }
-    */
-    if (OI.DR.getBButton()) {
-      claw.queueState(ClawStates.GETGAMEPIECE);
-    } else {
-      claw.queueState(ClawStates.SPITGAMEPIECE);
-
-      // claw.queueState(ClawStates.IDLE);
+      claw.setTargetAngle(0);
     }
 
     claw.periodic();
+
+    CommandScheduler.getInstance().run();
 
     // ^ will be gone later just keeping now to not break shit
   }

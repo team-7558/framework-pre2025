@@ -1,130 +1,129 @@
 package frc.robot.subsystems.claw;
 
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.math.MathUtil;
 
 public class Claw extends StateMachineSubsystemBase<ClawStates> {
 
-    //Positive Voltage is intaking
-    //Negative Voltage is spitting
+  // Positive Voltage is intaking
+  // Negative Voltage is spitting
 
-    //Positive Voltage is clockwise arm
-    //Positive Voltage is counterclockwise arm
+  // Positive Voltage is clockwise arm
+  // Positive Voltage is counterclockwise arm
 
-    private static Claw instance;
+  private static Claw instance;
 
-    private final ClawIO io;
-    private final Claw2d mech = new Claw2d("ArmActual", new Color8Bit(100, 0, 0));
-    private final ClawIOInputsAutoLogged inputs = new ClawIOInputsAutoLogged();
-    public boolean first_time = true;
+  private final ClawIO io;
+  private final Claw2d mech = new Claw2d("ArmActual", new Color8Bit(100, 0, 0));
+  private final ClawIOInputsAutoLogged inputs = new ClawIOInputsAutoLogged();
+  public boolean first_time = true;
 
-    private double targetAngleDegrees;
+  private double targetAngleDegrees;
 
-    double kV = 0.5; // Volts per rad/s (example value)
-    double kS = 1.0; // Static friction voltage (example value)
+  double kV = 0.5; // Volts per rad/s (example value)
+  double kS = 1.0; // Static friction voltage (example value)
 
-    private Claw(ClawIO io) {
-        super("Claw");
-        this.io = io;
-        setTargetAngle(0);
-        queueState(ClawStates.IDLE);
+  private Claw(ClawIO io) {
+    super("Claw");
+    this.io = io;
+    setTargetAngle(0);
+    queueState(ClawStates.IDLE);
+  }
+
+  public static Claw getInstance() {
+    if (instance == null) {
+      switch (Constants.currentMode) {
+        case SIM:
+          instance = new Claw(new ClawIOSim());
+          break;
+        case REAL:
+        default:
+          break;
+      }
     }
+    return instance;
+  }
 
-    public static Claw getInstance() {
-        if (instance == null) {
-            switch (Constants.currentMode) {
-                case SIM:
-                    instance = new Claw(new ClawIOSim());
-                    break;
-                case REAL:
-                default:
-                    break;
-            }
-        }
-        return instance;
-    }
+  @Override
+  public void inputPeriodic() {
+    io.updateInputs(inputs);
+    Logger.processInputs("claw", inputs);
+  }
 
-    @Override
-    public void inputPeriodic() {
-        io.updateInputs(inputs);
-        Logger.processInputs("claw", inputs);
-    }
-
-    @Override
-    public void handleStateMachine() {
-        switch (getState()) {
-            case DISABLED:
-                break;
-            case IDLE:
-                setClawVoltage(0.0);
-                setArmVoltage(0.0);
-                break;
-            case TRAVELLING:
-                if (Math.abs(inputs.arm_pos_deg - targetAngleDegrees) < 0.5) {
-                    queueState(ClawStates.HOLDING);
-                } else {
-                    if (stateInit()) {
-                        first_time = true;
-                    } else {
-                        first_time = false;
-                    }
-                    io.goToAngle(targetAngleDegrees, first_time);
-                }
-                break;
-            case HOLDING:
-                io.setArmVoltage(0);
-                break;
-            case GETGAMEPIECE:
-                if (inputs.beambreakhit) {
-                    setClawVoltage(0);
-                } else {
-                    setClawVoltage(2);
-                }
-                break;
-            case SPITGAMEPIECE:
-                setClawVoltage(-2);
-                break;
-            case ZEROING:
-                queueState(ClawStates.TRAVELLING);
-                setTargetAngle(inputs.arm_absolute_pos_deg);
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void outputPeriodic() {
-        if (Math.abs(inputs.claw_volts_V) > 0) {
-            mech.Open(true);
+  @Override
+  public void handleStateMachine() {
+    switch (getState()) {
+      case DISABLED:
+        break;
+      case IDLE:
+        setClawVoltage(0.0);
+        setArmVoltage(0.0);
+        break;
+      case TRAVELLING:
+        if (Math.abs(inputs.arm_pos_deg - targetAngleDegrees) < 0.5) {
+          queueState(ClawStates.HOLDING);
         } else {
-            System.out.println("IN");
-            mech.Open(false);
+          if (stateInit()) {
+            first_time = true;
+          } else {
+            first_time = false;
+          }
+          io.goToAngle(targetAngleDegrees, first_time);
         }
+        break;
+      case HOLDING:
+        io.setArmVoltage(0);
+        break;
+      case GETGAMEPIECE:
+        if (inputs.beambreakhit) {
+          setClawVoltage(0);
+        } else {
+          setClawVoltage(2);
+        }
+        break;
+      case SPITGAMEPIECE:
+        setClawVoltage(-2);
+        break;
+      case ZEROING:
+        queueState(ClawStates.TRAVELLING);
+        setTargetAngle(inputs.arm_absolute_pos_deg);
+      default:
+        break;
+    }
+  }
 
-        mech.setAngle(inputs.arm_pos_deg);
-
-        mech.periodic();
-
-        Logger.recordOutput("Claw/TargetAngleDegrees", targetAngleDegrees);
+  @Override
+  public void outputPeriodic() {
+    if (Math.abs(inputs.claw_volts_V) > 0) {
+      mech.Open(true);
+    } else {
+      System.out.println("IN");
+      mech.Open(false);
     }
 
-    public void setAngle(double angle) {
-        setTargetAngle(angle);
-    }
+    mech.setAngle(inputs.arm_pos_deg);
 
-    public void setArmVoltage(double volts) {
-        io.setArmVoltage(volts);
-    }
+    mech.periodic();
 
-    public void setClawVoltage(double volts) {
-        io.setClawVoltage(volts);
-    }
+    Logger.recordOutput("Claw/TargetAngleDegrees", targetAngleDegrees);
+  }
 
-    public void setTargetAngle(double targetAngleDegrees) {
-        this.targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, -360, 360);
-    }
+  public void setAngle(double angle) {
+    setTargetAngle(angle);
+  }
+
+  public void setArmVoltage(double volts) {
+    io.setArmVoltage(volts);
+  }
+
+  public void setClawVoltage(double volts) {
+    io.setClawVoltage(volts);
+  }
+
+  public void setTargetAngle(double targetAngleDegrees) {
+    this.targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, -360, 360);
+  }
 }
