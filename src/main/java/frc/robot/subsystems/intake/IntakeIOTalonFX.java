@@ -11,16 +11,22 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class IntakeIOTalonFX implements IntakeIO {
-    
+
   // Arm motor
-  private final TalonFX motor;
+  private final TalonFX ArmMotor;
+  private final TalonFX IntakeMotor;
   private final VoltageOut armVoltageControl;
+  private final VoltageOut Intake_voltage_out;
   private final PositionVoltage armPosControl;
+
+
+
+  private final DigitalInput beambreak;
 
   private final StatusSignal<Double> pos_m;
   private final StatusSignal<Double> vel_mps;
@@ -43,7 +49,7 @@ public class IntakeIOTalonFX implements IntakeIO {
     armVoltageControl = new VoltageOut(0);
     armPosControl = new PositionVoltage(0, 0, true, 0, 0, false, false, false);
 
-    motor = new TalonFX(11);
+    ArmMotor = new TalonFX(11);
 
     // Configure arm motor
 
@@ -52,12 +58,12 @@ public class IntakeIOTalonFX implements IntakeIO {
     posControl = new PositionVoltage(minPositionDegrees, 0, true, 0, 0, false, false, false);
     mmPosControl = new MotionMagicVoltage(minPositionDegrees, true, 0, 1, false, false, false);
 
-    pos_m = motor.getPosition();
-    vel_mps = motor.getVelocity();
-    acc_mps2 = motor.getAcceleration();
-    leftCurrent_A = motor.getStatorCurrent();
-    rightCurrent_A = motor.getStatorCurrent();
-    volts_V = motor.getMotorVoltage();
+    pos_m = ArmMotor.getPosition();
+    vel_mps = ArmMotor.getVelocity();
+    acc_mps2 = ArmMotor.getAcceleration();
+    leftCurrent_A = ArmMotor.getStatorCurrent();
+    rightCurrent_A = ArmMotor.getStatorCurrent();
+    volts_V = ArmMotor.getMotorVoltage();
 
     motorConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
     motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -99,29 +105,58 @@ public class IntakeIOTalonFX implements IntakeIO {
     motorConfig.Slot2.kI = 0.0;
     motorConfig.Slot2.kD = 0.0;
 
-    motor.getConfigurator().apply(motorConfig);
-    motor.getConfigurator().apply(motorConfig);
+    ArmMotor.getConfigurator().apply(motorConfig);
+    ArmMotor.getConfigurator().apply(motorConfig);
+
+
+
+    IntakeMotor = new TalonFX(13);
+    var IntakemotorConfig = new TalonFXConfiguration();
+    beambreak = new DigitalInput(0);
+
+    IntakemotorConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
+    IntakemotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    IntakemotorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
+    IntakemotorConfig.Feedback.SensorToMechanismRatio = 5;
+    IntakemotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    IntakeMotor.getConfigurator().apply(motorConfig);
+
+    // Initialize voltage control
+    Intake_voltage_out = new VoltageOut(0.0);
   }
 
   public void updateInputs(IntakeIOInputs inputs) {
     BaseStatusSignal.refreshAll();
-    inputs.left_currents = new double[] {motor.getStatorCurrent().getValueAsDouble()};
-    inputs.pos_deg = Units.radiansToDegrees(motor.getPosition().getValueAsDouble());
-    inputs.left_volts = motor.getMotorVoltage().getValueAsDouble();
-    inputs.left_velDegPS = motor.getVelocity().getValueAsDouble();
+    inputs.slap_currents = new double[] {ArmMotor.getStatorCurrent().getValueAsDouble()};
+    inputs.slap_pos_deg = Units.radiansToDegrees(ArmMotor.getPosition().getValueAsDouble());
+    inputs.slap_volts = ArmMotor.getMotorVoltage().getValueAsDouble();
+    inputs.slap_velDegPS = ArmMotor.getVelocity().getValueAsDouble();
   }
 
   public void goToAngle(double position_deg, IntakeIOInputs inputs, boolean first_time) {
     double rotations = position_deg / 360;
-    motor.setControl(armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
+    ArmMotor.setControl(armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
   }
 
-  public void setVoltage(double volts) {
-    motor.setControl(armVoltageControl.withOutput(volts));
+  public void setIntakeVoltage(double volts) {
+    // Clamp voltage to valid range (-12V to 12V)
+    volts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    // Set motor voltage
+    IntakeMotor.setControl(Intake_voltage_out.withOutput(volts));
   }
 
   @Override
-  public void stop() {
-    setVoltage(0.0);
+  public void stopIntake() {
+    setIntakeVoltage(0.0);
+  }
+
+  public void setArmVoltage(double volts) {
+    ArmMotor.setControl(armVoltageControl.withOutput(volts));
+  }
+
+  @Override
+  public void stopArm() {
+    setArmVoltage(0.0);
   }
 }

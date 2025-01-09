@@ -1,16 +1,16 @@
 package frc.robot.subsystems.intake;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.util.AltTimer;
+import org.littletonrobotics.junction.Logger;
 
 public class IntakeIOSim implements IntakeIO {
-    
+
   private TrapezoidProfile.State armSetpoint;
   private TrapezoidProfile.State armStartPoint;
   private TrapezoidProfile.State armGoal;
@@ -22,6 +22,9 @@ public class IntakeIOSim implements IntakeIO {
 
   private final AltTimer timer = new AltTimer();
 
+  DCMotorSim motorSim = new DCMotorSim(DCMotor.getKrakenX60Foc(1), 1, 1);
+
+  private double motor_applied_volts = 0.0;
   private final SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           DCMotor.getKrakenX60Foc(1),
@@ -33,25 +36,39 @@ public class IntakeIOSim implements IntakeIO {
           false,
           Units.degreesToRadians(0)); // Custom arm motor simulation
   private final PIDController armPositionPID = new PIDController(70, 1, 4);
-  private double applied_volts = 0.0;
+  private double arm_applied_volts = 0.0;
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
     // Update elevator simulation
     armSim.update(0.02); // 20 ms update
-    inputs.pos_deg = Units.radiansToDegrees(armSim.getAngleRads());
-    inputs.left_velDegPS = Units.radiansToDegrees(armSim.getVelocityRadPerSec());
-    inputs.left_volts = applied_volts;
-    inputs.left_currents =
+    inputs.slap_pos_deg = Units.radiansToDegrees(armSim.getAngleRads());
+    inputs.slap_velDegPS = Units.radiansToDegrees(armSim.getVelocityRadPerSec());
+    inputs.slap_volts = arm_applied_volts;
+    inputs.slap_currents =
         new double[] {
           armSim.getCurrentDrawAmps(), armSim.getCurrentDrawAmps()
+        }; // Simulate multiple motor left_currents
+
+    motorSim.update(0.02); // 20 ms update
+    inputs.VelocityDegPS = Units.radiansToDegrees(motorSim.getAngularVelocityRadPerSec());
+    inputs.AppliedVolts = motor_applied_volts;
+    inputs.current_Amps =
+        new double[] {
+          motorSim.getCurrentDrawAmps(), motorSim.getCurrentDrawAmps()
         }; // Simulate multiple motor left_currents
   }
 
   @Override
-  public void setVoltage(double left_volts) {
-    applied_volts = left_volts;
+  public void setArmVoltage(double left_volts) {
+    arm_applied_volts = left_volts;
     armSim.setInputVoltage(left_volts);
+  }
+
+  @Override
+  public void setIntakeVoltage(double volts) {
+    motor_applied_volts = volts;
+    motorSim.setInputVoltage(volts);
   }
 
   @Override
@@ -60,7 +77,7 @@ public class IntakeIOSim implements IntakeIO {
       System.out.println("Travelling once");
       timer.reset();
       armGoal = new TrapezoidProfile.State(degrees, 0);
-      armStartPoint = new TrapezoidProfile.State(inputs.pos_deg, inputs.left_velDegPS);
+      armStartPoint = new TrapezoidProfile.State(inputs.slap_pos_deg, inputs.slap_velDegPS);
     }
 
     armSetpoint = armProfile.calculate(timer.time(), armStartPoint, armGoal);
@@ -68,13 +85,18 @@ public class IntakeIOSim implements IntakeIO {
     double targetRadians = Units.degreesToRadians(armSetpoint.position);
     armPositionPID.setSetpoint(targetRadians);
     double calculatedVoltage = armPositionPID.calculate(armSim.getAngleRads());
-    setVoltage(calculatedVoltage);
+    setArmVoltage(calculatedVoltage);
 
     Logger.recordOutput("Intake/ArmSetpoint", armSetpoint.position);
   }
 
   @Override
-  public void stop() {
-    setVoltage(0.0);
+  public void stopArm() {
+    setArmVoltage(0.0);
+  }
+
+  @Override
+  public void stopIntake() {
+    setIntakeVoltage(0.0);
   }
 }

@@ -16,6 +16,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeStates;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -36,6 +38,7 @@ public class Robot extends LoggedRobot {
 
   private Drive drive;
 
+  private Intake intake = Intake.getInstance();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -112,6 +115,16 @@ public class Robot extends LoggedRobot {
     drive.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
+
+    if (OI.DR.getAButton()) {
+      intake.queueState(IntakeStates.TRAVELLING);
+      intake.setTargetAngle(90);
+    } else {
+      intake.queueState(IntakeStates.TRAVELLING);
+      intake.setTargetAngle(0);
+    }
+
+    intake.periodic();
 
     CommandScheduler.getInstance().run();
 

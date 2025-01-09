@@ -16,6 +16,8 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
 
   private double targetAngleDegrees;
 
+  boolean running = false;
+
   private Intake(IntakeIO io) {
     super("Intake");
     this.io = io;
@@ -51,7 +53,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
       case IDLE:
         break;
       case TRAVELLING:
-        if (Math.abs(inputs.pos_deg - targetAngleDegrees) < 0.5) {
+        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.5) {
           queueState(IntakeStates.HOLDING);
         } else {
           if (stateInit()) {
@@ -63,8 +65,14 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
         }
         break;
       case HOLDING:
-        io.setVoltage(0);
+        io.setArmVoltage(0);
         break;
+      case INTAKING:
+        running = true;
+        setIntakeVoltage(2);
+      case SPITTING:
+        running = false;
+        setIntakeVoltage(-2);
       default:
         break;
     }
@@ -74,14 +82,19 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
   public void outputPeriodic() {
     System.out.println("Before");
 
-    mech.setAngle(inputs.pos_deg);
+    mech.setAngle(inputs.slap_pos_deg);
     mech.periodic();
 
     Logger.recordOutput("Slap/TargetAngleDegrees", targetAngleDegrees);
+    Logger.recordOutput("coral/running", running);
   }
 
   public void set(double angle) {
     setTargetAngle(angle);
+  }
+
+  public void setIntakeVoltage(double voltage) {
+    io.setIntakeVoltage(voltage);
   }
 
   public void setTargetAngle(double targetAngleDegrees) {
