@@ -101,4 +101,3 @@ public class ClawIOSim implements ClawIO {
     setClawVoltage(0.0);
   }
 }
-

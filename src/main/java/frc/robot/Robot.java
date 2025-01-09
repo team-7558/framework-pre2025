@@ -15,7 +15,6 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.claw.Claw;
-import frc.robot.subsystems.claw.ClawIOSim;
 import frc.robot.subsystems.claw.ClawStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
@@ -117,11 +116,10 @@ public class Robot extends LoggedRobot {
     // swerve.periodic();
     PerfTracker.periodic();
 
-     
     if (OI.DR.getAButton()) {
       claw.queueState(ClawStates.TRAVELLING);
       claw.setTargetAngle(360);
-      
+
     } else {
       claw.queueState(ClawStates.TRAVELLING);
       claw.setTargetAngle(0);
