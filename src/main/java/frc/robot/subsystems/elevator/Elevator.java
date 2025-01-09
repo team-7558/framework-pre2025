@@ -13,7 +13,10 @@
 
 package frc.robot.subsystems.elevator;
 
+import edu.wpi.first.math.MathUtil;
+import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
+import frc.robot.util.Util;
 import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
@@ -29,13 +32,19 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   public static final double ELEV_MIN_HEIGHT_M = 0.0;
   public static final double ELEV_MAX_HEIGHT_M = 0.0;
+  public static final double ELEV_STROKE_M = ELEV_MAX_HEIGHT_M - ELEV_MIN_HEIGHT_M;
+
   public static final double ELEV_MIN_ANGLE_DEG = 0.0;
   public static final double ELEV_MAX_ANGLE_DEG = 0.0;
 
   public static final double ELEV_SCORING_TOP = 0.0;
   public static final double ELEV_SCORING_DOWN = 0.0;
 
-  public Elevator() {
+  public static final double ELEV_MAX_VEL_MPS = 0.0;
+
+  private double targetHeight_m = ELEV_MIN_HEIGHT_M;
+
+  public Elevator(ElevatorIO io) {
     super("Elevator");
     this.io = new ElevatorIOReal();
     setTargetLength(0);
@@ -50,8 +59,21 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
   }
 
   public static Elevator getInstance() {
+
     if (instance == null) {
-      instance = new Elevator();
+      System.out.println("Elevator initialized.");
+      switch (Constants.currentMode) {
+        case REAL:
+          instance = new Elevator(new ElevatorIOReal());
+          break;
+
+        case SIM:
+          instance = new Elevator(new ElevatorIOSim());
+          break;
+
+        default:
+          instance = new Elevator(new ElevatorIO() {});
+      }
     }
     return instance;
   }
@@ -107,6 +129,22 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
   }
 
   public double getHeight() {
-    return inputs.position_m;
+    return inputs.pos_m;
+  }
+
+  public boolean atTargetHeight() {
+    return atTargetHeight(0.0);
+  }
+
+  public boolean atTargetHeight(double tol) {
+    return atHeight(targetHeight_m, tol);
+  }
+
+  public boolean atHeight(double height_m, double tol) {
+    return Util.inRange(height_m - inputs.pos_m, tol);
+  }
+
+  public void setTargetHeight(double height_m) {
+    this.targetHeight_m = MathUtil.clamp(height_m, ELEV_MIN_HEIGHT_M, ELEV_MAX_HEIGHT_M);
   }
 }

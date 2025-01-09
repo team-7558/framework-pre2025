@@ -24,10 +24,12 @@ public class ElevatorIOReal implements ElevatorIO {
 
   private final DigitalInput hallEffect;
 
+  // TODO CHANGE
+
   private static final double MIN_HEIGHT_R = 0.6477000000000004;
   private static final double MAX_HEIGHT_R = 85.11303203125;
   private static final double STROKE_R = MAX_HEIGHT_R - MIN_HEIGHT_R;
-  private static final double METERS_TO_ROTATIONS = STROKE_R / Elevator.STROKE_M;
+  private static final double METERS_TO_ROTATIONS = STROKE_R / Elevator.ELEV_STROKE_M;
   private static final double ROTATIONS_TO_METERS = 1.0 / METERS_TO_ROTATIONS;
   private final StatusSignal<Double> pos_m;
   private final StatusSignal<Double> vel_mps;
@@ -50,8 +52,10 @@ public class ElevatorIOReal implements ElevatorIO {
 
     voltageControl = new VoltageOut(0);
     mmVelControl = new MotionMagicVelocityVoltage(0, 0, true, 0, 2, false, false, false);
-    posControl = new PositionVoltage(Elevator.MIN_HEIGHT_M, 0, true, 0, 0, false, false, false);
-    mmPosControl = new MotionMagicVoltage(Elevator.MIN_HEIGHT_M, true, 0, 1, false, false, false);
+    posControl =
+        new PositionVoltage(Elevator.ELEV_MIN_HEIGHT_M, 0, true, 0, 0, false, false, false);
+    mmPosControl =
+        new MotionMagicVoltage(Elevator.ELEV_MIN_HEIGHT_M, true, 0, 1, false, false, false);
 
     leftFalcon = new TalonFX(1);
     rightFalcon = new TalonFX(4);
@@ -63,6 +67,8 @@ public class ElevatorIOReal implements ElevatorIO {
     leftCurrent_A = rightFalcon.getStatorCurrent();
     rightCurrent_A = rightFalcon.getStatorCurrent();
     volts_V = leftFalcon.getMotorVoltage();
+
+    // TODO CHANGE VLAUES
 
     leaderConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
     leaderConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -79,7 +85,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
     // Position control gains
     leaderConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;
-    leaderConfig.Slot0.kG = 0.07;
+    leaderConfig.Slot0.kG = 0.07; //
     leaderConfig.Slot0.kP = 176;
     leaderConfig.Slot0.kI = 0;
     leaderConfig.Slot0.kD = 4; // 16;
@@ -112,24 +118,24 @@ public class ElevatorIOReal implements ElevatorIO {
     leftFalcon.optimizeBusUtilization();
     rightFalcon.optimizeBusUtilization();
 
-    resetPos(Elevator.MIN_HEIGHT_M);
+    resetPos(Elevator.ELEV_MIN_HEIGHT_M);
   }
 
   /** Updates the set of loggable inputs. */
   @Override
   public void updateInputs(ElevatorIOInputs inputs) {
     BaseStatusSignal.refreshAll(pos_m, vel_mps, acc_mps2, volts_V, leftCurrent_A, rightCurrent_A);
-    inputs.posm = pos_m.getValueAsDouble() + posOffset_m;
-    inputs.voltsV = volts_V.getValueAsDouble();
-    inputs.velmps = vel_mps.getValueAsDouble();
-    inputs.currentsA =
+    inputs.pos_m = pos_m.getValueAsDouble() + posOffset_m;
+    inputs.volts_V = volts_V.getValueAsDouble();
+    inputs.vel_mps = vel_mps.getValueAsDouble();
+    inputs.currents_A =
         new double[] {leftCurrent_A.getValueAsDouble(), rightCurrent_A.getValueAsDouble()};
     inputs.hallEffect = !hallEffect.get();
   }
 
   @Override
   public void setVel(double vel_mps) {
-    double v = MathUtil.clamp(vel_mps, -Elevator.MAX_VEL_MPS, Elevator.MAX_VEL_MPS);
+    double v = MathUtil.clamp(vel_mps, -Elevator.ELEV_MAX_VEL_MPS, Elevator.ELEV_MAX_VEL_MPS);
     leftFalcon.setControl(mmVelControl.withVelocity(v));
     rightFalcon.setControl(mmVelControl.withVelocity(v));
   }

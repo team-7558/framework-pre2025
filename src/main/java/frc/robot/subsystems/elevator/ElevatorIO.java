@@ -6,10 +6,10 @@ public interface ElevatorIO {
 
   @AutoLog
   public static class ElevatorIOInputs {
-    public double posm = 0.0;
-    public double velmps = 0.0;
-    public double voltsV = 0.0;
-    public double[] currentsA = new double[] {};
+    public double pos_m = 0.0;
+    public double vel_mps = 0.0;
+    public double volts_V = 0.0;
+    public double[] currents_A = new double[] {};
 
     public boolean hallEffect = false;
   }
@@ -23,8 +23,6 @@ public interface ElevatorIO {
   public default void holdPos(double pos_m) {}
 
   public default void travelToPos(double pos_m) {}
-
-  public default void configurePID(double kP, double kI, double kD) {}
 
   public default void resetPos(double pos_m) {}
 
