@@ -5,7 +5,11 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PneumaticHub;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
@@ -23,6 +27,11 @@ public class ArmIOSparkMax {
 
   private final CANSparkMax wheelsMotor = new CANSparkMax(12, MotorType.kBrushless);
 
+  private PneumaticHub revPH = new PneumaticHub(24);
+  private Compressor compressor = new Compressor(24, PneumaticsModuleType.REVPH);
+
+  private Solenoid solenoid = new Solenoid(24, PneumaticsModuleType.REVPH, 1);
+
   // private final CANSparkMax wristMotor = new CANSparkMax(13, MotorType.kBrushless);
   // private final RelativeEncoder wristEncoder = wristMotor.getEncoder();
   // private final SparkPIDController wristPid = wristMotor.getPIDController();
@@ -32,6 +41,8 @@ public class ArmIOSparkMax {
   double max = 0;
 
   public ArmIOSparkMax() {
+    // revPH.enableCompressorDigital();
+    revPH.enableCompressorAnalog(100, 120);
 
     // set gains
 
@@ -70,6 +81,7 @@ public class ArmIOSparkMax {
     // inputs.wrist_position_r = wristEncoder.getPosition();
     // inputs.wrist_velocity_rps = wristEncoder.getVelocity();
     // inputs.wrist_volts_V = wristMotor.getBusVoltage();
+    System.out.println(inputs.arm_position_r);
   }
 
   public void setArmPosition(double position) {
@@ -110,5 +122,9 @@ public class ArmIOSparkMax {
 
   public void zero() {
     armEncoder.setPosition(0);
+  }
+
+  public void setSolenoid(boolean on) {
+    solenoid.set(on);
   }
 }

@@ -30,4 +30,6 @@ public interface ArmIO {
   public default void setWheels(double velocity) {}
 
   public default void zero() {}
+
+  public default void setSolenoid(boolean solenoid) {}
 }

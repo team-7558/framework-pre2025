@@ -44,6 +44,10 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
     io.zero();
   }
 
+  public void setClaw(boolean a) {
+    io.setSolenoid(a);
+  }
+
   @Override
   public void handleStateMachine() {
 

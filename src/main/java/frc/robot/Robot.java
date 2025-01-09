@@ -13,10 +13,9 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.auto.RunAltAuto;
+import frc.robot.auto.autos.Processor4;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmState;
 import frc.robot.subsystems.drive.Drive;
@@ -46,6 +45,8 @@ public class Robot extends LoggedRobot {
   private Arm arm;
   private SwerveInput si;
 
+  private RunAltAuto auto = new RunAltAuto(new Processor4());
+
   // private LoggedDashboardChooser<Command> autoChooser;
 
   /**
@@ -55,36 +56,36 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotInit() {
 
-    NamedCommands.registerCommand(
-        "scoringUp",
-        Commands.runOnce(
-            () -> {
-              SS.getInstance().queueState(InternalState.SCORING_UP);
-            }));
-    NamedCommands.registerCommand(
-        "scoringDown",
-        Commands.runOnce(
-            () -> {
-              SS.getInstance().queueState(InternalState.SCORING_DOWN);
-            }));
-    NamedCommands.registerCommand(
-        "intake",
-        Commands.runOnce(
-            () -> {
-              SS.getInstance().queueState(InternalState.INTAKING);
-            }));
-    NamedCommands.registerCommand(
-        "stopIntake",
-        Commands.runOnce(
-            () -> {
-              SS.getInstance().queueState(InternalState.IDLE);
-            }));
-    NamedCommands.registerCommand(
-        "Run Flywheel",
-        Commands.runOnce(
-            () -> {
-              System.out.println("init");
-            }));
+    // NamedCommands.registerCommand(
+    //     "scoringUp",
+    //     Commands.runOnce(
+    //         () -> {
+    //           SS.getInstance().queueState(InternalState.SCORING_UP);
+    //         }));
+    // NamedCommands.registerCommand(
+    //     "scoringDown",
+    //     Commands.runOnce(
+    //         () -> {
+    //           SS.getInstance().queueState(InternalState.SCORING_DOWN);
+    //         }));
+    // NamedCommands.registerCommand(
+    //     "intake",
+    //     Commands.runOnce(
+    //         () -> {
+    //           SS.getInstance().queueState(InternalState.INTAKING);
+    //         }));
+    // NamedCommands.registerCommand(
+    //     "stopIntake",
+    //     Commands.runOnce(
+    //         () -> {
+    //           SS.getInstance().queueState(InternalState.IDLE);
+    //         }));
+    // NamedCommands.registerCommand(
+    //     "Run Flywheel",
+    //     Commands.runOnce(
+    //         () -> {
+    //           System.out.println("init");
+    //         }));
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
     Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -153,6 +154,12 @@ public class Robot extends LoggedRobot {
       drive.zeroGyro();
     }
 
+    if (OI.DR.getYButton()) {
+      arm.setClaw(true);
+    } else {
+      arm.setClaw(false);
+    }
+
     if (OI.DR.getAButton()) {
       SS.getInstance().queueState(InternalState.SCORING_UP);
     }
@@ -193,14 +200,14 @@ public class Robot extends LoggedRobot {
 
   /** Runs at the start of auto */
   @Override
-  public void autonomousInit() {
-    
-  }
+  public void autonomousInit() {}
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    // run auto!
+    SS.getInstance().queueState(InternalState.IDLE);
+
+    auto.periodic();
   }
 
   /** This function is called once when teleop is enabled. */

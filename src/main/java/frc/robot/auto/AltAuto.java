@@ -1,9 +1,10 @@
 package frc.robot.auto;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
-import frc.robot.superstructure.InternalState;
+import frc.robot.superstructure.Intention;
 import frc.robot.superstructure.SS;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
@@ -17,6 +18,9 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
 
   protected final Drive drive;
   protected final SS ss;
+
+  private Timer swerveTimer;
+  private SwerveFollower follower;
 
   private AutoState state;
 
@@ -34,9 +38,15 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
     trajstack = new Trajstack();
     this.forcePoseReset = forcePoseReset;
     this.t = new AltTimer();
+    this.state = AutoState.DO_NOTHING;
+    this.swerveTimer = new Timer();
+    this.follower = new SwerveFollower(trajstack);
   }
 
   public final void init() {
+    swerveTimer.reset();
+    swerveTimer.start();
+    follower.start();
     System.out.println("Starting " + name);
     if (!generated) {
       generate();
@@ -63,6 +73,7 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
   }
 
   public final void execute() {
+    follower.step(swerveTimer.get());
     handleStateMachine();
     onExecute();
     // executeCallbacks(); figure this out
@@ -180,7 +191,13 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
   public void handleStateMachine() {
     switch (state) {
       case DO_NOTHING:
-        ss.queueState(InternalState.DISABLED);
+        ss.intend(Intention.IDLE);
+        break;
+      case INTAKING:
+        break;
+      case SCORING:
+        break;
+      default:
         break;
     }
   }
