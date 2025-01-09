@@ -24,8 +24,6 @@ public class IntakeIOTalonFX implements IntakeIO {
   private final VoltageOut Intake_voltage_out;
   private final PositionVoltage armPosControl;
 
-
-
   private final DigitalInput beambreak;
 
   private final StatusSignal<Double> pos_m;
@@ -108,8 +106,6 @@ public class IntakeIOTalonFX implements IntakeIO {
     ArmMotor.getConfigurator().apply(motorConfig);
     ArmMotor.getConfigurator().apply(motorConfig);
 
-
-
     IntakeMotor = new TalonFX(13);
     var IntakemotorConfig = new TalonFXConfiguration();
     beambreak = new DigitalInput(0);
@@ -135,7 +131,8 @@ public class IntakeIOTalonFX implements IntakeIO {
 
   public void goToAngle(double position_deg, IntakeIOInputs inputs, boolean first_time) {
     double rotations = position_deg / 360;
-    ArmMotor.setControl(armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
+    ArmMotor.setControl(
+        armPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)));
   }
 
   public void setIntakeVoltage(double volts) {
