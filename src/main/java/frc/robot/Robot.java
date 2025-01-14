@@ -14,6 +14,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.superstructure.InternalState;
@@ -35,6 +37,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private Arm arm = Arm.getInstance();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -112,6 +115,16 @@ public class Robot extends LoggedRobot {
     drive.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
+
+    if (OI.DR.getAButton()) {
+      arm.queueState(ArmStates.ELBOWTRAVELLING);
+      arm.setElbowTargetAngle(90);
+    } else {
+      arm.queueState(ArmStates.ELBOWTRAVELLING);
+      arm.setElbowTargetAngle(0);
+    }
+
+    arm.periodic();
 
     CommandScheduler.getInstance().run();
 
