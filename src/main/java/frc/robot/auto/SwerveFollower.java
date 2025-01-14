@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.SwerveInput;
 import org.littletonrobotics.junction.Logger;
 
 public class SwerveFollower {
@@ -20,8 +19,8 @@ public class SwerveFollower {
   private final Drive drive;
   private final IFollowable toFollow;
 
-  public static final PIDConstants TRANSLATION_PID = new PIDConstants(1, 0, 0);
-  public static final PIDConstants ROTATION_PID = new PIDConstants(1, 0, 0);
+  public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.1, 0, 0);
+  public static final PIDConstants ROTATION_PID = new PIDConstants(0.1, 0, 0);
 
   public SwerveFollower(IFollowable toFollow) {
     this.toFollow = toFollow;
@@ -53,6 +52,7 @@ public class SwerveFollower {
   }
 
   public void step(double t) {
+    // System.out.println(t);
     PathPlannerTrajectoryState targetState = toFollow.sample(t);
 
     Pose2d currentPose = drive.getPose();
@@ -83,8 +83,8 @@ public class SwerveFollower {
         targetSpeeds.omegaRadiansPerSecond);
 
     Logger.recordOutput("SwerveFollower/TargetSpeeds", targetSpeeds);
-
-    drive.setInput(new SwerveInput(targetSpeeds));
+    // System.out.println(targetSpeeds.vxMetersPerSecond + " " + targetSpeeds.vyMetersPerSecond);
+    drive.setInputSpeeds(targetSpeeds);
   }
 
   public boolean elapsed(double t) {
@@ -96,7 +96,7 @@ public class SwerveFollower {
     // interrupting
     // the command to smoothly transition into some auto-alignment routine
     if (!interrupted && toFollow.getEndState().linearVelocity < 0.05) {
-      drive.setInput(new SwerveInput(new ChassisSpeeds()));
+      drive.setInputSpeeds(new ChassisSpeeds());
     }
 
     PathPlannerLogging.logActivePath(null);

@@ -219,7 +219,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
           .addDriveTrainSimulation(sim); // register the drive train simulation
 
       // reset the field for auto (placing game-pieces in positions)
-      SimulatedArena.getInstance().resetFieldForAuto();
+      // SimulatedArena.getInstance().resetFieldForAuto();
+      SimulatedArena.getInstance().clearGamePieces();
     }
     System.out.println("STARTING THREAD");
     // PhoenixOdometryThread.getInstance().start();
@@ -244,8 +245,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   }
 
   public void run(ChassisSpeeds run) {
-    setInput(
-        new SwerveInput(run.vxMetersPerSecond, run.vyMetersPerSecond, run.omegaRadiansPerSecond));
+    setInputSpeeds(run);
   }
 
   public boolean shouldFlip() {
@@ -295,7 +295,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
       }
 
       // Apply update
-      // poseEstimator.updateWithTime(sampleTimestamps[i], rawYaw_Rot2d, modulePositions);
+      poseEstimator.updateWithTime(sampleTimestamps[i], rawYaw_Rot2d, modulePositions);
       odom.update(rawYaw_Rot2d, modulePositions);
     }
   }
@@ -304,24 +304,6 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   public void handleStateMachine() {
 
     // Calculate throttle speed
-    double maxLinearVel_mps =
-        Util.lerp(CFG.MAX_LINEAR_VEL_THROTTLED_mps, CFG.MAX_LINEAR_VEL_mps, si.throttle);
-    double maxAngularVel_radps =
-        Util.lerp(CFG.MAX_ANGULAR_VEL_THROTTLED_radps, CFG.MAX_ANGULAR_VEL_radps, si.throttle);
-
-    // Circular input processing
-    double inputMagnitude = Math.hypot(si.xi, si.yi);
-
-    double x_ = si.xi * maxLinearVel_mps;
-    double y_ = si.yi * maxLinearVel_mps;
-    double w_ = si.wi * maxAngularVel_radps;
-
-    if (inputMagnitude > 1.0) {
-      x_ = x_ / inputMagnitude;
-      y_ = y_ / inputMagnitude;
-    }
-
-    inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x_, y_, w_, getRotation());
 
     switch (getState()) {
       case DISABLED:
@@ -329,10 +311,30 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         }
         break;
       case FIELD_RELATIVE:
+        System.out.println("field relative");
+        double maxLinearVel_mps =
+            Util.lerp(CFG.MAX_LINEAR_VEL_THROTTLED_mps, CFG.MAX_LINEAR_VEL_mps, si.throttle);
+        double maxAngularVel_radps =
+            Util.lerp(CFG.MAX_ANGULAR_VEL_THROTTLED_radps, CFG.MAX_ANGULAR_VEL_radps, si.throttle);
+
+        // Circular input processing
+        double inputMagnitude = Math.hypot(si.xi, si.yi);
+
+        double x_ = si.xi * maxLinearVel_mps;
+        double y_ = si.yi * maxLinearVel_mps;
+        double w_ = si.wi * maxAngularVel_radps;
+
+        if (inputMagnitude > 1.0) {
+          x_ = x_ / inputMagnitude;
+          y_ = y_ / inputMagnitude;
+        }
+
+        inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x_, y_, w_, getRotation());
         break;
       case POSE_FOLLOWING:
         break;
       case PATH_FOLLOWING:
+        // System.out.println("path following");
         break;
       default:
     }
@@ -401,6 +403,10 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
 
   public void setInput(SwerveInput i) {
     si.set(i);
+  }
+
+  public void setInputSpeeds(ChassisSpeeds speeds) {
+    this.inputSpeeds = speeds;
   }
 
   public ChassisSpeeds accLimitForward(ChassisSpeeds acc, ChassisSpeeds vel) {
@@ -489,8 +495,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   /** Returns the current odometry pose. */
   @AutoLogOutput(key = "Drive/Odom")
   public Pose2d getPose() {
-    // return poseEstimator.getEstimatedPosition();
-    return odom.getPoseMeters();
+    return poseEstimator.getEstimatedPosition();
+    // return odom.getPoseMeters();
   }
 
   /** Returns the current odometry rotation. */

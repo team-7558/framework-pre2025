@@ -56,7 +56,7 @@ public class SS implements IStateMachine<InternalState> {
       case IDLE:
         // arm.setArmTarget(15);
         // arm.queueState(ArmState.HOLDING_PIECE);
-        drive.queueState(PathingMode.FIELD_RELATIVE);
+        // drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
         drive.queueState(PathingMode.DISABLED);
@@ -83,6 +83,8 @@ public class SS implements IStateMachine<InternalState> {
         // } else {
         //   arm.setArmTarget(15);
         // }
+        // elevator.set(1);
+        // elevator.queueState(ElevatorState.HOLDING);
         break;
       case SCORING_DOWN:
         // if (elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN) {

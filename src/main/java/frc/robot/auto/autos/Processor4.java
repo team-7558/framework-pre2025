@@ -7,7 +7,16 @@ public class Processor4 extends AltAuto {
 
   public Processor4() {
     super("Processor4", true);
-    trajstack.appendChain().append("toscore", false);
+    trajstack.appendChain().append("straightline", false);
+    trajstack
+        .appendChain()
+        .append("toscore", false)
+        .append("scoretopickup1", false)
+        .append("pickuptoscore2", false)
+        .append("score2topickup3", false)
+        .append("pickup3toscore3", false)
+        .append("score3topickup4", false)
+        .append("pickup4toscore4", false);
     trajstack.setActiveIdx(0);
   }
 

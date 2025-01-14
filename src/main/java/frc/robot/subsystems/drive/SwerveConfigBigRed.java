@@ -78,11 +78,11 @@ public class SwerveConfigBigRed implements ISwerveConfig {
   public final String CAN_BUS = "canivore";
 
   // Measured
-  public final double MASS_KG = 25.7709;
-  public final double TRACK_WIDTH_X_m = Units.inchesToMeters(21.5);
-  public final double TRACK_WIDTH_Y_m = Units.inchesToMeters(21.5); // TODO could be wrong
-  public final double BOT_WIDTH_X_m = Units.inchesToMeters(29.5);
-  public final double BOT_WIDTH_Y_m = Units.inchesToMeters(29.5);
+  public final double MASS_KG = 52.16;
+  public final double TRACK_WIDTH_X_m = Units.inchesToMeters(29.5);
+  public final double TRACK_WIDTH_Y_m = Units.inchesToMeters(29.5); // TODO could be wrong
+  public final double BOT_WIDTH_X_m = Units.inchesToMeters(33.50);
+  public final double BOT_WIDTH_Y_m = Units.inchesToMeters(33.50);
   public final double COR_OFFSET_X_m = 0.0;
   public final double COR_OFFSET_Y_m = 0.0;
   public final double DRIVE_BASE_RADIUS_m =

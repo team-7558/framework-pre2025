@@ -4,7 +4,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.PathingMode;
-import frc.robot.superstructure.Intention;
 import frc.robot.superstructure.SS;
 import frc.robot.util.AltTimer;
 import frc.robot.util.IStateMachine;
@@ -73,6 +72,7 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
   }
 
   public final void execute() {
+    drive.queueState(PathingMode.PATH_FOLLOWING);
     follower.step(swerveTimer.get());
     handleStateMachine();
     onExecute();
@@ -191,7 +191,7 @@ public abstract class AltAuto implements IStateMachine<AutoState> {
   public void handleStateMachine() {
     switch (state) {
       case DO_NOTHING:
-        ss.intend(Intention.IDLE);
+        // ss.intend(Intention.IDLE);
         break;
       case INTAKING:
         break;

@@ -155,12 +155,12 @@ public class Robot extends LoggedRobot {
 
     if (OI.DR.getLeftBumper()) {
       // arm.setClaw(true);
-      // arm.setWheels(-3);
+      arm.setWheels(-3);
     }
     if (OI.DR.getRightBumper()) {
       // arm.setClaw(false);
       // arm.
-      // arm.setWheels(3);
+      arm.setWheels(3);
     }
 
     if (OI.DR.getAButton()) {
