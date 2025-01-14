@@ -1,21 +1,20 @@
-package frc.robot.subsystems.algaeIntake;
+package frc.robot.subsystems.hand;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 
-public class AlgaeIOTalonFX implements AlgaeIO {
+public class HandIOTalonFX implements HandIO {
 
   private final TalonFX motor;
   private final VoltageOut voltage_out;
-    private final DigitalInput beambreak;
+  private final DigitalInput beambreak;
 
-  public AlgaeIOTalonFX() {
+  public HandIOTalonFX() {
     motor = new TalonFX(13);
     var motorConfig = new TalonFXConfiguration();
     beambreak = new DigitalInput(0);
@@ -31,7 +30,7 @@ public class AlgaeIOTalonFX implements AlgaeIO {
     voltage_out = new VoltageOut(0.0);
   }
 
-  public void updateInputs(AlgaeIOInputs inputs) {
+  public void updateInputs(HandIOInputs inputs) {
     // Refresh all signals to get updated data
     BaseStatusSignal.refreshAll();
 
@@ -55,4 +54,3 @@ public class AlgaeIOTalonFX implements AlgaeIO {
     setVoltage(0.0);
   }
 }
-

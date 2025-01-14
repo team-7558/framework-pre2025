@@ -1,19 +1,17 @@
-package frc.robot.subsystems.algaeIntake;
+package frc.robot.subsystems.hand;
 
 import org.littletonrobotics.junction.AutoLog;
 
-
-
-public interface AlgaeIO {
+public interface HandIO {
   @AutoLog
-  public static class AlgaeIOInputs {
+  public static class HandIOInputs {
     public double VelocityDegPS = 0.0;
     public double AppliedVolts = 0.0;
     public double[] current_Amps = new double[] {};
     public boolean beamBreakActivated = false;
   }
 
-  public default void updateInputs(AlgaeIOInputs inputs) {}
+  public default void updateInputs(HandIOInputs inputs) {}
 
   public default void setVoltage(double volts) {}
 

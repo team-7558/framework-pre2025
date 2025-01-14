@@ -1,40 +1,39 @@
-package frc.robot.subsystems.algaeIntake;
+package frc.robot.subsystems.hand;
 
+import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.util.Units;
-
-public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
-  private static Algae instance;
-
-  private final AlgaeIO io;
-  private final AlgaeIOInputsAutoLogged inputs = new AlgaeIOInputsAutoLogged();
+public class Hand extends StateMachineSubsystemBase<HandStates> {
+  private static Hand instance;
+  private Hand2d mech;
+  public final HandIO io;
+  public final HandIOInputsAutoLogged inputs = new HandIOInputsAutoLogged();
   double kV = 0.5; // Volts per rad/s (example value)
   double kS = 1.0; // Static friction voltage (example value)
-  boolean running = false;
 
-  public Algae(AlgaeIO io) {
-    super("Algae");
+  public Hand(HandIO io) {
+    super("Hand");
     this.io = io;
-    queueState(AlgaeStates.IDLE);
+    queueState(HandStates.IDLE);
+    mech = new Hand2d();
   }
 
   @Override
   public void inputPeriodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("coral", inputs);
+    Logger.processInputs("hand", inputs);
   }
 
-  public static Algae getInstance() {
+  public static Hand getInstance() {
     if (instance == null) {
       switch (Constants.currentMode) {
         case SIM:
-          instance = new Algae(new AlgaeIOSim());
+          instance = new Hand(new HandIOSim());
           break;
         case REAL:
-          instance = new Algae(new AlgaeIOTalonFX());
+          instance = new Hand(new HandIOTalonFX());
           break;
         default:
           break;
@@ -49,16 +48,16 @@ public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
       case DISABLED:
         break;
       case IDLE:
-        running = false;
-        setVelocity(0);
+        setVoltage(0.0);
         break;
       case INTAKING:
-        running = true;
-        setVelocity(0.5);
+        setVoltage(3.0);
+        if (inputs.beamBreakActivated) {
+          queueState(HandStates.IDLE);
+        }
         break;
       case SPITTING:
-        running = true;
-        setVelocity(-0.5);
+        setVoltage(-3.0);
         break;
       default:
         break;
@@ -66,8 +65,9 @@ public class Algae extends StateMachineSubsystemBase<AlgaeStates> {
   }
 
   @Override
-  protected void outputPeriodic() {
-    Logger.recordOutput("coral/running", running);
+  public void outputPeriodic() {
+    mech.setAngle(inputs.VelocityDegPS);
+    mech.periodic();
   }
 
   public void setVelocity(double velocity_DPS) {
