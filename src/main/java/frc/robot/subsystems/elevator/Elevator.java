@@ -31,6 +31,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
   public static final double ELEV_MAX_HEIGHT_M = 3.55;
   public static final double ELEV_MIN_ANGLE_DEG = 0;
   public static final double ELEV_MAX_ANGLE_DEG = 180;
+  public static final double ELEV_MAX_SAFE = 0.5;
 
   public static final double ELEV_SCORING_TOP = 3.3;
   public static final double ELEV_SCORING_DOWN = 3;
@@ -63,14 +64,8 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
       case DISABLED:
         break;
       case ZEROING:
-        if (!inputs.hallEffectHit) {
-          io.setVoltage(-0.8);
-        } else {
-          io.zero();
-          io.setVoltage(0);
-          zeroed = true;
-          queueState(ElevatorState.IDLE);
-        }
+        io.zero();
+        zeroed = true;
         break;
       case IDLE:
         break;

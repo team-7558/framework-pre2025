@@ -17,6 +17,10 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
   private double armScoring = 30;
   private double armZeroing = 0;
 
+  private double THRESHOLD = 30; // amps
+
+  public double armIntaking = 10;
+
   private double maxDutyCycle = 0.5;
 
   private boolean zeroed = false;
@@ -60,21 +64,38 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
       case IDLE:
         armPosition = armMinimum;
         io.setArmPosition(armPosition, maxDutyCycle);
-        // io.runWheels(-1);
+        // io.setSolenoid(true);
+        io.runWheels(wheelsVelocity);
         break;
       case HOLDING_PIECE:
         // io.runWheels(-1);
+        // io.setSolenoid(true);
         io.setArmPosition(armPosition, maxDutyCycle);
+        io.runWheels(wheelsVelocity);
         break;
       case SPITTING:
-        // io.runWheels(1);
+        // io.runWheels(-1);
+        // io.setSolenoid(true);
         io.setArmPosition(armPosition, maxDutyCycle);
+        io.runWheels(wheelsVelocity);
       case ZEROING:
+        // System.out.println(inputs.arm_current_A[0]);
+        // if (inputs.arm_current_A[0] < THRESHOLD) {
+        //   zeroed = false;
+        //   io.setArmVoltage(-1.5);
+        // } else {
         io.zero();
-        io.setArmVoltage(0);
+        zeroed = true;
         queueState(ArmState.IDLE);
+        // }
 
         break;
+      case INTAKING:
+        // io.runWheels(1);
+        io.setArmPosition(armIntaking);
+        // io.setSolenoid(false);
+        break;
+
       case MANUAL:
         // io.setArmVoltage(OI.DR.getXButton() ? 1.5 : 0);
         // io.setArmVoltage(OI.DR.getYButton() ? -1.5 : 0);
@@ -92,6 +113,14 @@ public class Arm extends StateMachineSubsystemBase<ArmState> {
   public void setArmTarget(double a, double maxDutyCycle) {
     this.armPosition = a;
     this.maxDutyCycle = maxDutyCycle;
+  }
+
+  public double getArmPosition() {
+    return inputs.arm_position_r;
+  }
+
+  public void setWheels(double wheels) {
+    this.wheelsVelocity = wheels;
   }
 
   @Override

@@ -76,10 +76,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     // MotionMagic Position gains
     motorConfig.Slot1.GravityType = GravityTypeValue.Elevator_Static;
     motorConfig.Slot1.kG = 0.2;
-    motorConfig.Slot1.kV = 2.2;
+    motorConfig.Slot1.kV = 1;
     motorConfig.Slot1.kS = 0.0;
     motorConfig.Slot1.kA = 0; // 1;
-    motorConfig.Slot1.kP = 17;
+    motorConfig.Slot1.kP = 1;
     motorConfig.Slot1.kI = 0.0;
     motorConfig.Slot1.kD = 0.0;
 

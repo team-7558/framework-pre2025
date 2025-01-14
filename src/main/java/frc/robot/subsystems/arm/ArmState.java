@@ -7,6 +7,7 @@ public enum ArmState implements IState {
   DISABLED,
   HOLDING_PIECE,
   SPITTING,
+  INTAKING,
   ZEROING,
   MANUAL,
 }

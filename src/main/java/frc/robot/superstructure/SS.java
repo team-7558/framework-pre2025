@@ -54,8 +54,8 @@ public class SS implements IStateMachine<InternalState> {
         elevator.queueState(ElevatorState.DISABLED);
         break;
       case IDLE:
-        arm.setArmTarget(15);
-        arm.queueState(ArmState.HOLDING_PIECE);
+        // arm.setArmTarget(15);
+        // arm.queueState(ArmState.HOLDING_PIECE);
         drive.queueState(PathingMode.FIELD_RELATIVE);
         break;
       case BOOT:
@@ -64,40 +64,55 @@ public class SS implements IStateMachine<InternalState> {
         arm.queueState(ArmState.ZEROING);
         if (elevator.getZeroed()) {
           arm.queueState(ArmState.ZEROING);
-          arm.setArmTarget(15);
-          arm.queueState(ArmState.IDLE);
-          booted = true;
-          queueState(InternalState.IDLE);
+          if (arm.getZeroed()) {
+            System.out.println("about to set to idle");
+            arm.queueState(ArmState.IDLE);
+            booted = true;
+            queueState(InternalState.IDLE);
+          }
         }
         intend(Intention.IDLE);
         break;
       case SCORING_UP:
-        elevator.set(Elevator.ELEV_SCORING_TOP);
-        arm.queueState(ArmState.HOLDING_PIECE);
-        elevator.queueState(ElevatorState.HOLDING);
-        if (elevator.getHeight() >= Elevator.ELEV_SCORING_TOP - 1) {
-          // System.out.println("at target!!!!!!!!!!!");
-          arm.setArmTarget(30);
-        } else {
-          arm.setArmTarget(15);
-        }
+        // elevator.set(Elevator.ELEV_SCORING_TOP);
+        // arm.queueState(ArmState.HOLDING_PIECE);
+        // elevator.queueState(ElevatorState.HOLDING);
+        // if (elevator.getHeight() >= Elevator.ELEV_SCORING_TOP - 1) {
+        //   // System.out.println("at target!!!!!!!!!!!");
+        //   arm.setArmTarget(30);
+        // } else {
+        //   arm.setArmTarget(15);
+        // }
         break;
       case SCORING_DOWN:
-        if (elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN) {
-          arm.setArmTarget(20, 0.5);
-          arm.queueState(ArmState.HOLDING_PIECE);
-        } else if (elevator.getHeight() <= Elevator.ELEV_SCORING_DOWN
-            && elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN - 0.4) {
-          arm.queueState(ArmState.SPITTING);
-          arm.setArmTarget(30, 0.5);
-        } else if (elevator.getHeight() < Elevator.ELEV_SCORING_DOWN - 0.7) {
-          arm.setArmTarget(15, 0.3);
-          arm.queueState(ArmState.HOLDING_PIECE);
-        } else if (elevator.getHeight() < 0.25) {
-          queueState(InternalState.IDLE);
-        }
-        elevator.set(0.2);
-        elevator.queueState(ElevatorState.HOLDING);
+        // if (elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN) {
+        //   arm.setArmTarget(20, 0.2);
+        //   arm.queueState(ArmState.HOLDING_PIECE);
+        // } else if (elevator.getHeight() <= Elevator.ELEV_SCORING_DOWN
+        //     && elevator.getHeight() >= Elevator.ELEV_SCORING_DOWN - 0.4) {
+        //   arm.queueState(ArmState.SPITTING);
+        //   arm.setArmTarget(30, 0.2);
+        // } else if (elevator.getHeight() < Elevator.ELEV_SCORING_DOWN - 0.7) {
+        //   arm.setArmTarget(15, 0.2);
+        //   arm.queueState(ArmState.HOLDING_PIECE);
+        // } else if (elevator.getHeight() < 0.25) {
+        //   arm.setArmTarget(15);
+        //   queueState(InternalState.IDLE);
+        // }
+        // elevator.set(0.2);
+        // elevator.queueState(ElevatorState.HOLDING);
+        break;
+      case INTAKING:
+        // if (arm.getArmPosition() <= 17 && arm.getArmPosition() >= 14) {
+        //   elevator.set(Elevator.ELEV_MIN_HEIGHT_M);
+        //   elevator.queueState(ElevatorState.HOLDING);
+        // }
+        // if (elevator.getHeight() > Elevator.ELEV_MAX_SAFE) {
+        //   arm.queueState(ArmState.IDLE);
+        // } else {
+        //   arm.queueState(ArmState.INTAKING);
+        // }
+
         break;
       default:
         break;
