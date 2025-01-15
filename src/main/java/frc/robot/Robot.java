@@ -156,17 +156,17 @@ public class Robot extends LoggedRobot {
       drive.zeroGyro();
     }
 
-    if (OI.DR.getLeftBumper()) {
-      // arm.setClaw(true);
-      arm.setWheels(-3);
-    }
+    // if (OI.DR.getLeftBumper()) {
+    //   // arm.setClaw(true);
+    //   arm.setWheels(-3);
+    // }
     if (OI.DR.getRightBumper()) {
       // arm.setClaw(false);
       // arm.
       arm.setWheels(3);
     }
 
-    if (OI.DR.getLeftTriggerAxis() > 0) {
+    if (OI.DR.getLeftBumper()) {
       drive.queueState(PathingMode.POSE_FOLLOWING);
       drive.setTargetPose(new Pose2d(5, 3, new Rotation2d()));
     } else {

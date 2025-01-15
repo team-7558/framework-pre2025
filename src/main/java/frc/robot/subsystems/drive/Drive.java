@@ -320,7 +320,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         }
         break;
       case FIELD_RELATIVE:
-        System.out.println("field relative");
+        // System.out.println("field relative");
         double maxLinearVel_mps =
             Util.lerp(CFG.MAX_LINEAR_VEL_THROTTLED_mps, CFG.MAX_LINEAR_VEL_mps, si.throttle);
         double maxAngularVel_radps =
@@ -341,27 +341,38 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x_, y_, w_, getRotation());
         break;
       case POSE_FOLLOWING:
-        Transform2d poseDiff = targetPose.minus(getPose());
-        Translation2d translationDiff = poseDiff.getTranslation();
+        Transform2d poseDiff = targetPose.minus(getPose()); // Calculate the difference in position.
 
-        double magnitude = Math.hypot(poseDiff.getX(), poseDiff.getY());
+        double magnitude =
+            Math.hypot(
+                poseDiff.getX(),
+                poseDiff.getY()); // Calculate the magnitude (distance to the target).
 
-        Translation2d direction;
+        Transform2d direction; // This will hold the normalized and limited vector.
+
         if (magnitude > CFG.MAX_LINEAR_VEL_mps) {
+          // If the magnitude exceeds the max speed, normalize the vector and scale it to
+          // MAX_LINEAR_SPEED.
           double scale = CFG.MAX_LINEAR_VEL_mps / magnitude;
-          direction = new Translation2d(poseDiff.getX() * scale, poseDiff.getY() * scale);
+          direction =
+              new Transform2d(poseDiff.getX() * scale, poseDiff.getY() * scale, new Rotation2d());
         } else {
-          direction = poseDiff.getTranslation();
+          // Otherwise, use the original vector.
+          direction = poseDiff;
         }
 
-        // normalization ^
+        // Create the ChassisSpeeds with the limited linear velocities.
+        ChassisSpeeds speeds =
+            new ChassisSpeeds(
+                direction.getX(), // Linear velocity in the x-direction (vx)
+                direction.getY(), // Linear velocity in the y-direction (vy)
+                0 // No angular velocity (omega)
+                );
 
-        ChassisSpeeds speeds = new ChassisSpeeds(direction.getX(), direction.getY(), 0);
-
+        // Assuming you have a function to get the robot's current rotation (getRotation).
         ChassisSpeeds robotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getRotation());
 
         this.inputSpeeds = robotRelative;
-
         break;
       case PATH_FOLLOWING:
         // System.out.println("path following");
