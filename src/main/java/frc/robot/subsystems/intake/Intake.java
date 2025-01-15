@@ -21,7 +21,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
   private Intake(IntakeIO io) {
     super("Intake");
     this.io = io;
-    setTargetAngle(0);
+    setTargetAngle(90);
     queueState(IntakeStates.IDLE);
   }
 
@@ -54,7 +54,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
       case IDLE:
         break;
       case TRAVELLING:
-        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.5) {
+        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.1) {
           queueState(IntakeStates.HOLDING);
         } else {
           if (stateInit()) {
@@ -62,7 +62,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
           } else {
             first_time = false;
           }
-          io.goToAngle(targetAngleDegrees, inputs, first_time);
+          io.goToAngle(targetAngleDegrees, inputs, stateInit());
         }
         break;
       case HOLDING:
@@ -81,7 +81,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
 
   @Override
   public void outputPeriodic() {
-    System.out.println("Before");
+    // System.out.println("Before");
 
     mech.setAngle(inputs.slap_pos_deg);
     mech.periodic();

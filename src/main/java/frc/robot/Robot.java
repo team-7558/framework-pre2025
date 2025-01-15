@@ -37,7 +37,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
-
   private Intake intake = Intake.getInstance();
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -118,10 +117,10 @@ public class Robot extends LoggedRobot {
 
     if (OI.DR.getAButton()) {
       intake.queueState(IntakeStates.TRAVELLING);
-      intake.setTargetAngle(90);
+      intake.setTargetAngle(0);
     } else {
       intake.queueState(IntakeStates.TRAVELLING);
-      intake.setTargetAngle(0);
+      intake.setTargetAngle(90);
     }
 
     intake.periodic();

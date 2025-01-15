@@ -43,7 +43,7 @@ public class Intake2d {
 
   /** Periodically updates the SmartDashboard and logs the mechanism state. */
   public void periodic() {
-    SmartDashboard.putData(finalName, mech);
-    Logger.recordOutput(finalName, mech);
+    SmartDashboard.putData("Intake2d", mech);
+    Logger.recordOutput("Intake2d", mech);
   }
 }
