@@ -350,6 +350,11 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
 
         Transform2d direction; // This will hold the normalized and limited vector.
 
+        Rotation2d rotationDiff = poseDiff.getRotation();
+        double radDiff = rotationDiff.getRadians();
+        double angularVelocity =
+            Util.limit(radDiff, -CFG.MAX_ANGULAR_VEL_radps, CFG.MAX_ANGULAR_VEL_radps);
+
         if (magnitude > CFG.MAX_LINEAR_VEL_mps) {
           // If the magnitude exceeds the max speed, normalize the vector and scale it to
           // MAX_LINEAR_SPEED.
@@ -366,7 +371,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
             new ChassisSpeeds(
                 direction.getX(), // Linear velocity in the x-direction (vx)
                 direction.getY(), // Linear velocity in the y-direction (vy)
-                0 // No angular velocity (omega)
+                angularVelocity // No angular velocity (omega)
                 );
 
         // Assuming you have a function to get the robot's current rotation (getRotation).
@@ -375,6 +380,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         this.inputSpeeds = robotRelative;
         break;
       case PATH_FOLLOWING:
+        // a swerve follower will probably be running
         // System.out.println("path following");
         break;
       default:
