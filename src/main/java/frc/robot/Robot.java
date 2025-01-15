@@ -16,6 +16,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.Elevator2d;
+import frc.robot.subsystems.elevator.ElevatorState;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
 import frc.robot.util.Util;
@@ -35,6 +38,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+  private Elevator elevator;
+  private Elevator2d mech;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -90,6 +95,8 @@ public class Robot extends LoggedRobot {
 
     // init subsystems
     drive = Drive.getInstance();
+    elevator = Elevator.getInstance();
+    mech = Elevator2d.getInstance();
   }
 
   /** This function is called periodically during all modes. */
@@ -101,15 +108,30 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
 
+    boolean ab_ = OI.DR.getYButton();
+    boolean yb_ = OI.DR.getAButton();
     double x_ = OI.deadband(-OI.DR.getLeftY());
     double y_ = OI.deadband(-OI.DR.getLeftX());
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
+
+    if (ab_) {
+      elevator.queueState(ElevatorState.TRAVELLING);
+      elevator.setTargetHeight(Elevator.ELEV_MAX_HEIGHT_M);
+    } else if (yb_) {
+      elevator.queueState(ElevatorState.TRAVELLING);
+      elevator.setTargetHeight(Elevator.ELEV_MIN_HEIGHT_M);
+    } else {
+      elevator.queueState(ElevatorState.IDLE);
+    }
+
     drive.setInput(input);
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
+    elevator.periodic();
+    mech.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
 

@@ -8,5 +8,6 @@ public enum ElevatorState implements IState {
   HOLDING,
   HOMING,
   MANUAL,
-  TRACKING
+  TRACKING,
+  TRAVELLING
 }

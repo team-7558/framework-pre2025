@@ -1,22 +1,23 @@
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
-import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color8Bit;
-import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
 
-    ElevatorIOInputs temp = new ElevatorIOInputs();
+  private ElevatorIOInputs temp = new ElevatorIOInputs();
+  private ElevatorSim elev =
+      new ElevatorSim(DCMotor.getKrakenX60Foc(1), 25, 10, 0.05, 0.5, 3, false, 0.5);
 
-    
+  private PIDController pidE = new PIDController(100, 0, 0);
+
+  private double appliedVoltsElev;
+  
+
   public void updateInputs(ElevatorIOInputs Inputs) {}
 
-  public void setVoltage(double volts_V) {
-
-  }
+  public void setVoltage(double volts_V) {}
 
   public void setVel(double vel_mps) {}
 
@@ -36,12 +37,5 @@ public class ElevatorIOSim implements ElevatorIO {
 
   public void toggleBrake() {}
 
-  public void zero() {} 
-
-
-
-
-E
-
-
+  public void zero() {}
 }
