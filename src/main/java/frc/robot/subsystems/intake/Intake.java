@@ -32,6 +32,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
           instance = new Intake(new IntakeIOSim());
           break;
         case REAL:
+          instance = new Intake(new IntakeIOTalonFX());
         default:
           break;
       }
