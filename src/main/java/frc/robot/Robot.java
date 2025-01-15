@@ -37,6 +37,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 public class Robot extends LoggedRobot {
 
   private Drive drive;
+
   private Arm arm = Arm.getInstance();
 
   /**
@@ -117,16 +118,14 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     if (OI.DR.getAButton()) {
+      arm.queueState(ArmStates.TRAVELLING);
       arm.setElbowTargetAngle(90);
-      arm.queueState(ArmStates.TRAVELLING);
-
     } else {
-      arm.setElbowTargetAngle(0);
       arm.queueState(ArmStates.TRAVELLING);
+      arm.setElbowTargetAngle(0);
     }
 
     arm.periodic();
-
     CommandScheduler.getInstance().run();
 
     // ^ will be gone later just keeping now to not break shit
