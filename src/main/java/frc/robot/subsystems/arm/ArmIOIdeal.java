@@ -1,44 +1,45 @@
 package frc.robot.subsystems.arm;
 
-import frc.robot.Constants;
-
 public class ArmIOIdeal implements ArmIO {
   private double ElbowVel_degps = 0.0;
   private double ElbowVolts_V = 0.0;
   private double ElbowPos_deg = 0.0;
 
+  private double ShoulderVel_degps = 0.0;
+  private double ShoulderVolts_V = 0.0;
+  private double ShoulderPos_deg = 0.0;
+
   public ArmIOIdeal() {}
 
   @Override
   public void updateInputs(ArmIOInputs inputs) {
-    inputs.elbow_volts = ElbowVolts_V;
-    inputs.elbow_velDegPS = ElbowVel_degps;
+    inputs.elbow_volts_V = ElbowVolts_V;
+    inputs.elbow_vel_degps = ElbowVel_degps;
     inputs.elbow_pos_deg = ElbowPos_deg;
-    inputs.elbow_currents = new double[] {40, 40};
+    inputs.elbow_current_A = new double[] {40, 40};
+
+    inputs.shoulder_volts_V = ShoulderVolts_V;
+    inputs.shoulder_vel_degps = ShoulderVel_degps;
+    inputs.shoulder_pos_deg = ShoulderPos_deg;
+    inputs.shoulder_current_A = new double[] {40, 40};
   }
 
   @Override
-  public void setVelocity(double velocity_mps) {
-    this.vel_mps = velocity_mps;
-    this.pos_m += velocity_mps * Constants.globalDelta_sec;
+  public void goToElbowAngle(double angle, boolean first_time) {
+    this.ElbowPos_deg = angle;
   }
 
   @Override
-  public void setVoltage(double volts_V) {
-    this.volts_V = volts_V;
+  public void stopElbow() {
+    this.ElbowVolts_V = 0.0;
   }
 
   @Override
-  public void holdPos(double pos_m) {
-    this.vel_mps = 0;
-    this.volts_V = 0;
-    this.pos_m = pos_m;
+  public void goToShoulderAngle(double angle, boolean first_time) {
+    this.ShoulderPos_deg = angle;
   }
 
-  @Override
-  public void travelToPos(double pos_m) {
-    this.vel_mps = 0;
-    this.volts_V = 0;
-    this.pos_m = pos_m;
+  public void stopShoulder() {
+    this.ElbowVolts_V = 0.0;
   }
 }

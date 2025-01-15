@@ -14,7 +14,8 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
   private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
   public boolean first_time = true;
 
-  private double targetAngleDegrees;
+  private double ElbowTargetAngleDegrees;
+  private double ShoulderTargetAngleDegrees;
 
   private Arm(ArmIO io) {
     super("Arm");
@@ -50,21 +51,24 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
         break;
       case IDLE:
         break;
-      case ELBOWTRAVELLING:
-        if (Math.abs(inputs.elbow_pos_deg - targetAngleDegrees) < 0.5) {
-          queueState(ArmStates.ELBOWHOLDING);
+      case TRAVELLING:
+        if (Math.abs(inputs.elbow_pos_deg - ElbowTargetAngleDegrees) < 0.5
+            && Math.abs(inputs.elbow_pos_deg - ShoulderTargetAngleDegrees) < 0.5) {
+          queueState(ArmStates.HOLDING);
         } else {
           if (stateInit()) {
             first_time = true;
           } else {
             first_time = false;
           }
-          io.goToElbowAngle(targetAngleDegrees, inputs, first_time);
-        }
 
+          io.goToElbowAngle(ElbowTargetAngleDegrees, first_time);
+          io.goToShoulderAngle(ShoulderTargetAngleDegrees, first_time);
+        }
         break;
-      case ELBOWHOLDING:
-        io.setElbowVoltage(0);
+      case HOLDING:
+        io.stopElbow();
+        io.stopShoulder();
         break;
       default:
         break;
@@ -73,19 +77,20 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
 
   @Override
   public void outputPeriodic() {
-    System.out.println("Before");
 
     mech.setElbowAngle(inputs.elbow_pos_deg);
+
+    mech.setShoulderAngle(inputs.shoulder_pos_deg);
     mech.periodic();
 
-    Logger.recordOutput("Arm/TargetAngleDegrees", targetAngleDegrees);
-  }
-
-  public void set(double angle) {
-    setElbowTargetAngle(angle);
+    Logger.recordOutput("Arm/ElbowTargetAngleDegrees", ElbowTargetAngleDegrees);
   }
 
   public void setElbowTargetAngle(double targetAngleDegrees) {
-    this.targetAngleDegrees = targetAngleDegrees;
+    this.ElbowTargetAngleDegrees = targetAngleDegrees;
+  }
+
+  public void setShoulderTargetAngle(double targetAngleDegrees) {
+    this.ShoulderTargetAngleDegrees = targetAngleDegrees;
   }
 }

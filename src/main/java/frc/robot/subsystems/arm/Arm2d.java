@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.Logger;
 public class Arm2d {
 
   private final MechanismLigament2d ElbowSideview;
-  private final MechanismLigament2d ShoulderSideview;
+  private final MechanismLigament2d ShoulderFrontview;
   private final Mechanism2d mech;
   private final String finalName;
 
@@ -24,21 +24,21 @@ public class Arm2d {
     this.finalName = name;
 
     mech = new Mechanism2d(3, 3);
-    MechanismRoot2d ElbowRoot = mech.getRoot("root", 0.5, 0.5);
+    MechanismRoot2d root = mech.getRoot("root", 0.5, 0.5);
 
-    MechanismRoot2d ShoulderRoot = mech.getRoot("root", 3, 0.5);
+    MechanismLigament2d connection =
+        root.append(new MechanismLigament2d("connector", 1.5, 0, 0.05, new Color8Bit(0, 0, 0)));
 
-    ElbowSideview = ElbowRoot.append(new MechanismLigament2d("ElbowSideView", 0.5, 90, 10, color));
+    ElbowSideview = root.append(new MechanismLigament2d("ElbowSideView", 0.5, 90, 10, color));
 
-    ShoulderSideview =
-        ShoulderRoot.append(new MechanismLigament2d("ShoulderSideView", 0.5, 90, 10, color));
+    ShoulderFrontview =
+        connection.append(new MechanismLigament2d("ShoulderSideView", 0.5, 90, 10, color));
 
     MechanismLigament2d bottom =
-        ElbowRoot.append(
-            new MechanismLigament2d("bottom", 0.001, 0, 20, new Color8Bit(125, 0, 125)));
+        root.append(new MechanismLigament2d("bottom", 0.001, 0, 20, new Color8Bit(125, 0, 125)));
 
     MechanismLigament2d bottom2 =
-        ShoulderRoot.append(
+        connection.append(
             new MechanismLigament2d("bottom2", 0.001, 0, 20, new Color8Bit(125, 0, 125)));
   }
 
@@ -51,6 +51,10 @@ public class Arm2d {
    */
   public void setElbowAngle(double targetAngle) {
     ElbowSideview.setAngle(targetAngle);
+  }
+
+  public void setShoulderAngle(double targetAngle) {
+    ShoulderFrontview.setAngle(targetAngle);
   }
 
   /** Periodically updates the SmartDashboard and logs the mechanism state. */

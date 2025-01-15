@@ -5,8 +5,6 @@ import frc.robot.util.IState;
 public enum ArmStates implements IState {
   IDLE,
   DISABLED,
-  ELBOWTRAVELLING,
-  ELBOWHOLDING,
-  SHOULDERTRAVELLING,
-  SHOULDERHOLDING
+  TRAVELLING,
+  HOLDING
 }

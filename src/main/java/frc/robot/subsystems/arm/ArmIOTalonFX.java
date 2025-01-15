@@ -99,10 +99,10 @@ public class ArmIOTalonFX implements ArmIO {
 
   public void updateInputs(ArmIOInputs inputs) {
     BaseStatusSignal.refreshAll();
-    inputs.elbow_currents = new double[] {ElbowMotor.getStatorCurrent().getValueAsDouble()};
+    inputs.elbow_current_A = new double[] {ElbowMotor.getStatorCurrent().getValueAsDouble()};
     inputs.elbow_pos_deg = Units.radiansToDegrees(ElbowMotor.getPosition().getValueAsDouble());
-    inputs.elbow_volts = ElbowMotor.getMotorVoltage().getValueAsDouble();
-    inputs.elbow_velDegPS = ElbowMotor.getVelocity().getValueAsDouble();
+    inputs.elbow_volts_V = ElbowMotor.getMotorVoltage().getValueAsDouble();
+    inputs.elbow_vel_degps = ElbowMotor.getVelocity().getValueAsDouble();
   }
 
   public void goToAngle(double position_deg, ArmIOInputs inputs, boolean first_time) {
