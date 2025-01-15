@@ -11,19 +11,23 @@ public class ArmIOSparkMax {
   private final ShuffleboardTab m_tab = Shuffleboard.getTab("Arm");
 
   // arm motor
-  // private final CANSparkMax armMotor = new CANSparkMax(11, MotorType.kBrushless);
+  // private final CANSparkMax armMotor = new CANSparkMax(11,
+  // MotorType.kBrushless);
   // private final RelativeEncoder armEncoder = armMotor.getEncoder();
   // private final DigitalInput m_hallEffect = new DigitalInput(1);
   private final PIDController armPid = new PIDController(0.1, 0, 0);
 
-  // private final CANSparkMax wheelsMotor = new CANSparkMax(12, MotorType.kBrushless);
+  // private final CANSparkMax wheelsMotor = new CANSparkMax(12,
+  // MotorType.kBrushless);
 
   // private PneumaticHub revPH = new PneumaticHub(24);
-  // private Compressor compressor = new Compressor(24, PneumaticsModuleType.REVPH);
+  // private Compressor compressor = new Compressor(24,
+  // PneumaticsModuleType.REVPH);
 
   // private Solenoid solenoid = new Solenoid(24, PneumaticsModuleType.REVPH, 1);
 
-  // private final CANSparkMax wristMotor = new CANSparkMax(13, MotorType.kBrushless);
+  // private final CANSparkMax wristMotor = new CANSparkMax(13,
+  // MotorType.kBrushless);
   // private final RelativeEncoder wristEncoder = wristMotor.getEncoder();
   // private final SparkPIDController wristPid = wristMotor.getPIDController();
 
@@ -100,7 +104,8 @@ public class ArmIOSparkMax {
 
   public void setWristAngle(double angle) {
     // double rotations = angle / 5.8;
-    // wristPid.setReference(Util.limit(rotations, 0, 180 / 5.8), ControlType.kPosition);
+    // wristPid.setReference(Util.limit(rotations, 0, 180 / 5.8),
+    // ControlType.kPosition);
   }
 
   public void setArmVoltage(double volts) {

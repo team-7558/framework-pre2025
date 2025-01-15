@@ -23,6 +23,7 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -160,6 +161,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   private SwerveDrivePoseEstimator poseEstimator;
   private SwerveDriveOdometry odom;
 
+  private Pose2d targetPose;
+
   private PathingOverride override;
 
   public Drive(
@@ -177,6 +180,8 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     this.modules[FR] = new Module(frModuleIO, FR);
     this.modules[BL] = new Module(blModuleIO, BL);
     this.modules[BR] = new Module(brModuleIO, BR);
+
+    targetPose = new Pose2d();
 
     RobotConfig config = null;
     try {
@@ -250,6 +255,10 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
 
   public boolean shouldFlip() {
     return true;
+  }
+
+  public void setTargetPose(Pose2d targetPose) {
+    this.targetPose = targetPose;
   }
 
   @Override
@@ -332,6 +341,27 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
         inputSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(x_, y_, w_, getRotation());
         break;
       case POSE_FOLLOWING:
+        Transform2d poseDiff = targetPose.minus(getPose());
+        Translation2d translationDiff = poseDiff.getTranslation();
+
+        double magnitude = Math.hypot(poseDiff.getX(), poseDiff.getY());
+
+        Translation2d direction;
+        if (magnitude > CFG.MAX_LINEAR_VEL_mps) {
+          double scale = CFG.MAX_LINEAR_VEL_mps / magnitude;
+          direction = new Translation2d(poseDiff.getX() * scale, poseDiff.getY() * scale);
+        } else {
+          direction = poseDiff.getTranslation();
+        }
+
+        // normalization ^
+
+        ChassisSpeeds speeds = new ChassisSpeeds(direction.getX(), direction.getY(), 0);
+
+        ChassisSpeeds robotRelative = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getRotation());
+
+        this.inputSpeeds = robotRelative;
+
         break;
       case PATH_FOLLOWING:
         // System.out.println("path following");

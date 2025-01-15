@@ -13,11 +13,14 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.auto.RunAltAuto;
 import frc.robot.auto.autos.Processor4;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.PathingMode;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorState;
@@ -161,6 +164,13 @@ public class Robot extends LoggedRobot {
       // arm.setClaw(false);
       // arm.
       arm.setWheels(3);
+    }
+
+    if (OI.DR.getLeftTriggerAxis() > 0) {
+      drive.queueState(PathingMode.POSE_FOLLOWING);
+      drive.setTargetPose(new Pose2d(5, 3, new Rotation2d()));
+    } else {
+      drive.queueState(PathingMode.FIELD_RELATIVE);
     }
 
     if (OI.DR.getAButton()) {
