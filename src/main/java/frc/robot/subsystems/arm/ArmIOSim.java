@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class ArmIOSim implements ArmIO {
 
-  private ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+  private ArmIOInputs inputs;
 
   private TrapezoidProfile.State ElbowArmSetpoint;
   private TrapezoidProfile.State ElbowArmStartPoint;
@@ -45,7 +45,7 @@ public class ArmIOSim implements ArmIO {
           false,
           Units.degreesToRadians(0)); // Custom arm motor simulation
 
-  private final PIDController ElbowArmPositionPID = new PIDController(70, 1, 4);
+  private final PIDController ElbowArmPositionPID = new PIDController(10, 0, 0);
   private double applied_volts = 0.0;
 
   private final SingleJointedArmSim ShoulderArmSim =
@@ -87,6 +87,7 @@ public class ArmIOSim implements ArmIO {
   @Override
   public void goToElbowAngle(double degrees, boolean first_time) {
     if (first_time) {
+      System.out.println("Travelling once");
       timer.reset();
       ElbowArmGoal = new TrapezoidProfile.State(degrees, 0);
       ElbowArmStartPoint = new TrapezoidProfile.State(inputs.elbow_pos_deg, inputs.elbow_vel_degps);
@@ -94,13 +95,15 @@ public class ArmIOSim implements ArmIO {
 
     ElbowArmSetpoint = ElbowArmProfile.calculate(timer.time(), ElbowArmStartPoint, ElbowArmGoal);
     // Check if the target is valid (optional safety check)
-    double targetRadians = Units.degreesToRadians(ElbowArmSetpoint.position);
-    ElbowArmPositionPID.setSetpoint(targetRadians);
-    double calculatedVoltage = ElbowArmPositionPID.calculate(ElbowArmSim.getAngleRads());
-    applied_volts = calculatedVoltage;
-    ElbowArmSim.setInputVoltage(calculatedVoltage);
+    double ElbowtargetRadians = Units.degreesToRadians(ElbowArmSetpoint.position);
+    ElbowArmPositionPID.setSetpoint(ElbowtargetRadians);
+    double ElbowcalculatedVoltage = ElbowArmPositionPID.calculate(ElbowArmSim.getAngleRads());
+    applied_volts = ElbowcalculatedVoltage;
+    ElbowArmSim.setInputVoltage(ElbowcalculatedVoltage);
 
-    Logger.recordOutput("Arm/ArmSetpoint", ElbowArmSetpoint.position);
+    Logger.recordOutput("ElbowArm/ArmSetpoint", ElbowArmSetpoint.position);
+    Logger.recordOutput("ElbowArm/ElbowArmGoal", ElbowArmGoal.position);
+    Logger.recordOutput("ElbowArm/ElbowArmGoal", ElbowArmStartPoint.position);
   }
 
   @Override
@@ -127,11 +130,13 @@ public class ArmIOSim implements ArmIO {
 
   @Override
   public void stopElbow() {
-    ElbowArmSim.setInputVoltage(0.0);
+    applied_volts = 0;
+    ElbowArmSim.setInputVoltage(0);
   }
 
   @Override
   public void stopShoulder() {
-    ShoulderArmSim.setInputVoltage(0.0);
+    Shoulder_Applied_volts = 0;
+    ShoulderArmSim.setInputVoltage(0);
   }
 }

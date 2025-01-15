@@ -52,23 +52,25 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
       case IDLE:
         break;
       case TRAVELLING:
-        if (Math.abs(inputs.elbow_pos_deg - ElbowTargetAngleDegrees) < 0.5
-            && Math.abs(inputs.elbow_pos_deg - ShoulderTargetAngleDegrees) < 0.5) {
+        if (Math.abs(inputs.elbow_pos_deg - ElbowTargetAngleDegrees) < 0.5) {
           queueState(ArmStates.HOLDING);
+          break;
         } else {
           if (stateInit()) {
             first_time = true;
           } else {
             first_time = false;
           }
-
           io.goToElbowAngle(ElbowTargetAngleDegrees, first_time);
-          io.goToShoulderAngle(ShoulderTargetAngleDegrees, first_time);
         }
         break;
       case HOLDING:
-        io.stopElbow();
-        io.stopShoulder();
+        if (stateInit()) {
+          first_time = true;
+        } else {
+          first_time = false;
+        }
+        io.goToElbowAngle(ElbowTargetAngleDegrees, first_time);
         break;
       default:
         break;
