@@ -13,25 +13,25 @@
 
 package frc.robot.subsystems.elevator;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.util.Util;
-import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   private boolean zeroed;
+  private Elevator2d mech2d;
 
   private final ElevatorIO io;
   private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
 
   private static Elevator instance;
 
-  private double targetLengthMeters;
-
-  public static final double ELEV_MIN_HEIGHT_M = 0.0;
-  public static final double ELEV_MAX_HEIGHT_M = 0.0;
+  public static final double ELEV_MIN_HEIGHT_M = 0.5;
+  public static final double ELEV_MAX_HEIGHT_M = 1.5;
   public static final double ELEV_STROKE_M = ELEV_MAX_HEIGHT_M - ELEV_MIN_HEIGHT_M;
 
   public static final double ELEV_MIN_ANGLE_DEG = 0.0;
@@ -44,12 +44,13 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   private double targetHeight_m = ELEV_MIN_HEIGHT_M;
 
+
   public Elevator(ElevatorIO io) {
     super("Elevator");
     this.io = new ElevatorIOReal();
-    setTargetLength(0);
     queueState(ElevatorState.IDLE);
     zeroed = false;
+    mech2d = new Elevator2d();
   }
 
   @Override
@@ -58,7 +59,9 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
     Logger.processInputs("Elevator", inputs);
   }
 
-  public static Elevator getInstance() {
+  public static Elevator getInstance(
+
+  ) {
 
     if (instance == null) {
       System.out.println("Elevator initialized.");
@@ -98,7 +101,12 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
       case IDLE:
         break;
       case HOLDING:
-        io.travelToPos(targetLengthMeters);
+        io.travelToPos(targetHeight_m);
+        break;
+      case TRAVELLING:
+        if (!atTargetHeight()) {
+          io.travelToPos(targetHeight_m);
+        }
         break;
 
       case MANUAL:
@@ -112,17 +120,8 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   @Override
   public void outputPeriodic() {
-    io.travelToPos(targetLengthMeters);
-    Logger.recordOutput("Elevator/TargetLengthMeters", targetLengthMeters);
-  }
-
-  public void set(double meters) {
-    meters = Math.max(ELEV_MIN_HEIGHT_M, Math.min(ELEV_MAX_HEIGHT_M, meters));
-    setTargetLength(meters);
-  }
-
-  public void setTargetLength(double targetLengthMeters) {
-    this.targetLengthMeters = targetLengthMeters;
+    io.travelToPos(targetHeight_m);
+    Logger.recordOutput("Elevator/targetHeight_m", targetHeight_m);
   }
 
   public boolean getZeroed() {
@@ -134,7 +133,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
   }
 
   public boolean atTargetHeight() {
-    return atTargetHeight(0.0);
+    return atTargetHeight(0.2);
   }
 
   public boolean atTargetHeight(double tol) {
