@@ -22,6 +22,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
     super("Intake");
     this.io = io;
     setTargetAngle(90);
+    io.goToAngle(targetAngleDegrees, inputs, true);
     queueState(IntakeStates.IDLE);
   }
 
@@ -57,11 +58,6 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
         if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.1) {
           queueState(IntakeStates.HOLDING);
         } else {
-          if (stateInit()) {
-            first_time = true;
-          } else {
-            first_time = false;
-          }
           io.goToAngle(targetAngleDegrees, inputs, stateInit());
         }
         break;
@@ -87,6 +83,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
     mech.periodic();
 
     Logger.recordOutput("Slap/TargetAngleDegrees", targetAngleDegrees);
+    Logger.recordOutput("Slap/CurrentAngle", inputs.slap_pos_deg);
     Logger.recordOutput("coral/running", running);
   }
 
