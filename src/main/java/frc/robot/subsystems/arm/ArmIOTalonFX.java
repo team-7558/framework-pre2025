@@ -1,4 +1,4 @@
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -17,7 +17,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 
-public class ClawIOTalonFX implements ClawIO {
+public class ArmIOTalonFX implements ArmIO {
   private final TalonFX arm_motor;
   private final TalonFX claw_motor;
   private final CANcoder cancoder;
@@ -43,7 +43,7 @@ public class ClawIOTalonFX implements ClawIO {
   private final double maxPositionDegrees = 90;
   private final double minPositionDegrees = 0; // Set your desired minimum position here
 
-  public ClawIOTalonFX() {
+  public ArmIOTalonFX() {
     var armmotorConfig = new TalonFXConfiguration();
     var clawmotorConfig = new TalonFXConfiguration();
 
@@ -125,7 +125,7 @@ public class ClawIOTalonFX implements ClawIO {
     armAbsolutePosition = cancoder.getAbsolutePosition();
   }
 
-  public void updateInputs(ClawIOInputs inputs) {
+  public void updateInputs(ArmIOInputs inputs) {
     BaseStatusSignal.refreshAll();
     inputs.arm_currents_A = new double[] {arm_motor.getStatorCurrent().getValueAsDouble()};
     inputs.arm_pos_deg = Units.radiansToDegrees(arm_motor.getPosition().getValueAsDouble());

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.arm;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -6,7 +6,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
-public class Claw extends StateMachineSubsystemBase<ClawStates> {
+public class Arm extends StateMachineSubsystemBase<ArmStates> {
 
   // Positive Voltage is intaking
   // Negative Voltage is spitting
@@ -14,11 +14,11 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
   // Positive Voltage is clockwise arm
   // Positive Voltage is counterclockwise arm
 
-  private static Claw instance;
+  private static Arm instance;
 
-  private final ClawIO io;
-  private final Claw2d mech = new Claw2d("ArmActual", new Color8Bit(100, 0, 0));
-  private final ClawIOInputsAutoLogged inputs = new ClawIOInputsAutoLogged();
+  private final ArmIO io;
+  private final Arm2d mech = new Arm2d("ArmActual", new Color8Bit(100, 0, 0));
+  private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
   public boolean first_time = true;
 
   private double targetAngleDegrees;
@@ -26,18 +26,18 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
   double kV = 0.5; // Volts per rad/s (example value)
   double kS = 1.0; // Static friction voltage (example value)
 
-  private Claw(ClawIO io) {
-    super("Claw");
+  private Arm(ArmIO io) {
+    super("Arm");
     this.io = io;
     setTargetAngle(0);
-    queueState(ClawStates.IDLE);
+    queueState(ArmStates.IDLE);
   }
 
-  public static Claw getInstance() {
+  public static Arm getInstance() {
     if (instance == null) {
       switch (Constants.currentMode) {
         case SIM:
-          instance = new Claw(new ClawIOSim());
+          instance = new Arm(new ArmIOSim());
           break;
         case REAL:
         default:
@@ -50,7 +50,7 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
   @Override
   public void inputPeriodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("claw", inputs);
+    Logger.processInputs("arm", inputs);
   }
 
   @Override
@@ -64,7 +64,7 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
         break;
       case TRAVELLING:
         if (Math.abs(inputs.arm_pos_deg - targetAngleDegrees) < 0.5) {
-          queueState(ClawStates.HOLDING);
+          queueState(ArmStates.HOLDING);
         } else {
           if (stateInit()) {
             first_time = true;
@@ -77,19 +77,6 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
       case HOLDING:
         io.setArmVoltage(0);
         break;
-      case GETGAMEPIECE:
-        if (inputs.beambreakhit) {
-          setClawVoltage(0);
-        } else {
-          setClawVoltage(2);
-        }
-        break;
-      case SPITGAMEPIECE:
-        setClawVoltage(-2);
-        break;
-      case ZEROING:
-        queueState(ClawStates.TRAVELLING);
-        setTargetAngle(inputs.arm_absolute_pos_deg);
       default:
         break;
     }
@@ -108,7 +95,7 @@ public class Claw extends StateMachineSubsystemBase<ClawStates> {
 
     mech.periodic();
 
-    Logger.recordOutput("Claw/TargetAngleDegrees", targetAngleDegrees);
+    Logger.recordOutput("arm/TargetAngleDegrees", targetAngleDegrees);
   }
 
   public void setAngle(double angle) {

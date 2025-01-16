@@ -14,8 +14,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.claw.Claw;
-import frc.robot.subsystems.claw.ClawStates;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmStates;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.superstructure.InternalState;
@@ -38,7 +38,7 @@ public class Robot extends LoggedRobot {
 
   private Drive drive;
 
-  private Claw claw = Claw.getInstance();
+  private Arm arm = Arm.getInstance();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -117,15 +117,14 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     if (OI.DR.getAButton()) {
-      claw.queueState(ClawStates.TRAVELLING);
-      claw.setTargetAngle(360);
-
+      arm.queueState(ArmStates.TRAVELLING);
+      arm.setTargetAngle(90);
     } else {
-      claw.queueState(ClawStates.TRAVELLING);
-      claw.setTargetAngle(0);
+      arm.queueState(ArmStates.TRAVELLING);
+      arm.setTargetAngle(0);
     }
 
-    claw.periodic();
+    arm.periodic();
 
     CommandScheduler.getInstance().run();
 

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.arm;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -9,12 +9,12 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.util.AltTimer;
 import org.littletonrobotics.junction.Logger;
 
-public class ClawIOSim implements ClawIO {
+public class ArmIOSim implements ArmIO {
 
   private TrapezoidProfile.State armSetpoint;
   private TrapezoidProfile.State armStartPoint;
   private TrapezoidProfile.State armGoal;
-  private ClawIOInputs inputs;
+  private ArmIOInputs inputs;
 
   private final TrapezoidProfile.Constraints armConstraints =
       new TrapezoidProfile.Constraints(90, 45);
@@ -40,16 +40,8 @@ public class ClawIOSim implements ClawIO {
   private double claw_applied_volts = 0.0;
 
   @Override
-  public void updateInputs(ClawIOInputs inputs) {
+  public void updateInputs(ArmIOInputs inputs) {
     // Update elevator simulation
-    clawSim.update(0.02); // 20 ms update
-    this.inputs = inputs;
-    inputs.claw_velocity_degps = Units.radiansToDegrees(clawSim.getAngularVelocityRadPerSec());
-    inputs.claw_volts_V = claw_applied_volts;
-    inputs.claw_currents_A =
-        new double[] {
-          clawSim.getCurrentDrawAmps(), clawSim.getCurrentDrawAmps()
-        }; // Simulate multiple motor left_currents
 
     armSim.update(0.02); // 20 ms update
     inputs.arm_pos_deg = Units.radiansToDegrees(armSim.getAngleRads());

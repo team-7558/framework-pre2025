@@ -1,10 +1,10 @@
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.arm;
 
 import org.littletonrobotics.junction.AutoLog;
 
-public interface ClawIO {
+public interface ArmIO {
   @AutoLog
-  public static class ClawIOInputs {
+  public static class ArmIOInputs {
     public double claw_velocity_degps = 0.0;
     public double claw_volts_V = 0.0;
     public double[] claw_currents_A = new double[] {};
@@ -18,7 +18,7 @@ public interface ClawIO {
     public boolean beambreakhit = false;
   }
 
-  public default void updateInputs(ClawIOInputs inputs) {}
+  public default void updateInputs(ArmIOInputs inputs) {}
 
   public default void setArmVoltage(double volts) {}
 

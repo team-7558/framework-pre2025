@@ -1,4 +1,4 @@
-package frc.robot.subsystems.claw;
+package frc.robot.subsystems.arm;
 
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import org.littletonrobotics.junction.Logger;
 
-public class Claw2d {
+public class Arm2d {
 
   private final MechanismLigament2d claw_left;
   private final MechanismLigament2d claw_right;
@@ -21,7 +21,7 @@ public class Claw2d {
    * @param name The name of the mechanism (used for display in SmartDashboard and logs).
    * @param color The color of the arm ligament in the visualization.
    */
-  public Claw2d(String name, Color8Bit color) {
+  public Arm2d(String name, Color8Bit color) {
     this.finalName = name;
 
     mech = new Mechanism2d(3, 3);
