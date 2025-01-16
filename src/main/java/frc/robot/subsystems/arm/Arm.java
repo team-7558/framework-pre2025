@@ -7,6 +7,12 @@ import org.littletonrobotics.junction.Logger;
 
 public class Arm extends StateMachineSubsystemBase<ArmStates> {
 
+  // Positive Voltage is intaking
+  // Negative Voltage is spitting
+
+  // Positive Voltage is clockwise arm
+  // Positive Voltage is counterclockwise arm
+
   private static Arm instance;
 
   private final ArmIO io;
@@ -14,11 +20,13 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
   private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
   public boolean first_time = true;
 
-  private double ElbowTargetAngleDegrees;
-  private double ShoulderTargetAngleDegrees;
+  private double targetAngleDegrees;
+
+  double kV = 0.5; // Volts per rad/s (example value)
+  double kS = 1.0; // Static friction voltage (example value)
 
   private Arm(ArmIO io) {
-    super("Arm");
+    super("arm");
     this.io = io;
     setElbowTargetAngle(0);
     queueState(ArmStates.IDLE);
@@ -41,7 +49,7 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
   @Override
   public void inputPeriodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Arm", inputs);
+    Logger.processInputs("arm", inputs);
   }
 
   @Override
@@ -50,27 +58,22 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
       case DISABLED:
         break;
       case IDLE:
+        io.stopElbow();
         break;
       case TRAVELLING:
-        if (Math.abs(inputs.elbow_pos_deg - ElbowTargetAngleDegrees) < 0.5) {
+        if (Math.abs(inputs.elbow_pos_deg - targetAngleDegrees) < 0.5) {
           queueState(ArmStates.HOLDING);
-          break;
         } else {
           if (stateInit()) {
             first_time = true;
           } else {
             first_time = false;
           }
-          io.goToElbowAngle(ElbowTargetAngleDegrees, first_time);
+          io.goToElbowAngle(targetAngleDegrees, first_time);
         }
         break;
       case HOLDING:
-        if (stateInit()) {
-          first_time = true;
-        } else {
-          first_time = false;
-        }
-        io.goToElbowAngle(ElbowTargetAngleDegrees, first_time);
+        io.stopElbow();
         break;
       default:
         break;
@@ -82,17 +85,12 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
 
     mech.setElbowAngle(inputs.elbow_pos_deg);
 
-    mech.setShoulderAngle(inputs.shoulder_pos_deg);
     mech.periodic();
 
-    Logger.recordOutput("Arm/ElbowTargetAngleDegrees", ElbowTargetAngleDegrees);
+    Logger.recordOutput("Arm/TargetAngleDegrees", targetAngleDegrees);
   }
 
   public void setElbowTargetAngle(double targetAngleDegrees) {
-    this.ElbowTargetAngleDegrees = targetAngleDegrees;
-  }
-
-  public void setShoulderTargetAngle(double targetAngleDegrees) {
-    this.ShoulderTargetAngleDegrees = targetAngleDegrees;
+    this.targetAngleDegrees = targetAngleDegrees;
   }
 }
