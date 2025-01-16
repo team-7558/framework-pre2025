@@ -118,11 +118,18 @@ public class Robot extends LoggedRobot {
     PerfTracker.periodic();
 
     if (OI.DR.getAButton()) {
-      arm.queueState(ArmStates.TRAVELLING);
+      if (OI.DR.getAButtonPressed()) {
+        arm.queueState(ArmStates.TRAVELLING);
+      }
       arm.setElbowTargetAngle(90);
+    } else if (OI.DR.getBButton()) {
+      if (OI.DR.getBButtonPressed()) {
+        arm.queueState(ArmStates.TRAVELLING);
+      }
+      arm.setElbowTargetAngle(45);
     } else {
-      arm.queueState(ArmStates.TRAVELLING);
-      arm.setElbowTargetAngle(0);
+      arm.queueState(ArmStates.IDLE);
+      
     }
 
     arm.periodic();

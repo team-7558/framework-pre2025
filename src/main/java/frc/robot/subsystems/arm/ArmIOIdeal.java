@@ -25,7 +25,7 @@ public class ArmIOIdeal implements ArmIO {
   }
 
   @Override
-  public void goToElbowAngle(double angle, boolean first_time) {
+  public void goToElbowAngle(double angle, ArmIOInputs inputs, boolean first_time) {
     this.ElbowPos_deg = angle;
   }
 

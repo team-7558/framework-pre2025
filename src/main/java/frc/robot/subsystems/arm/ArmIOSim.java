@@ -32,8 +32,6 @@ public class ArmIOSim implements ArmIO {
 
   private final AltTimer ShoulderTimer = new AltTimer();
 
-  private final ArmIOInputs inputs = new ArmIOInputs();
-
   private final SingleJointedArmSim ElbowArmSim =
       new SingleJointedArmSim(
           DCMotor.getKrakenX60Foc(1),
@@ -85,13 +83,15 @@ public class ArmIOSim implements ArmIO {
   }
 
   @Override
-  public void goToElbowAngle(double degrees, boolean first_time) {
+  public void goToElbowAngle(double degrees, ArmIOInputs inputs, boolean first_time) {
     if (first_time) {
       System.out.println("Travelling once");
       timer.reset();
       ElbowArmGoal = new TrapezoidProfile.State(degrees, 0);
       ElbowArmStartPoint = new TrapezoidProfile.State(inputs.elbow_pos_deg, inputs.elbow_vel_degps);
+      System.out.println(inputs.elbow_pos_deg + " " + inputs.elbow_vel_degps);
     }
+
 
     ElbowArmSetpoint = ElbowArmProfile.calculate(timer.time(), ElbowArmStartPoint, ElbowArmGoal);
     // Check if the target is valid (optional safety check)
@@ -105,7 +105,7 @@ public class ArmIOSim implements ArmIO {
     Logger.recordOutput("ElbowArm/ElbowArmGoal", ElbowArmGoal.position);
     Logger.recordOutput("ElbowArm/ElbowArmGoal", ElbowArmStartPoint.position);
   }
-
+  /*/
   @Override
   public void goToShoulderAngle(double degrees, boolean first_time) {
     if (first_time) {
@@ -127,6 +127,8 @@ public class ArmIOSim implements ArmIO {
 
     Logger.recordOutput("ArmShoulder/ArmSetpoint", ShoulderArmSetpoint.position);
   }
+
+  */
 
   @Override
   public void stopElbow() {

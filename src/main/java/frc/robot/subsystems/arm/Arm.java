@@ -69,7 +69,7 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
           } else {
             first_time = false;
           }
-          io.goToElbowAngle(targetAngleDegrees, first_time);
+          io.goToElbowAngle(targetAngleDegrees, inputs, first_time);
         }
         break;
       case HOLDING:
