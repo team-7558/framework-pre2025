@@ -8,5 +8,6 @@ public enum IntakeStates implements IState {
   HOLDING,
   TRAVELLING,
   INTAKING,
-  SPITTING
+  SPITTING,
+  STOPPED
 }

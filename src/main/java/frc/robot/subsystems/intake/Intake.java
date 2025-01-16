@@ -65,11 +65,28 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
         io.setArmVoltage(0);
         break;
       case INTAKING:
+        io.setArmVoltage(0);
         running = true;
-        setIntakeVoltage(2);
+        setIntakeVoltage(3);
+        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.1) {
+          queueState(IntakeStates.HOLDING);
+        } else {
+          io.goToAngle(targetAngleDegrees, inputs, stateInit());
+        }
+        break;
       case SPITTING:
+        io.setArmVoltage(0);
+        running = true;
+        setIntakeVoltage(-3);
+        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.1) {
+          queueState(IntakeStates.HOLDING);
+        } else {
+          io.goToAngle(targetAngleDegrees, inputs, stateInit());
+        }
+        break;
+      case STOPPED:
         running = false;
-        setIntakeVoltage(-2);
+        io.setIntakeVoltage(0);
       default:
         break;
     }
@@ -80,6 +97,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
     // System.out.println("Before");
 
     mech.setAngle(inputs.slap_pos_deg);
+    mech.spin(inputs.VelocityDegPS);
     mech.periodic();
 
     Logger.recordOutput("Slap/TargetAngleDegrees", targetAngleDegrees);

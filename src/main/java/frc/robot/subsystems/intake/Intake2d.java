@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 public class Intake2d {
 
   private final MechanismLigament2d arm;
+  private final MechanismLigament2d roller;
   private final Mechanism2d mech;
   private final String finalName;
 
@@ -26,6 +27,7 @@ public class Intake2d {
     MechanismRoot2d root = mech.getRoot("root", 1.5, 0.5);
 
     arm = root.append(new MechanismLigament2d("arm", 0.5, 90, 10, color));
+    roller = arm.append(new MechanismLigament2d("roller", 0.1, 0, 10, color));
     MechanismLigament2d bottom =
         root.append(new MechanismLigament2d("bottom", 0.001, 0, 20, new Color8Bit(125, 0, 125)));
   }
@@ -39,6 +41,10 @@ public class Intake2d {
    */
   public void setAngle(double targetAngle) {
     arm.setAngle(targetAngle);
+  }
+
+  public void spin(double angle) {
+    roller.setAngle(angle);
   }
 
   /** Periodically updates the SmartDashboard and logs the mechanism state. */
