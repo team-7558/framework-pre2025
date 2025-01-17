@@ -92,7 +92,6 @@ public class ArmIOSim implements ArmIO {
       System.out.println(inputs.elbow_pos_deg + " " + inputs.elbow_vel_degps);
     }
 
-
     ElbowArmSetpoint = ElbowArmProfile.calculate(timer.time(), ElbowArmStartPoint, ElbowArmGoal);
     // Check if the target is valid (optional safety check)
     double ElbowtargetRadians = Units.degreesToRadians(ElbowArmSetpoint.position);
@@ -101,13 +100,13 @@ public class ArmIOSim implements ArmIO {
     applied_volts = ElbowcalculatedVoltage;
     ElbowArmSim.setInputVoltage(ElbowcalculatedVoltage);
 
-    Logger.recordOutput("ElbowArm/ArmSetpoint", ElbowArmSetpoint.position);
-    Logger.recordOutput("ElbowArm/ElbowArmGoal", ElbowArmGoal.position);
-    Logger.recordOutput("ElbowArm/ElbowArmGoal", ElbowArmStartPoint.position);
+    Logger.recordOutput("Arm/Elbow/ElbowArmSetpoint", ElbowArmSetpoint.position);
+    Logger.recordOutput("Arm/Elbow/ElbowArmGoal", ElbowArmGoal.position);
+    Logger.recordOutput("Arm/Elbow/ElbowArmGoal", ElbowArmStartPoint.position);
   }
-  /*/
+
   @Override
-  public void goToShoulderAngle(double degrees, boolean first_time) {
+  public void goToShoulderAngle(double degrees, ArmIOInputs inputs, boolean first_time) {
     if (first_time) {
       System.out.println("Travelling once");
       timer.reset();
@@ -125,10 +124,8 @@ public class ArmIOSim implements ArmIO {
     Shoulder_Applied_volts = calculatedVoltage;
     ShoulderArmSim.setInputVoltage(calculatedVoltage);
 
-    Logger.recordOutput("ArmShoulder/ArmSetpoint", ShoulderArmSetpoint.position);
+    Logger.recordOutput("Arm/Shoulder/ArmSetpoint", ShoulderArmSetpoint.position);
   }
-
-  */
 
   @Override
   public void stopElbow() {

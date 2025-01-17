@@ -39,6 +39,8 @@ public class Robot extends LoggedRobot {
   private Drive drive;
 
   private Arm arm = Arm.getInstance();
+  private double ElbowTargetAngle;
+  private double ShoulderTargetAngle;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -116,22 +118,33 @@ public class Robot extends LoggedRobot {
     drive.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
-
-    if (OI.DR.getAButton()) {
-      if (OI.DR.getAButtonPressed()) {
-        arm.queueState(ArmStates.TRAVELLING);
-      }
-      arm.setElbowTargetAngle(90);
-    } else if (OI.DR.getBButton()) {
-      if (OI.DR.getBButtonPressed()) {
-        arm.queueState(ArmStates.TRAVELLING);
-      }
-      arm.setElbowTargetAngle(45);
-    } else {
-      arm.queueState(ArmStates.IDLE);
-      
+    if (OI.DR.getAButtonPressed()) {
+      System.out.println("PressedA");
+      arm.queueState(ArmStates.TRAVELLING);
+    } else if (OI.DR.getBButtonPressed()) {
+      arm.queueState(ArmStates.TRAVELLING);
     }
 
+    if (OI.DR.getAButtonReleased()) {
+      System.out.println("ReleasedA");
+      arm.queueState(ArmStates.TRAVELLING);
+    } else if (OI.DR.getBButtonReleased()) {
+      arm.queueState(ArmStates.TRAVELLING);
+    }
+
+    if (OI.DR.getAButton()) {
+      ElbowTargetAngle = 90;
+      ShoulderTargetAngle = 45;
+    } else if (OI.DR.getBButton()) {
+      ElbowTargetAngle = 45;
+      ShoulderTargetAngle = 90;
+    } else {
+
+      ElbowTargetAngle = 10;
+      ShoulderTargetAngle = 50;
+    }
+    arm.setElbowTargetAngle(ElbowTargetAngle);
+    arm.setShoulderTargetAngle(ShoulderTargetAngle);
     arm.periodic();
     CommandScheduler.getInstance().run();
 

@@ -24,7 +24,7 @@ public interface ArmIO {
 
   public default void stopElbow() {}
 
-  public default void goToShoulderAngle(double pos_deg, boolean first_time) {}
+  public default void goToShoulderAngle(double pos_deg, ArmIOInputs inputs, boolean first_time) {}
 
   public default void stopShoulder() {}
 
