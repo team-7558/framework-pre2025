@@ -9,6 +9,8 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
 
   private static Intake instance;
 
+  private double previousAngleDegrees;
+  private boolean newAngle;
   private final IntakeIO io;
   private final Intake2d mech = new Intake2d("ArmActual", new Color8Bit(100, 0, 0));
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
@@ -24,6 +26,8 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
     setTargetAngle(90);
     io.goToAngle(targetAngleDegrees, inputs, true);
     queueState(IntakeStates.IDLE);
+    newAngle = false;
+    previousAngleDegrees = 90;
   }
 
   public static Intake getInstance() {
@@ -55,14 +59,20 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
       case IDLE:
         break;
       case TRAVELLING:
+        // System.out.println(inputs.slap_pos_deg - targetAngleDegrees);
+        // System.out.println(Math.abs(inputs.slap_pos_deg - targetAngleDegrees));
         if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.1) {
           queueState(IntakeStates.HOLDING);
         } else {
-          io.goToAngle(targetAngleDegrees, inputs, stateInit());
+          io.goToAngle(targetAngleDegrees, inputs, newAngle);
         }
         break;
       case HOLDING:
-        io.setArmVoltage(0);
+        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) > 0.1) {
+          queueState(IntakeStates.TRAVELLING);
+        } else {
+          io.goToAngle(targetAngleDegrees, inputs, newAngle);
+        }
         break;
       case INTAKING:
         running = true;
@@ -85,6 +95,8 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
     Logger.recordOutput("Slap/TargetAngleDegrees", targetAngleDegrees);
     Logger.recordOutput("Slap/CurrentAngle", inputs.slap_pos_deg);
     Logger.recordOutput("coral/running", running);
+    Logger.recordOutput("Slap/newAngle?", newAngle);
+    Logger.recordOutput("Slap/previous", previousAngleDegrees);
   }
 
   public void set(double angle) {
@@ -97,5 +109,11 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
 
   public void setTargetAngle(double targetAngleDegrees) {
     this.targetAngleDegrees = targetAngleDegrees;
+    if (targetAngleDegrees == previousAngleDegrees) {
+      newAngle = false;
+    } else {
+      newAngle = true;
+    }
+    previousAngleDegrees = targetAngleDegrees;
   }
 }
