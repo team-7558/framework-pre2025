@@ -20,13 +20,13 @@ public interface ArmIO {
 
   public default void updateInputs(ArmIOInputs inputs) {}
 
-  public default void goToElbowAngle(double pos_deg, ArmIOInputs inputs, boolean first_time) {}
+  public default void goToElbowAngle(double pos_deg, ArmIOInputs inputs, boolean first_time, double volts) {}
 
   public default void setElbowVoltage(double volts) {}
 
   public default void stopElbow() {}
 
-  public default void goToShoulderAngle(double pos_deg, ArmIOInputs inputs, boolean first_time) {}
+  public default void goToShoulderAngle(double pos_deg, ArmIOInputs inputs, boolean first_time, double volts) {}
 
   public default void stopShoulder() {}
 

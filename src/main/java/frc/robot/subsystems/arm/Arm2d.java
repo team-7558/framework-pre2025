@@ -9,8 +9,8 @@ import org.littletonrobotics.junction.Logger;
 
 public class Arm2d {
 
-  private final MechanismLigament2d ElbowSideview;
-  private final MechanismLigament2d ShoulderFrontview;
+  private final MechanismLigament2d Sideview;
+  private final MechanismLigament2d FrontView;
   private final Mechanism2d mech;
   private final String finalName;
 
@@ -29,10 +29,10 @@ public class Arm2d {
     MechanismLigament2d connection =
         root.append(new MechanismLigament2d("connector", 1.5, 0, 0.05, new Color8Bit(0, 0, 0)));
 
-    ElbowSideview = root.append(new MechanismLigament2d("ElbowSideView", 0.5, 90, 10, color));
+    Sideview = root.append(new MechanismLigament2d("SideView", 0.5, 90, 10, color));
 
-    ShoulderFrontview =
-        connection.append(new MechanismLigament2d("ShoulderSideView", 0.5, 90, 10, color));
+    FrontView =
+        connection.append(new MechanismLigament2d("FrontView", 0.5, 90, 10, color));
 
     MechanismLigament2d bottom =
         root.append(new MechanismLigament2d("bottom", 0.001, 0, 20, new Color8Bit(125, 0, 125)));
@@ -50,11 +50,13 @@ public class Arm2d {
    * @param targetAngle The desired angle of the arm.
    */
   public void setElbowAngle(double targetAngle) {
-    ElbowSideview.setAngle(targetAngle);
+    Sideview.setAngle(targetAngle);
+    FrontView.setLength(0.5 * Math.cos(Math.toRadians(targetAngle)));
   }
 
   public void setShoulderAngle(double targetAngle) {
-    ShoulderFrontview.setAngle(targetAngle);
+    FrontView.setAngle(targetAngle);
+    Sideview.setLength(0.5 * Math.cos(Math.toRadians(targetAngle)));
   }
 
   /** Periodically updates the SmartDashboard and logs the mechanism state. */

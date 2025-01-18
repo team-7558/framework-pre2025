@@ -134,7 +134,7 @@ public class Robot extends LoggedRobot {
 
     if (OI.DR.getAButton()) {
       ElbowTargetAngle = 90;
-      ShoulderTargetAngle = 45;
+      ShoulderTargetAngle = 90;
     } else if (OI.DR.getBButton()) {
       ElbowTargetAngle = 45;
       ShoulderTargetAngle = 90;
