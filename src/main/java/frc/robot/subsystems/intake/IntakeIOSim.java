@@ -37,7 +37,7 @@ public class IntakeIOSim implements IntakeIO {
           false,
           Units.degreesToRadians(90)); // Custom arm motor simulation
 
-  private final PIDController armPositionPID = new PIDController(70, 1, 4);
+  private final PIDController armPositionPID = new PIDController(75, 0, 0);
   private double applied_volts = 0.0;
 
   @Override
@@ -58,11 +58,11 @@ public class IntakeIOSim implements IntakeIO {
   @Override
   public void goToAngle(double degrees, IntakeIOInputs inputs, boolean first_time) {
     if (first_time) {
-      //System.out.println("Travelling once");
+      // System.out.println("Travelling once");
       timer.reset();
       armGoal = new TrapezoidProfile.State(degrees, 0);
       armStartPoint = new TrapezoidProfile.State(inputs.slap_pos_deg, inputs.slap_velDegPS);
-      //System.out.println(inputs.slap_pos_deg + " " + inputs.slap_velDegPS);
+      // System.out.println(inputs.slap_pos_deg + " " + inputs.slap_velDegPS);
     }
 
     armSetpoint = armProfile.calculate(timer.time(), armStartPoint, armGoal);
@@ -85,7 +85,13 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
+  public void stopArm() {
+    applied_volts = 0.0;
+    setIntakeVoltage(0.0);
+  }
+  @Override
   public void stopIntake() {
+    motor_applied_volts = 0.0;
     setIntakeVoltage(0.0);
   }
 }

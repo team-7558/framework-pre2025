@@ -3,6 +3,7 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends StateMachineSubsystemBase<IntakeStates> {
@@ -53,6 +54,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
 
   @Override
   public void handleStateMachine() {
+    double dif = (Math.abs(inputs.slap_pos_deg - targetAngleDegrees));
     switch (getState()) {
       case DISABLED:
         break;
@@ -60,19 +62,16 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
         break;
       case TRAVELLING:
         // System.out.println(inputs.slap_pos_deg - targetAngleDegrees);
-        // System.out.println(Math.abs(inputs.slap_pos_deg - targetAngleDegrees));
-        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) < 0.1) {
+        if (dif < 1) {
+          io.stopArm();
           queueState(IntakeStates.HOLDING);
-        } else {
+        } else if (dif > 0.5) {
           io.goToAngle(targetAngleDegrees, inputs, newAngle);
         }
         break;
       case HOLDING:
-        if (Math.abs(inputs.slap_pos_deg - targetAngleDegrees) > 0.1) {
-          queueState(IntakeStates.TRAVELLING);
-        } else {
-          io.goToAngle(targetAngleDegrees, inputs, newAngle);
-        }
+        io.stopArm();
+        // io.goToAngle(targetAngleDegrees, inputs, newAngle);
         break;
       case INTAKING:
         running = true;
