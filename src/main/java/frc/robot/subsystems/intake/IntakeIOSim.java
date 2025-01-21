@@ -16,7 +16,7 @@ public class IntakeIOSim implements IntakeIO {
   private TrapezoidProfile.State armGoal;
 
   private final TrapezoidProfile.Constraints armConstraints =
-      new TrapezoidProfile.Constraints(100, 500);
+      new TrapezoidProfile.Constraints(200, 50);
 
   private final TrapezoidProfile armProfile = new TrapezoidProfile(armConstraints);
 
@@ -29,15 +29,15 @@ public class IntakeIOSim implements IntakeIO {
   private final SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           DCMotor.getKrakenX60Foc(1),
-          45,
-          3.67,
+          20,
+          2,
           0.5,
           Units.degreesToRadians(0),
           Units.degreesToRadians(90),
           false,
           Units.degreesToRadians(90)); // Custom arm motor simulation
 
-  private final PIDController armPositionPID = new PIDController(70, 1, 0);
+  private final PIDController armPositionPID = new PIDController(6.54, 0, 0.001);
   private double applied_volts = 0.0;
 
   @Override
