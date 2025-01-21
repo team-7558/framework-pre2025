@@ -16,7 +16,7 @@ public class IntakeIOSim implements IntakeIO {
   private TrapezoidProfile.State armGoal;
 
   private final TrapezoidProfile.Constraints armConstraints =
-      new TrapezoidProfile.Constraints(30, 200);
+      new TrapezoidProfile.Constraints(100, 500);
 
   private final TrapezoidProfile armProfile = new TrapezoidProfile(armConstraints);
 
@@ -37,7 +37,7 @@ public class IntakeIOSim implements IntakeIO {
           false,
           Units.degreesToRadians(90)); // Custom arm motor simulation
 
-  private final PIDController armPositionPID = new PIDController(75, 0, 0);
+  private final PIDController armPositionPID = new PIDController(70, 1, 0);
   private double applied_volts = 0.0;
 
   @Override
@@ -89,6 +89,7 @@ public class IntakeIOSim implements IntakeIO {
     applied_volts = 0.0;
     setIntakeVoltage(0.0);
   }
+
   @Override
   public void stopIntake() {
     motor_applied_volts = 0.0;

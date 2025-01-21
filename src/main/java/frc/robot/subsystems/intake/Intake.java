@@ -3,7 +3,7 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
-
+import frc.robot.util.Util;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends StateMachineSubsystemBase<IntakeStates> {
@@ -15,7 +15,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
   private final IntakeIO io;
   private final Intake2d mech = new Intake2d("ArmActual", new Color8Bit(100, 0, 0));
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
-  public boolean first_time = true;
+  public double dif;
 
   private double targetAngleDegrees;
 
@@ -24,11 +24,12 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
   private Intake(IntakeIO io) {
     super("Intake");
     this.io = io;
-    setTargetAngle(90);
-    io.goToAngle(targetAngleDegrees, inputs, true);
     queueState(IntakeStates.IDLE);
     newAngle = false;
+    inputs.slap_pos_deg = 90;
     previousAngleDegrees = 90;
+    setTargetAngle(90);
+    io.goToAngle(targetAngleDegrees, inputs, true);
   }
 
   public static Intake getInstance() {
@@ -54,7 +55,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
 
   @Override
   public void handleStateMachine() {
-    double dif = (Math.abs(inputs.slap_pos_deg - targetAngleDegrees));
+    dif = (Math.abs(inputs.slap_pos_deg - targetAngleDegrees));
     switch (getState()) {
       case DISABLED:
         break;
@@ -62,16 +63,16 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
         break;
       case TRAVELLING:
         // System.out.println(inputs.slap_pos_deg - targetAngleDegrees);
-        if (dif < 1) {
-          io.stopArm();
+        io.goToAngle(targetAngleDegrees, inputs, newAngle);
+        if (atTargetAngle()) {
+          // io.stopArm();
           queueState(IntakeStates.HOLDING);
-        } else if (dif > 0.5) {
-          io.goToAngle(targetAngleDegrees, inputs, newAngle);
         }
         break;
       case HOLDING:
-        io.stopArm();
-        // io.goToAngle(targetAngleDegrees, inputs, newAngle);
+        if (!atTargetAngle()) {
+          queueState(IntakeStates.TRAVELLING);
+        } else io.goToAngle(targetAngleDegrees, inputs, newAngle);
         break;
       case INTAKING:
         running = true;
@@ -96,6 +97,7 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
     Logger.recordOutput("coral/running", running);
     Logger.recordOutput("Slap/newAngle?", newAngle);
     Logger.recordOutput("Slap/previous", previousAngleDegrees);
+    Logger.recordOutput("Slap/dif", dif);
   }
 
   public void set(double angle) {
@@ -104,6 +106,18 @@ public class Intake extends StateMachineSubsystemBase<IntakeStates> {
 
   public void setIntakeVoltage(double voltage) {
     io.setIntakeVoltage(voltage);
+  }
+
+  public boolean atAngle(double angle, double tol) {
+    return Util.inRange(angle - inputs.slap_pos_deg, tol);
+  }
+
+  public boolean atTargetAngle() {
+    return atTargetAngle(0.5);
+  }
+
+  public boolean atTargetAngle(double tol) {
+    return atAngle(targetAngleDegrees, tol);
   }
 
   public void setTargetAngle(double targetAngleDegrees) {
