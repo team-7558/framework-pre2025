@@ -131,15 +131,14 @@ public class Robot extends LoggedRobot {
     } else if (OI.DR.getBButtonReleased()) {
       arm.queueState(ArmStates.TRAVELLING);
     }
-
+    
     if (OI.DR.getAButton()) {
-      ElbowTargetAngle = 90;
+      ElbowTargetAngle = 110;
       ShoulderTargetAngle = 90;
     } else if (OI.DR.getBButton()) {
       ElbowTargetAngle = 45;
       ShoulderTargetAngle = 90;
     } else {
-
       ElbowTargetAngle = 10;
       ShoulderTargetAngle = 50;
     }

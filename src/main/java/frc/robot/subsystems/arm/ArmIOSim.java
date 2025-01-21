@@ -43,7 +43,7 @@ public class ArmIOSim implements ArmIO {
           false,
           Units.degreesToRadians(0)); // Custom arm motor simulation
 
-  private final PIDController ElbowArmPositionPID = new PIDController(0, 0, 0); //10 kp
+  private final PIDController ElbowArmPositionPID = new PIDController(10, 0, 0); // 10 kp
   private double applied_volts = 0.0;
 
   private final SingleJointedArmSim ShoulderArmSim =
@@ -57,7 +57,7 @@ public class ArmIOSim implements ArmIO {
           false,
           Units.degreesToRadians(0)); // Custom arm motor simulation
 
-  private final PIDController ShoulderArmPositionPID = new PIDController(0, 0, 0); //70, 1, 4
+  private final PIDController ShoulderArmPositionPID = new PIDController(70, 1, 4); // 70, 1, 4
   private double Shoulder_Applied_volts = 0.0;
 
   @Override
@@ -97,9 +97,8 @@ public class ArmIOSim implements ArmIO {
     double ElbowtargetRadians = Units.degreesToRadians(ElbowArmSetpoint.position);
     ElbowArmPositionPID.setSetpoint(ElbowtargetRadians);
     double ElbowcalculatedVoltage = ElbowArmPositionPID.calculate(ElbowArmSim.getAngleRads());
-    applied_volts = ElbowcalculatedVoltage + volts;
+    applied_volts = ElbowcalculatedVoltage;
     ElbowArmSim.setInputVoltage(applied_volts);
-
 
     Logger.recordOutput("Arm/Elbow/ElbowArmSetpoint", ElbowArmSetpoint.position);
     Logger.recordOutput("Arm/Elbow/ElbowArmGoal", ElbowArmGoal.position);
@@ -107,7 +106,8 @@ public class ArmIOSim implements ArmIO {
   }
 
   @Override
-  public void goToShoulderAngle(double degrees, ArmIOInputs inputs, boolean first_time, double volts) {
+  public void goToShoulderAngle(
+      double degrees, ArmIOInputs inputs, boolean first_time, double volts) {
     if (first_time) {
       System.out.println("Travelling once");
       timer.reset();
@@ -122,7 +122,7 @@ public class ArmIOSim implements ArmIO {
     double targetRadians = Units.degreesToRadians(ShoulderArmSetpoint.position);
     ShoulderArmPositionPID.setSetpoint(targetRadians);
     double calculatedVoltage = ShoulderArmPositionPID.calculate(ShoulderArmSim.getAngleRads());
-    Shoulder_Applied_volts = calculatedVoltage + volts;
+    Shoulder_Applied_volts = calculatedVoltage;
     ShoulderArmSim.setInputVoltage(Shoulder_Applied_volts);
 
     Logger.recordOutput("Arm/Shoulder/ArmSetpoint", ShoulderArmSetpoint.position);

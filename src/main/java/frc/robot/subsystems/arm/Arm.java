@@ -31,10 +31,7 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
   private double ElbowForceGravity;
   private double ShoulderForceGravity;
 
-
-
-  private double ARMFORCE = 10*9.8*0.01;
-
+  private double ARMFORCE = 10 * 9.8 * 0.01;
 
   double kV = 0.5; // Volts per rad/s (example value)
   double kS = 1.0; // Static friction voltage (example value)
@@ -89,8 +86,16 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
           } else {
             Shoulder_first_time = false;
           }
-          io.goToElbowAngle(ElbowTargetAngleDegrees, inputs, Elbow_first_time, calcElbowFeedForwardVoltage(ShoulderTargetAngleDegrees, ElbowTargetAngleDegrees));
-          io.goToShoulderAngle(ShoulderTargetAngleDegrees, inputs, Shoulder_first_time, calcShoulderFeedForwardVoltage(ShoulderTargetAngleDegrees, ElbowTargetAngleDegrees));
+          io.goToElbowAngle(
+              ElbowTargetAngleDegrees,
+              inputs,
+              Elbow_first_time,
+              calcElbowFeedForwardVoltage(ShoulderTargetAngleDegrees, ElbowTargetAngleDegrees));
+          io.goToShoulderAngle(
+              ShoulderTargetAngleDegrees,
+              inputs,
+              Shoulder_first_time,
+              calcShoulderFeedForwardVoltage(ShoulderTargetAngleDegrees, ElbowTargetAngleDegrees));
         }
         break;
       case HOLDING:
@@ -126,12 +131,26 @@ public class Arm extends StateMachineSubsystemBase<ArmStates> {
   }
 
   public double calcShoulderFeedForwardVoltage(double shoulder_pos_deg, double elbow_pos_deg) {
-    ShoulderForceGravity = ARMFORCE*Math.cos(Units.degreesToRadians(shoulder_pos_deg))*Math.sin(Units.degreesToRadians(elbow_pos_deg));
+    ShoulderForceGravity =
+        ARMFORCE
+            * Math.cos(Units.degreesToRadians(shoulder_pos_deg))
+            * Math.sin(Units.degreesToRadians(elbow_pos_deg));
     return ShoulderForceGravity;
   }
 
   public double calcElbowFeedForwardVoltage(double shoulder_pos_deg, double elbow_pos_deg) {
-    ElbowForceGravity = ARMFORCE*Math.cos(Units.degreesToRadians(elbow_pos_deg))*Math.sin(Units.degreesToRadians(shoulder_pos_deg));
+    ElbowForceGravity =
+        ARMFORCE
+            * Math.cos(Units.degreesToRadians(elbow_pos_deg))
+            * Math.sin(Units.degreesToRadians(shoulder_pos_deg));
     return ElbowForceGravity;
   }
+
+  public void PlaceEndEffector(double magnitude, double angleDegrees) {
+    double angleRadians = Math.toRadians(angleDegrees); 
+    double x = magnitude * Math.cos(angleRadians);
+    double y = magnitude * Math.sin(angleRadians);
+  }
+
+
 }

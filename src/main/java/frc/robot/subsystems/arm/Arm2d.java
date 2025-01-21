@@ -31,8 +31,7 @@ public class Arm2d {
 
     Sideview = root.append(new MechanismLigament2d("SideView", 0.5, 90, 10, color));
 
-    FrontView =
-        connection.append(new MechanismLigament2d("FrontView", 0.5, 90, 10, color));
+    FrontView = connection.append(new MechanismLigament2d("FrontView", 0.5, 90, 10, color));
 
     MechanismLigament2d bottom =
         root.append(new MechanismLigament2d("bottom", 0.001, 0, 20, new Color8Bit(125, 0, 125)));

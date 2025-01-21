@@ -203,10 +203,12 @@ public class ArmIOTalonFX implements ArmIO {
     setElbowVoltage(0.0);
   }
 
-  public void goToShoulderAngle(double position_deg, ArmIOInputs inputs, boolean first_time, double volts) {
+  public void goToShoulderAngle(
+    double position_deg, ArmIOInputs inputs, boolean first_time, double volts) {
     double rotations = position_deg / 360;
     ShoulderMotor.setControl(
-        ShoulderPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees)).withFeedForward(volts));
+        ShoulderPosControl.withPosition(MathUtil.clamp(rotations, 35, maxPositionDegrees))
+            .withFeedForward(volts));
   }
 
   public void setShoulderVoltage(double volts) {

@@ -35,7 +35,8 @@ public class ArmIOIdeal implements ArmIO {
   }
 
   @Override
-  public void goToShoulderAngle(double angle, ArmIOInputs inputs, boolean first_time, double volts) {
+  public void goToShoulderAngle(
+      double angle, ArmIOInputs inputs, boolean first_time, double volts) {
     this.ShoulderPos_deg = angle;
   }
 
