@@ -6,6 +6,7 @@ import frc.robot.subsystems.StateMachineSubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 public class Hand extends StateMachineSubsystemBase<HandStates> {
+  public double scoreVolts;
   private static Hand instance;
   private Hand2d mech;
   public final HandIO io;
@@ -18,6 +19,7 @@ public class Hand extends StateMachineSubsystemBase<HandStates> {
     this.io = io;
     queueState(HandStates.IDLE);
     mech = new Hand2d();
+    scoreVolts = 0.0;
   }
 
   @Override
@@ -54,11 +56,11 @@ public class Hand extends StateMachineSubsystemBase<HandStates> {
       case INTAKING:
         intakeSetVoltage(3.0);
         if (inputs.beamBreakActivated) {
-          queueState(HandStates.IDLE);
+          intakeSetVoltage(0.0);
         }
         break;
       case SPITTING:
-        scoringSetVoltage(-3.0);
+        scoringSetVoltage(scoreVolts);
         break;
       default:
         break;

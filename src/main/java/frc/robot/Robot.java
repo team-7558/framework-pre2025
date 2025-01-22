@@ -114,6 +114,7 @@ public class Robot extends LoggedRobot {
     boolean ab = OI.DR.getAButton();
     boolean bb = OI.DR.getBButton();
     boolean yb = OI.DR.getYButton();
+    boolean xb = OI.DR.getXButton();
     /* comment out yb related if statements after when implementing as it acts as simulated beambreak */
     if (yb) {
       hand.inputs.beamBreakActivated = true;
@@ -126,6 +127,10 @@ public class Robot extends LoggedRobot {
       hand.queueState(HandStates.INTAKING);
     } else if (bb) {
       /* scoring */
+      hand.scoreVolts = 3.0;
+      hand.queueState(HandStates.SPITTING);
+    } else if (xb) {
+      hand.scoreVolts = -3.0;
       hand.queueState(HandStates.SPITTING);
     } else {
       hand.queueState(HandStates.IDLE);
