@@ -23,6 +23,21 @@ public class SS implements IStateMachine<InternalState> {
 
   private boolean booted;
 
+  public enum Scoring_Target {
+    L1,
+    L2,
+    L3,
+    L4,
+  }
+
+
+  public enum Inventory {
+    EMPTY,
+    CORAL,
+    ALGAE
+  }
+
+
   private SS() {
     intention = Intention.IDLE;
     state = InternalState.IDLE;
