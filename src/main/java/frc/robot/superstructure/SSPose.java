@@ -7,7 +7,6 @@ public class SSPose {
     private double h;  //h is height of the elevator from the ground to arm center pivot point
     private double phi;  //phi is the absolute angle of tongue from horizontal
 
-
     public SSPose(double alpha, double beta, double h, double phi) {
         this.alpha = alpha;
         this.beta = beta;
