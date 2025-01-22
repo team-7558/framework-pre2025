@@ -10,12 +10,14 @@ import edu.wpi.first.wpilibj.DigitalInput;
 
 public class HandIOTalonFX implements HandIO {
 
-  private final TalonFX motor;
+  private final TalonFX intakeMotor;
+  private final TalonFX scoringMotor;
   private final VoltageOut voltage_out;
   private final DigitalInput beambreak;
 
   public HandIOTalonFX() {
-    motor = new TalonFX(13);
+    intakeMotor = new TalonFX(13);
+    scoringMotor = new TalonFX(14);
     var motorConfig = new TalonFXConfiguration();
     beambreak = new DigitalInput(0);
 
@@ -24,7 +26,8 @@ public class HandIOTalonFX implements HandIO {
     motorConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
     motorConfig.Feedback.SensorToMechanismRatio = 5;
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    motor.getConfigurator().apply(motorConfig);
+    intakeMotor.getConfigurator().apply(motorConfig);
+    scoringMotor.getConfigurator().apply(motorConfig);
 
     // Initialize voltage control
     voltage_out = new VoltageOut(0.0);
@@ -35,22 +38,45 @@ public class HandIOTalonFX implements HandIO {
     BaseStatusSignal.refreshAll();
 
     // Read motor data and update inputs
-    inputs.current_Amps = new double[] {motor.getStatorCurrent().getValueAsDouble()};
-    inputs.AppliedVolts = motor.getMotorVoltage().getValueAsDouble();
-    inputs.VelocityDegPS =
-        motor.getVelocity().getValueAsDouble(); // Assuming getVelocity() is properly configured
+    inputs.intake_current_Amps = new double[] {intakeMotor.getStatorCurrent().getValueAsDouble()};
+    inputs.intakeAppliedVolts = intakeMotor.getMotorVoltage().getValueAsDouble();
+    inputs.intakeVelocityDegPS =
+        intakeMotor
+            .getVelocity()
+            .getValueAsDouble(); // Assuming getVelocity() is properly configured
+    inputs.scoring_current_Amps = new double[] {intakeMotor.getStatorCurrent().getValueAsDouble()};
+    inputs.scoringAppliedVolts = intakeMotor.getMotorVoltage().getValueAsDouble();
+    inputs.scoringVelocityDegPS =
+        scoringMotor
+            .getVelocity()
+            .getValueAsDouble(); // Assuming getVelocity() is properly configured
   }
 
-  public void setVoltage(double volts) {
+  @Override
+  public void intakeSetVoltage(double volts) {
     // Clamp voltage to valid range (-12V to 12V)
     volts = MathUtil.clamp(volts, -12.0, 12.0);
 
     // Set motor voltage
-    motor.setControl(voltage_out.withOutput(volts));
+    intakeMotor.setControl(voltage_out.withOutput(volts));
   }
 
   @Override
-  public void stop() {
-    setVoltage(0.0);
+  public void intakeStop() {
+    intakeSetVoltage(0.0);
+  }
+
+  @Override
+  public void scoringSetVoltage(double volts) {
+    // Clamp voltage to valid range (-12V to 12V)
+    volts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    // Set motor voltage
+    scoringMotor.setControl(voltage_out.withOutput(volts));
+  }
+
+  @Override
+  public void scoringStop() {
+    scoringSetVoltage(0.0);
   }
 }

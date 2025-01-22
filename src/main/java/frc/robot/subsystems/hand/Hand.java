@@ -48,16 +48,17 @@ public class Hand extends StateMachineSubsystemBase<HandStates> {
       case DISABLED:
         break;
       case IDLE:
-        setVoltage(0.0);
+        intakeSetVoltage(0.0);
+        scoringSetVoltage(0.0);
         break;
       case INTAKING:
-        setVoltage(3.0);
+        intakeSetVoltage(3.0);
         if (inputs.beamBreakActivated) {
           queueState(HandStates.IDLE);
         }
         break;
       case SPITTING:
-        setVoltage(-3.0);
+        scoringSetVoltage(-3.0);
         break;
       default:
         break;
@@ -66,15 +67,20 @@ public class Hand extends StateMachineSubsystemBase<HandStates> {
 
   @Override
   public void outputPeriodic() {
-    mech.setAngle(inputs.VelocityDegPS);
+    mech.setAngle(inputs.intakeVelocityDegPS);
+    mech.score(inputs.scoringVelocityDegPS);
     mech.periodic();
   }
 
-  public void setVelocity(double velocity_DPS) {
-    setVoltage(kV * Units.degreesToRadians(velocity_DPS) + kS);
+  public void scoringSetVoltage(double volts) {
+    io.scoringSetVoltage(volts);
   }
 
-  public void setVoltage(double volts) {
-    io.setVoltage(volts);
+  public void intakeSetVelocity(double velocity_DPS) {
+    intakeSetVoltage(kV * Units.degreesToRadians(velocity_DPS) + kS);
+  }
+
+  public void intakeSetVoltage(double volts) {
+    io.intakeSetVoltage(volts);
   }
 }

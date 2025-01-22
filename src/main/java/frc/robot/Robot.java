@@ -127,6 +127,8 @@ public class Robot extends LoggedRobot {
     } else if (bb) {
       /* scoring */
       hand.queueState(HandStates.SPITTING);
+    } else {
+      hand.queueState(HandStates.IDLE);
     }
     SwerveInput input = new SwerveInput(x_, y_, w_, throttle);
     drive.setInput(input);
