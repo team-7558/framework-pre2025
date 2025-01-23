@@ -51,11 +51,11 @@ public class SSPose {
 
     public EEPose getEEPose() {
         double x = Constants.armlength * Math.cos(this.alpha);
-        double y = Constants.armlength * Math.sin(this.alpha) * Math.cos(this.beta) + Math.cos(this.beta) * Constants.armoffset_in;
-        double z = Constants.armlength * Math.sin(this.alpha) * Math.sin(this.beta) + Constants.elevheighttoarm - Math.sin(this.beta) * Constants.armoffset_in;
+        double y = Constants.armlength * Math.sin(this.alpha) * Math.cos(this.beta);
+        double z = Constants.armlength * Math.sin(this.alpha) * Math.sin(this.beta) + Constants.elevheighttoarm;
 
         double roll = 0.0;
-        double angle_from_horizontal = Math.asin(Constants.armlength * Math.sin(this.alpha) * Math.sin(this.beta) - Constants.armoffset_in * Math.sin(this.beta));
+        double angle_from_horizontal = Math.asin(Constants.armlength * Math.sin(this.alpha) * Math.sin(this.beta));
 
         return new EEPose(x, y, z, roll, angle_from_horizontal);
     }
