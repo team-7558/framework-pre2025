@@ -9,6 +9,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.util.Units;
 
+// CHANGE FOR NEW MECH
+
 public class HangIOTalonFX implements HangIO {
     private static final double GEAR_RATIO = 0;
     private final TalonFX leader = new TalonFX(0);;

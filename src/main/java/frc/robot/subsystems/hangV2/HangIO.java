@@ -16,7 +16,7 @@ public interface HangIO {
     // update the inputs
     public default void updateInputs(HangIOInputs inputs) {};
 
-    // set the mech at a specific height
+    // tell the hang to turn to a specific position to lift the robot up
     public default void setPos(double positionDeg, double targetPos) {}
 
     public default void configurePID(double kP, double kI, double kD) {}
