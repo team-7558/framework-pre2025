@@ -1,5 +1,7 @@
 package frc.robot.superstructure;
 
+import frc.robot.Constants;
+
 public class SSPose {
 
     private double alpha; //alpha is elbow absolute angle from horizontal
@@ -47,6 +49,16 @@ public class SSPose {
     }
 
 
+    public EEPose getEEPose() {
+        double x = Math.cos(this.alpha);
+        double y = Math.sin(this.alpha) * Math.cos(this.beta) + Math.cos(this.beta) * Constants.armoffset_in;
+        double z = Math.sin(this.alpha) * Math.sin(this.beta) + Constants.elevheighttoarm - Math.sin(this.beta) * Constants.armoffset_in;
+
+        double roll = 0.0;
+        double angle_from_horizontal = Math.asin(Math.sin(this.alpha) * Math.sin(this.beta) - Constants.armoffset_in * Math.sin(this.beta));
+
+        return new EEPose(x, y, z, roll, angle_from_horizontal);
+    }
     // Override toString() for debugging and display
     @Override
     public String toString() {

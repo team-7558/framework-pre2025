@@ -25,8 +25,11 @@ public final class Constants {
   public static final Mode currentMode = Mode.SIM;
   public static final double globalDelta_s = 0.02; // 0.02 = 50Hz
   public static final double globalDelta_Hz = 1.0 / globalDelta_s; // 0.02 = 50Hz
+  public static final double armoffset_in = 15.0;
+  public static final double elevheighttoarm = 30.0;
 
   public static final boolean verboseLogging = true;
+
 
   public enum Mode {
     /** Running on a real robot. */
