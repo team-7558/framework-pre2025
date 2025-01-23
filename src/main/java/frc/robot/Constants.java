@@ -28,6 +28,7 @@ public final class Constants {
   public static final double armoffset_in = 15.0;
   public static final double elevheighttoarm = 30.0;
 
+  public static final double armlength = 15.0;
   public static final boolean verboseLogging = true;
 
 
