@@ -1,12 +1,11 @@
 package frc.robot.subsystems.elevator;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import org.littletonrobotics.junction.Logger;
 
 public class Elevator2d {
 
@@ -28,7 +27,6 @@ public class Elevator2d {
   public void setHeight(double height) {
     elev.setLength(height);
   }
-
 
   public void periodic() {
     SmartDashboard.putData("Elevator2D", mech);

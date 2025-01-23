@@ -96,7 +96,6 @@ public class Robot extends LoggedRobot {
     // init subsystems
     drive = Drive.getInstance();
     elevator = Elevator.getInstance();
-    mech = Elevator2d.getInstance();
   }
 
   /** This function is called periodically during all modes. */
@@ -131,7 +130,6 @@ public class Robot extends LoggedRobot {
     SS.getInstance().handleStateMachine();
     drive.periodic();
     elevator.periodic();
-    mech.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
 

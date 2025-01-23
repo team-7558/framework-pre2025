@@ -44,7 +44,6 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   private double targetHeight_m = ELEV_MIN_HEIGHT_M;
 
-
   public Elevator(ElevatorIO io) {
     super("Elevator");
     this.io = new ElevatorIOReal();
@@ -59,9 +58,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
     Logger.processInputs("Elevator", inputs);
   }
 
-  public static Elevator getInstance(
-
-  ) {
+  public static Elevator getInstance() {
 
     if (instance == null) {
       System.out.println("Elevator initialized.");
@@ -91,7 +88,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
         if (!inputs.hallEffect) {
           io.setVoltage(0.0);
         } else {
-          io.zero();
+          io.resetPos(ELEV_MIN_HEIGHT_M);
           io.setVoltage(0);
           zeroed = true;
           queueState(ElevatorState.IDLE);
@@ -119,8 +116,10 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
   @Override
   public void outputPeriodic() {
+    mech2d.setHeight(targetHeight_m);
     io.travelToPos(targetHeight_m);
     Logger.recordOutput("Elevator/targetHeight_m", targetHeight_m);
+    mech2d.periodic();
   }
 
   public boolean getZeroed() {

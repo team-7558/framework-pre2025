@@ -2,21 +2,39 @@ package frc.robot.subsystems.elevator;
 
 public class ElevatorIOIdeal implements ElevatorIO {
 
-  public void updateInputs(ElevatorIOInputs Inputs) {}
+  public double pos_m = 0.0;
+  public double vel_mps = 0.0;
+  public double volts_V = 0.0;
+  public double[] currents_A = new double[] {};
 
-  public void setVoltage(double volts_V) {}
+  public boolean hallEffect = false;
 
-  public void setVel(double vel_mps) {}
+  public void updateInputs(ElevatorIOInputs inputs) {
+    inputs.currents_A = currents_A;
+    inputs.pos_m = pos_m;
+    inputs.vel_mps = vel_mps;
+    inputs.volts_V = volts_V;
 
-  public void holdPos(double pos_m) {}
 
-  public void travelToPos(double pos_m) {}
+  }
 
-  public void resetPos(double pos_m) {}
+    public void setPos_m(double pos_m) {
+        this.pos_m = pos_m;
+    }
 
-  public void stop() {}
+    public void setVel_mps(double vel_mps) {
+        this.vel_mps = vel_mps;
+    }
 
-  public void toggleBrake() {}
+    public void setVolts_V(double volts_V) {
+        this.volts_V = volts_V;
+    }
 
-  public void zero() {}
+    public void setCurrents_A(double[] currents_A) {
+        this.currents_A = currents_A;
+    }
+
+    public void setHallEffect(boolean hallEffect) {
+        this.hallEffect = hallEffect;
+    }
 }
