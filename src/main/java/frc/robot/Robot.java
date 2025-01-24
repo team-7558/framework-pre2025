@@ -107,8 +107,8 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
 
-    double y_ = OI.deadband(-OI.DR.getLeftY());
-    double x_ = OI.deadband(-OI.DR.getLeftX());
+    double x_ = OI.deadband(OI.DR.getLeftY());
+    double y_ = OI.deadband(OI.DR.getLeftX());
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
     boolean ab = OI.DR.getAButton();
