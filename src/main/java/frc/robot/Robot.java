@@ -13,11 +13,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.SwerveInput;
 import frc.robot.subsystems.hand.Hand;
-import frc.robot.subsystems.hand.Hand2d;
 import frc.robot.subsystems.hand.HandStates;
 import frc.robot.superstructure.InternalState;
 import frc.robot.superstructure.SS;
@@ -39,7 +41,7 @@ public class Robot extends LoggedRobot {
 
   private Drive drive;
   private Hand hand;
-  private Hand2d mech;
+  private Field2d field = new Field2d();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -107,15 +109,19 @@ public class Robot extends LoggedRobot {
     // This must be called from the robot's periodic block in order for anything in
     // the Command-based framework to work.
 
-    double x_ = OI.deadband(OI.DR.getLeftY());
-    double y_ = OI.deadband(OI.DR.getLeftX());
+    field.setRobotPose(drive.sim.getSimulatedDriveTrainPose());
+    double x_ = -OI.deadband(OI.DR.getLeftY());
+    double y_ = -OI.deadband(OI.DR.getLeftX());
     double w_ = 1.0 * -Util.sqInput(OI.deadband(OI.DR.getRightX()));
     double throttle = Util.sqInput(1.0 - OI.deadband(OI.DR.getLeftTriggerAxis()));
     boolean ab = OI.DR.getAButton();
     boolean bb = OI.DR.getBButton();
     boolean yb = OI.DR.getYButton();
     boolean xb = OI.DR.getXButton();
-    /* comment out yb related if statements after when implementing as it acts as simulated beambreak */
+    /*
+     * comment out yb related if statements after when implementing as it acts as
+     * simulated beambreak
+     */
     if (yb) {
       hand.inputs.beamBreakActivated = true;
     } else if (!yb) {
@@ -140,11 +146,16 @@ public class Robot extends LoggedRobot {
 
     SS.getInstance().handleStateMachine();
     drive.periodic();
+    double xVel = Math.pow(drive.getChassisSpeeds().vxMetersPerSecond, 2);
+    double yVel = Math.pow(drive.getChassisSpeeds().vyMetersPerSecond, 2);
+    double speed = Math.sqrt(xVel + yVel) / Units.inchesToMeters(2);
+    Logger.recordOutput("SwerveData/Swerve Speed", speed);
     hand.periodic();
     // swerve.periodic();
     PerfTracker.periodic();
-
     CommandScheduler.getInstance().run();
+    SmartDashboard.putData("Field", field);
+    // SmartDashboard.putData("Swerve Drive", new Sendable() {});
 
     // ^ will be gone later just keeping now to not break shit
   }

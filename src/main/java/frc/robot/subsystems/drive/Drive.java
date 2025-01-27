@@ -29,7 +29,10 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.subsystems.drive.Module.Mode;
@@ -120,7 +123,7 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
   private final GyroIO gyroIO;
   private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
-  private SwerveDriveSimulation sim;
+  public SwerveDriveSimulation sim;
 
   private double autolockSetpoint_r = 0, intermediaryAutolockSetpoint_r = 0;
 
@@ -196,6 +199,34 @@ public class Drive extends StateMachineSubsystemBase<PathingMode> {
     acc = new ChassisSpeeds();
     override = PathingOverride.NONE;
     queueState(PathingMode.DISABLED);
+
+    SmartDashboard.putData(
+        "Swerve Drive",
+        new Sendable() {
+          public void initSendable(SendableBuilder builder) {
+            builder.setSmartDashboardType("SwerveDrive");
+
+            builder.addDoubleProperty(
+                "Front Left Angle", () -> modules[CFG.FL].getAngle().getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Left Velocity", () -> modules[CFG.FL].getVelocityMetersPerSec(), null);
+
+            builder.addDoubleProperty(
+                "Front Right Angle", () -> modules[CFG.FR].getAngle().getRadians(), null);
+            builder.addDoubleProperty(
+                "Front Right Velocity", () -> modules[CFG.FR].getVelocityMetersPerSec(), null);
+
+            builder.addDoubleProperty(
+                "Back Left Angle", () -> modules[CFG.BL].getAngle().getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Left Velocity", () -> modules[CFG.BL].getVelocityMetersPerSec(), null);
+
+            builder.addDoubleProperty(
+                "Back Right Angle", () -> modules[CFG.BR].getAngle().getRadians(), null);
+            builder.addDoubleProperty(
+                "Back Right Velocity", () -> modules[CFG.BR].getVelocityMetersPerSec(), null);
+          }
+        });
   }
 
   @Override
