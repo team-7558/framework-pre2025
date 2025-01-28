@@ -14,8 +14,7 @@ public interface ElevatorIO {
     public boolean hallEffect = false;
   }
 
-  public default void updateInputs(ElevatorIOInputs Inputs) {
-  }
+  public default void updateInputs(ElevatorIOInputs Inputs) {}
 
   public default void setVoltage(double volts_V) {}
 

@@ -15,7 +15,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
-import org.littletonrobotics.junction.Logger;
 
 public class ElevatorIOReal implements ElevatorIO {
 
@@ -160,8 +159,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
   @Override
   public void resetPos(double pos_m) {
-    posOffset_m = -this.pos_m.getValueAsDouble() + pos_m;
-    Logger.recordOutput("Elevator/posOffset", posOffset_m);
+    leftFalcon.setPosition(0);
   }
 
   @Override
@@ -170,7 +168,6 @@ public class ElevatorIOReal implements ElevatorIO {
     rightFalcon.stopMotor();
   }
 
-  @Override
   public void toggleBrake() {
     var config = new MotorOutputConfigs();
 
@@ -179,10 +176,5 @@ public class ElevatorIOReal implements ElevatorIO {
     isBraked = !isBraked;
     leftFalcon.getConfigurator().apply(config);
     rightFalcon.getConfigurator().apply(config);
-  }
-
-  @Override
-  public void zero() {
-    leftFalcon.setPosition(0);
   }
 }

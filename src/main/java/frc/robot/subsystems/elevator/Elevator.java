@@ -13,12 +13,11 @@
 
 package frc.robot.subsystems.elevator;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.MathUtil;
 import frc.robot.Constants;
 import frc.robot.subsystems.StateMachineSubsystemBase;
 import frc.robot.util.Util;
+import org.littletonrobotics.junction.Logger;
 
 public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
