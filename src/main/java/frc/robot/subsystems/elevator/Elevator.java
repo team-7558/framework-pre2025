@@ -73,6 +73,7 @@ public class Elevator extends StateMachineSubsystemBase<ElevatorState> {
 
         default:
           instance = new Elevator(new ElevatorIO() {});
+          break;
       }
     }
     return instance;
